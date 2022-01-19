@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../../Include/Axis/Memory.hpp"
+#include <new>
 
 namespace Axis
 {
