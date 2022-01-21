@@ -1,6 +1,7 @@
 # System test source files
 set(AXIS_SYSTEM_TEST_SOURCES
-    "${CMAKE_CURRENT_LIST_DIR}/Memory.cpp")
+    "${CMAKE_CURRENT_LIST_DIR}/Memory.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/String.cpp")
 
 # Targets to link with system test target
 set(AXIS_SYSTEM_TEST_TARGETS_TO_LINK

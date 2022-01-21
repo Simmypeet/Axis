@@ -1,11 +1,11 @@
 #include <Axis/Memory.hpp>
 #include <doctest.h>
 
-TEST_CASE("Axis memory allocation : [Axis-System]")
+DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
 {
-    SUBCASE("Allocators")
+    DOCTEST_SUBCASE("Allocators")
     {
-        SUBCASE("Allocate memory with `Axis::MallocAllocator`")
+        DOCTEST_SUBCASE("Allocate memory with `Axis::MallocAllocator`")
         {
             using namespace Axis;
 
@@ -13,16 +13,16 @@ TEST_CASE("Axis memory allocation : [Axis-System]")
             auto allocatedMemory = MallocAllocator::Allocate(16, 16);
 
             // Checks if the allocated memory is not null
-            CHECK(allocatedMemory != nullptr);
+            DOCTEST_CHECK(allocatedMemory != nullptr);
 
             // Checks if the allocated memory is aligned
-            CHECK(reinterpret_cast<uintptr_t>(allocatedMemory) % 16 == 0);
+            DOCTEST_CHECK(reinterpret_cast<uintptr_t>(allocatedMemory) % 16 == 0);
 
             // Frees the allocated memory
             MallocAllocator::Deallocate(allocatedMemory);
         }
 
-        SUBCASE("Allocate memory with `Axis::PoolAllocator`")
+        DOCTEST_SUBCASE("Allocate memory with `Axis::PoolAllocator`")
         {
             using namespace Axis;
 
@@ -30,19 +30,19 @@ TEST_CASE("Axis memory allocation : [Axis-System]")
             auto allocatedMemory = PoolAllocator::Allocate(16, 16);
 
             // Checks if the allocated memory is not null
-            CHECK(allocatedMemory != nullptr);
+            DOCTEST_CHECK(allocatedMemory != nullptr);
 
             // Checks if the allocated memory is aligned
-            CHECK(reinterpret_cast<uintptr_t>(allocatedMemory) % 16 == 0);
+            DOCTEST_CHECK(reinterpret_cast<uintptr_t>(allocatedMemory) % 16 == 0);
 
             // Frees the allocated memory
             PoolAllocator::Deallocate(allocatedMemory);
         }
     }
 
-    SUBCASE("`Axis::New` and `Axis::Delete`")
+    DOCTEST_SUBCASE("`Axis::New` and `Axis::Delete`")
     {
-        SUBCASE("Creates an instance in dynamic memory with `Axis::New`")
+        DOCTEST_SUBCASE("Creates an instance in dynamic memory with `Axis::New`")
         {
             using namespace Axis;
 
@@ -73,22 +73,90 @@ TEST_CASE("Axis memory allocation : [Axis-System]")
             auto instace = Axis::New<DefaultAllocator, TestClass>(&objectAlive);
 
             // Checks if the instance is not null
-            CHECK(instace != nullptr);
+            DOCTEST_CHECK(instace != nullptr);
 
             // Checks if the instance is alive
-            CHECK(objectAlive == true);
+            DOCTEST_CHECK(objectAlive == true);
 
             // Destroys the instance
             Axis::Delete<DefaultAllocator>(instace);
 
             // Checks if the instance is dead
-            CHECK(objectAlive == false);
+            DOCTEST_CHECK(objectAlive == false);
+        }
+
+        DOCTEST_SUBCASE("Creates an instance in dynamic memory with `Axis::New` which throws exception")
+        {
+            using namespace Axis;
+
+            struct TestClass
+            {
+                TestClass()
+                {
+                    // Throws number 1
+                    throw Int32(1);
+                }
+            };
+
+            // Creates an instance of `TestClass` with `Axis::New`,
+            // which throws an exception
+
+            try
+            {
+                auto instace = Axis::New<DefaultAllocator, TestClass>();
+            }
+            catch (Int32& exception)
+            {
+                // Checks if the exception is number 1
+                DOCTEST_CHECK(exception == 1);
+            }
+        }
+
+        DOCTEST_SUBCASE("Creates an instance in dynamic memory with `Axis::NewArray` which throws exception")
+        {
+            using namespace Axis;
+
+            static Size instanceCount = 0;
+
+            struct TestClass
+            {
+                TestClass()
+                {
+                    // Throws number 1
+
+                    if (instanceCount == 20)
+                        throw Int32(1);
+
+                    ++instanceCount;
+                }
+
+                ~TestClass() noexcept
+                {
+                    --instanceCount;
+                }
+            };
+
+            // Creates an instance of `TestClass` with `Axis::NewArray`,
+            // which throws an exception
+
+            try
+            {
+                auto instances = Axis::NewArray<DefaultAllocator, TestClass>(20);
+            }
+            catch (Int32& exception)
+            {
+                // Checks if the exception is number 1
+                DOCTEST_CHECK(exception == 1);
+
+                // Checks if the instance count is 0
+                DOCTEST_CHECK(instanceCount == 0);
+            }
         }
     }
 
-    SUBCASE("`Axis::NewArray` and `Axis::DeleteArray`")
+    DOCTEST_SUBCASE("`Axis::NewArray` and `Axis::DeleteArray`")
     {
-        SUBCASE("Creates an array of instances in dynamic memory with `Axis::NewArray`")
+        DOCTEST_SUBCASE("Creates an array of instances in dynamic memory with `Axis::NewArray`")
         {
             using namespace Axis;
 
@@ -113,16 +181,16 @@ TEST_CASE("Axis memory allocation : [Axis-System]")
             auto array = Axis::NewArray<DefaultAllocator, TestClass>(10);
 
             // Checks if the array is not null
-            CHECK(array != nullptr);
+            DOCTEST_CHECK(array != nullptr);
 
             // Checks if the array has 10 elements
-            CHECK(elementCount == 10);
+            DOCTEST_CHECK(elementCount == 10);
 
             // Destroys the array
             Axis::DeleteArray<DefaultAllocator>(array);
 
             // Checks if the array has 0 elements
-            CHECK(elementCount == 0);
+            DOCTEST_CHECK(elementCount == 0);
         }
     }
 }

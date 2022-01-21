@@ -43,7 +43,7 @@ struct AXIS_SYSTEM_API MallocAllocator
     ///
     /// \param[in] size The size of the memory to allocate
     /// \param[in] alignment The alignment of the memory to allocate
-    static PVoid Allocate(Size size, Size alignment) noexcept;
+    AXIS_NODISCARD static PVoid Allocate(Size size, Size alignment) noexcept;
 
     /// \brief Deallocates the given memory pointer
     ///
@@ -60,7 +60,7 @@ struct AXIS_SYSTEM_API PoolAllocator
     ///
     /// \param[in] size The size of the memory to allocate
     /// \param[in] alignment The alignment of the memory to allocate
-    static PVoid Allocate(Size size, Size alignment) noexcept;
+    AXIS_NODISCARD static PVoid Allocate(Size size, Size alignment) noexcept;
 
     /// \brief Returns the given memory pointer back to the pool
     ///
@@ -80,7 +80,7 @@ using DefaultAllocator = PoolAllocator;
 ///
 /// \return A new instance of the specified type.
 template <AllocatorType Allocator, RawType T, class... Args>
-T* New(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>);
+AXIS_NODISCARD T* New(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>);
 
 /// \brief Creates the array of new instances of the specified type using
 ///        the specified type on the heap. Uses \a `Axis::DeleteArray` to
@@ -93,7 +93,7 @@ T* New(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) req
 ///
 /// \return A new array of the specified type.
 template <AllocatorType Allocator, RawType T>
-T* NewArray(Size elementCount) noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_default_constructible_v<T>);
+AXIS_NODISCARD T* NewArray(Size elementCount) noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_default_constructible_v<T>);
 
 /// \brief Deletes the instance and frees the memory, must use the
 ///        same allocator type as the one used to allocate the instance.
