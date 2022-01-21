@@ -6,6 +6,7 @@
 #define AXIS_SYSTEM_MATHIMPL_INL
 #pragma once
 
+#include "../../Include/Axis/Assert.hpp"
 #include "../../Include/Axis/Math.hpp"
 #include <cmath>
 
@@ -50,7 +51,7 @@ inline constexpr T Clamp(T value,
     AXIS_VALIDATE(min <= max, "`min` must not be greater than `max`");
 
     return value < min ?
-        min :
+                      min :
         value > max ? max :
                       value;
 }
