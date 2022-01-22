@@ -15,7 +15,7 @@ jobs:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    name: ${{ matrix.platform.name }}
+    name: ${{ matrix.platform.name }} ${{ matrix.platform.compiler }}
     runs-on: ${{ matrix.platform.os }}
 
     strategy:
@@ -23,22 +23,26 @@ jobs:
       matrix:
         platform:
           - {
-              name: Windows VS2022,
+              name: Windows,
+              compiler: VS2022,
               os: windows-2022,
               flags: -G "Visual Studio 17 2022",
             }
           - {
-              name: Windows VS2019,
+              name: Windows,
+              compiler: VS2019,
               os: windows-2019,
               flags: -G "Visual Studio 16 2019",
             }
           - {
-              name: Windows Clang,
+              name: Windows,
+              compiler: Clang,
               os: windows-2022,
               flags: -G "Unix Makefiles" -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++,
             }
           - {
-              name: Windows GCC,
+              name: Windows,
+              compiler: GCC,
               os: windows-2022,
               flags: -G "Unix Makefiles" -D CMAKE_C_COMPILER=gcc -D CMAKE_CXX_COMPILER=gcc,
             }
@@ -46,31 +50,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Prepare Windows tools
-          if: runner.os == 'Windows'
-       shell: powershell
-         run: |
-                Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-                scoop install ninja --global
-                if ("${{ matrix.compiler }}".StartsWith("clang")) {
-                  scoop install llvm --global
-                }
-                if ("${{ matrix.compiler }}" -eq "gcc") {
-                  # Chocolatey GCC is broken on the windows-2019 image.
-                  # See: https://github.community/t5/GitHub-Actions/Something-is-wrong-with-the-chocolatey-installed-version-of-gcc/td-p/32413
-                  scoop install gcc --global
-                  echo "::set-env name=CC::gcc"
-                  echo "::set-env name=CXX::g++"
-                } elseif ("${{ matrix.compiler }}" -eq "clang") {
-                  echo "::set-env name=CC::clang"
-                  echo "::set-env name=CXX::clang++"
-                } else {
-                  echo "::set-env name=CC::${{ matrix.compiler }}"
-                  echo "::set-env name=CXX::${{ matrix.compiler }}"
-                }
-                # Scoop modifies the PATH so we make the modified PATH global.
-                echo "::set-env name=PATH::$env:PATH"
-
+      - name: Set up GCC
+        if: ${{matrix.platform.compiler}} == GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: latest
+          platform: x64
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
