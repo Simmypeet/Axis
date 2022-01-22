@@ -219,6 +219,8 @@ void PoolAllocator::Deallocate(PVoid ptr) noexcept
     // Gets the allocator
     auto allocator = block->Pool;
 
+    std::lock_guard<std::mutex> lock(s_poolAllocatorMapMutex);
+
     // Returns the memory block to the pool
     allocator->Return(ptr);
 }

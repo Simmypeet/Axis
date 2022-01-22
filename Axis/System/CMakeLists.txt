@@ -10,6 +10,7 @@ set(AXIS_SYSTEM_HEADER_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/SystemPch.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/String.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Math.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/List.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Trait.hpp")
 
 # Collects all system's source files
@@ -21,6 +22,7 @@ set(AXIS_SYSTEM_SOURCE_FILES
 set(AXIS_SYSTEM_PRIVATE_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/MemoryImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/MathImpl.inl"
+   "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/ListImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/StringImpl.inl")
 
 # Collects all target's source files

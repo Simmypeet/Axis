@@ -25,7 +25,7 @@ concept SameAs = requires
 
 /// \brief Checks if a type doesn't have reference, const or array qualifiers.
 template <class T>
-concept RawType = !std::is_reference_v<T> && !std::is_const_v<T> && !std::is_array_v<T>;
+concept RawType = !std::is_reference_v<T> && !std::is_const_v<T> && !std::is_array_v<T> && std::is_nothrow_destructible_v<std::decay_t<T>>;
 
 } // namespace Axis
 
