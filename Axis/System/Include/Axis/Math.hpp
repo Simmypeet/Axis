@@ -12,6 +12,7 @@
 
 #include "Config.hpp"
 #include <type_traits>
+#include <concepts>
 
 namespace Axis
 {

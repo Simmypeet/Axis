@@ -11,8 +11,8 @@
 #pragma once
 
 #include "Config.hpp"
+#include <concepts>
 #include <type_traits>
-
 namespace Axis
 {
 
