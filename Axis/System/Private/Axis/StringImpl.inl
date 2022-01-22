@@ -6,9 +6,9 @@
 #define AXIS_SYSTEM_STRINGIMPL_INL
 #pragma once
 
+#include "../../Include/Axis/Exception.hpp"
 #include "../../Include/Axis/Math.hpp"
 #include "../../Include/Axis/String.hpp"
-#include <exception>
 
 namespace Axis
 {
@@ -288,7 +288,7 @@ template <CharType T, AllocatorType Allocator>
 inline T& String<T, Allocator>::operator[](Size index)
 {
     if (index >= _stringLength)
-        throw std::exception("Index out of range");
+        throw ArgumentOutOfRangeException("`index` was out of range!");
 
     return GetCString()[index];
 }
@@ -297,7 +297,7 @@ template <CharType T, AllocatorType Allocator>
 inline const T& String<T, Allocator>::operator[](Size index) const
 {
     if (index >= _stringLength)
-        throw std::exception("Index out of range");
+        throw ArgumentOutOfRangeException("`index` was out of range!");
 
     return GetCString()[index];
 }

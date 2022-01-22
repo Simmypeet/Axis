@@ -8,10 +8,10 @@
 
 #ifndef AXIS_SYSTEM_STRING_HPP
 #define AXIS_SYSTEM_STRING_HPP
-#pragma once
 
 #include "Memory.hpp"
 #include "Trait.hpp"
+#pragma once
 
 namespace Axis
 {

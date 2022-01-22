@@ -259,7 +259,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
         {
             helloWorld[11] = '!';
         }
-        catch (std::exception&)
+        catch (::Axis::Exception&)
         {
             DOCTEST_CHECK(true);
         }

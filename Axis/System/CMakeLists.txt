@@ -14,6 +14,7 @@ set(AXIS_SYSTEM_HEADER_FILES
 
 # Collects all system's source files
 set(AXIS_SYSTEM_SOURCE_FILES
+   "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Exception.cpp"
    "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Memory.cpp")
 
 # Collects all system's private files
