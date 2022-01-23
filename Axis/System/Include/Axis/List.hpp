@@ -188,7 +188,7 @@ public:
     /// \param[in] index The index of the element to remove.
     ///
     /////////////////////////////////////////////////////////////////
-    void RemoveAt(Size index) noexcept(std::is_nothrow_move_constructible_v<T> ? true : std::is_nothrow_copy_constructible_v<T>) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>);
+    void RemoveAt(Size index) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>);
 
     /////////////////////////////////////////////////////////////////
     /// \brief Gets the pointer to the first element of the list.

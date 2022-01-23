@@ -359,5 +359,71 @@ DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
             CHECK(list[8].Value == 9);
             CHECK(list[9].Value == 10);
         }
+
+        DOCTEST_SUBCASE("RemoveAt")
+        {
+            using namespace Axis;
+
+            // Creates a list from initializer list
+            List<Int32> list = {1, 2, 3, 4, 5};
+
+            // Checks the validity of list
+            CHECK(list.GetLength() == 5);
+
+            // Checks the value of each element
+            CHECK(list[0] == 1);
+            CHECK(list[1] == 2);
+            CHECK(list[2] == 3);
+            CHECK(list[3] == 4);
+            CHECK(list[4] == 5);
+
+            // Removes the element at index 2
+            list.RemoveAt(2);
+
+            // Checks the validity of list
+            CHECK(list.GetLength() == 4);
+
+            // Checks the value of each element
+            CHECK(list[0] == 1);
+            CHECK(list[1] == 2);
+            CHECK(list[2] == 4);
+            CHECK(list[3] == 5);
+
+            // Removes the element at index 0
+            list.RemoveAt(0);
+
+            // Checks the validity of list
+            CHECK(list.GetLength() == 3);
+
+            // Checks the value of each element
+            CHECK(list[0] == 2);
+            CHECK(list[1] == 4);
+            CHECK(list[2] == 5);
+
+            // Removes the element at index 1
+            list.RemoveAt(1);
+
+            // Checks the validity of list
+            CHECK(list.GetLength() == 2);
+
+            // Checks the value of each element
+            CHECK(list[0] == 2);
+            CHECK(list[1] == 5);
+
+            // Removes the element at index 0
+            list.RemoveAt(0);
+
+            // Checks the validity of list
+            CHECK(list.GetLength() == 1);
+
+            // Checks the value of each element
+            CHECK(list[0] == 5);
+
+            // Removes the element at index 0
+            list.RemoveAt(0);
+
+            // Checks the validity of list
+            CHECK(list.GetLength() == 0);
+        }
     }
 }

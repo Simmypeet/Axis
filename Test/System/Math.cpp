@@ -43,23 +43,23 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
     {
         using namespace Axis;
 
-        DOCTEST_CHECK(Math::ReadBitPosition(0x1, 0) == 1);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x2, 1) == 1);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x4, 2) == 1);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x8, 3) == 1);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x10, 4) == 1);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x20, 5) == 1);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x40, 6) == 1);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x80, 7) == 1);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x1, 0) == true);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x2, 1) == true);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x4, 2) == true);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x8, 3) == true);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x10, 4) == true);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x20, 5) == true);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x40, 6) == true);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x80, 7) == true);
 
-        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 0) == 0);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 1) == 0);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 2) == 0);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 3) == 0);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 4) == 0);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 5) == 0);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 6) == 0);
-        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 7) == 0);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 0) == false);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 1) == false);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 2) == false);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 3) == false);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 4) == false);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 5) == false);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 6) == false);
+        DOCTEST_CHECK(Math::ReadBitPosition(0x0, 7) == false);
     }
 
     DOCTEST_SUBCASE("GetLeastSignificantBit")

@@ -23,9 +23,9 @@ inline constexpr Vector3<T>::Vector3(U x,
 template <ArithmeticType T>
 template <ArithmeticType U>
 inline constexpr Vector3<T>::Vector3(const Vector3<U>& other) noexcept :
-    X(other.X),
-    Y(other.Y),
-    Z(other.Z) {}
+    X((T)other.X),
+    Y((T)other.Y),
+    Z((T)other.Z) {}
 
 template <ArithmeticType T>
 inline constexpr Vector3<T>::Vector3(T value) noexcept :
@@ -36,14 +36,13 @@ inline constexpr Vector3<T>::Vector3(T value) noexcept :
 template <ArithmeticType T>
 inline constexpr BigFloat Vector3<T>::GetMagnitude() const noexcept
 {
-    auto res = std::sqrt((X * X) + (Y * Y) + (Z * Z));
-    return res;
+    return std::sqrt((X * X) + (Y * Y) + (Z * Z));
 }
 
 template <ArithmeticType T>
 inline constexpr void Vector3<T>::Normalize() noexcept requires(FloatingPointType<T>)
 {
-    auto magnitude = GetMagnitude();
+    T magnitude = (T)GetMagnitude();
 
     X /= magnitude;
     Y /= magnitude;
@@ -53,7 +52,7 @@ inline constexpr void Vector3<T>::Normalize() noexcept requires(FloatingPointTyp
 template <ArithmeticType T>
 inline constexpr Vector3<T> Vector3<T>::NormalizeCopy() const noexcept requires(FloatingPointType<T>)
 {
-    auto magnitude = GetMagnitude();
+    T magnitude = (T)GetMagnitude();
 
     return Vector3((T)(X / magnitude), (T)(Y / magnitude), (T)(Z / magnitude));
 }

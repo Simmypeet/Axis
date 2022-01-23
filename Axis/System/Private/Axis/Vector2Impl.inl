@@ -21,8 +21,8 @@ inline constexpr Vector2<T>::Vector2(U x,
 template <ArithmeticType T>
 template <ArithmeticType U>
 inline constexpr Vector2<T>::Vector2(const Vector2<U>& other) noexcept :
-    X(other.X),
-    Y(other.Y) {}
+    X((T)other.X),
+    Y((T)other.Y) {}
 
 template <ArithmeticType T>
 inline constexpr Vector2<T>::Vector2(T value) noexcept :
@@ -38,7 +38,7 @@ inline constexpr BigFloat Vector2<T>::GetMagnitude() const noexcept
 template <ArithmeticType T>
 inline constexpr void Vector2<T>::Normalize() noexcept requires(FloatingPointType<T>)
 {
-    auto magnitude = GetMagnitude();
+    T magnitude = (T)GetMagnitude();
 
     X /= magnitude;
     Y /= magnitude;
@@ -47,7 +47,7 @@ inline constexpr void Vector2<T>::Normalize() noexcept requires(FloatingPointTyp
 template <ArithmeticType T>
 inline constexpr Vector2<T> Vector2<T>::NormalizeCopy() const noexcept requires(FloatingPointType<T>)
 {
-    auto magnitude = GetMagnitude();
+    T magnitude = (T)GetMagnitude();
 
     return Vector2(X / magnitude, Y / magnitude);
 }

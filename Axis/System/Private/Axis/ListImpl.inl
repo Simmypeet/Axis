@@ -365,10 +365,11 @@ inline void List<T, Allocator>::PopBack() noexcept
 }
 
 template <RawType T, AllocatorType Allocator>
-inline void List<T, Allocator>::RemoveAt(Size index) noexcept(std::is_nothrow_move_constructible_v<T> ? true : std::is_nothrow_copy_constructible_v<T>) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>)
+inline void List<T, Allocator>::RemoveAt(Size index) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>)
 {
     // Checks if the index is valid.
-    AXIS_VALIDATE(index < _length, "Index out of range.");
+    if (index >= _length)
+        throw ArgumentOutOfRangeException("`index` was out of range!");
 
     // No need to allocate new memory if
     if constexpr (std::is_nothrow_move_constructible_v<T> ? true : std::is_nothrow_copy_constructible_v<T>)
