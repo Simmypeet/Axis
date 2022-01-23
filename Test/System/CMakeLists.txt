@@ -2,6 +2,11 @@
 set(AXIS_SYSTEM_TEST_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/Memory.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/String.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/Vector2.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/Vector3.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/Rectangle.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/Random.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/Math.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/List.cpp")
 
 # Targets to link with system test target

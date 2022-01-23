@@ -11,8 +11,9 @@
 #pragma once
 
 #include "Config.hpp"
-#include <type_traits>
 #include <concepts>
+#include <type_traits>
+
 
 namespace Axis
 {
@@ -35,6 +36,15 @@ concept UnsignedIntegralType = std::is_unsigned_v<T> && std::is_integral_v<T>;
 
 namespace Math
 {
+    /// \brief Checks if two floating point numbers are equal within the
+    ///        Epsilon value.
+    ///
+    /// \param[in] a First floating point number.
+    /// \param[in] b Second floating point number.
+    ///
+    /// \return True if the two numbers are equal, false otherwise.
+    template <FloatingPointType T, FloatingPointType U>
+    AXIS_NODISCARD constexpr Bool IsFloatEqual(T a, U b) noexcept;
 
     /// \brief Assigns value to a specified bit position.
     ///
@@ -71,7 +81,7 @@ namespace Math
     template <ArithmeticType T, ArithmeticType U, ArithmeticType V>
     AXIS_NODISCARD constexpr T Clamp(T value,
                                      U min,
-                                     V max) noexcept;
+                                     V max);
 
     /// \brief Checks if the value is in the specified range.
     ///
@@ -81,7 +91,7 @@ namespace Math
     template <ArithmeticType T, ArithmeticType U, ArithmeticType V>
     AXIS_NODISCARD constexpr Bool IsInRange(T value,
                                             U min,
-                                            V max) noexcept;
+                                            V max);
 
     /// \brief Gets the maximum value in the specified arguments.
     template <ArithmeticType T>
@@ -94,11 +104,6 @@ namespace Math
     /// \brief Combines the existing hash to another.
     AXIS_NODISCARD constexpr Size HashCombine(Size hash,
                                               Size anotherHash) noexcept;
-
-    /// \brief Gets fast approximated value of inverse square root.
-    ///
-    /// \param[in] value the value to substitute in the formula of ( 1/ sqrt(X) )
-    AXIS_NODISCARD inline Float32 FastInverseSquareRoot(Float32 value) noexcept;
 
     /// \brief Gets absolute value.
     template <ArithmeticType T>

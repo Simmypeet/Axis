@@ -6,15 +6,22 @@
 #define AXIS_SYSTEM_MATHIMPL_INL
 #pragma once
 
-#include "../../Include/Axis/Assert.hpp"
+#include "../../Include/Axis/Exception.hpp"
 #include "../../Include/Axis/Math.hpp"
 #include <cmath>
+
 
 namespace Axis
 {
 
 namespace Math
 {
+
+template <FloatingPointType T, FloatingPointType U>
+inline constexpr Bool IsFloatEqual(T a, U b) noexcept
+{
+    return std::abs(a - b) < std::numeric_limits<T>::epsilon();
+}
 
 template <IntegralType T>
 inline constexpr T AssignBitToPosition(T bitStorage, Uint8 position, Bool value) noexcept
@@ -46,9 +53,10 @@ inline constexpr T GetLeastSignificantBit(T value) noexcept
 template <ArithmeticType T, ArithmeticType U, ArithmeticType V>
 inline constexpr T Clamp(T value,
                          U min,
-                         V max) noexcept
+                         V max)
 {
-    AXIS_VALIDATE(min <= max, "`min` must not be greater than `max`");
+    if (min > max)
+        throw InvalidArgumentException("`min` value was greater than `max` value.");
 
     return value < min ?
                       min :
@@ -59,9 +67,10 @@ inline constexpr T Clamp(T value,
 template <ArithmeticType T, ArithmeticType U, ArithmeticType V>
 inline constexpr Bool IsInRange(T value,
                                 U min,
-                                V max) noexcept
+                                V max)
 {
-    AXIS_VALIDATE(min <= max, "`min` must not be greater than `max`");
+    if (min > max)
+        throw InvalidArgumentException("`min` value was greater than `max` value.");
 
     return value >= min &&
         value <= max;
@@ -85,23 +94,6 @@ inline constexpr Size HashCombine(Size hash,
     Size combinedHash = hash ^ anotherHash + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 
     return combinedHash;
-}
-
-inline Float32 FastInverseSquareRoot(Float32 value) noexcept
-{
-    // clang-format off
-
-    const Float32 threehalfs = 1.5F;
-    long i = *(long*)&value;
-
-    i = 0x5f3759df - (i >> 1);
-    value = *(Float32*)&i;
-
-    value = value * (threehalfs - ((value * 0.5F) * value * value));
-
-    return value;
-
-    // clang-format on
 }
 
 template <ArithmeticType T>
@@ -138,14 +130,6 @@ inline constexpr T RoundUp(T numToRound, T multipleOf) noexcept
     }
 }
 
-template <IntegralType T>
-inline constexpr T RoundDown(T numToRound, T multipleOf) noexcept
-{
-    static_assert(std::is_arithmetic<T>::value);
-
-    return numToRound - (numToRound % multipleOf);
-}
-
 template <ArithmeticType T>
 constexpr auto Modulo(T x, T y) noexcept -> decltype(auto)
 {
@@ -163,7 +147,7 @@ template <UnsignedIntegralType T>
 inline constexpr T RoundToNextPowerOfTwo(T num) noexcept
 {
     if (num == 0)
-        return 0;
+        return 1;
 
     num--;
 

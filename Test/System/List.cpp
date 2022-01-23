@@ -1,6 +1,5 @@
 #include <Axis/List.hpp>
 #include <doctest.h>
-#include <iostream>
 
 DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
 {
