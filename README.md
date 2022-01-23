@@ -1,4 +1,6 @@
-# Axis [![CMake](https://github.com/SimmyPeet/Axis/actions/workflows/CMake.yml/badge.svg)](https://github.com/SimmyPeet/Axis/actions/workflows/CMake.yml)
+# Axis [![CMake](https://github.com/SimmyPeet/Axis/actions/workflows/CMake.yml/badge.svg)](https://github.com/SimmyPeet/Axis/actions/workflows/CMake.yml) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+
 
 Axis is a modern C++ game framework/library. The framework is designed to be highly modular and leverages the modern C++ features for safe and fast codes.
 
