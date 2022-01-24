@@ -73,7 +73,7 @@ struct AXIS_SYSTEM_API PoolAllocator
 using DefaultAllocator = PoolAllocator;
 
 /// \brief Creates a new instance of the specified type using the
-///        specified type on the heap. Uses \a `Axis::Delete` to delete
+///        specified allocator on the heap. Uses \a `Axis::Delete` to delete
 ///        the instance.
 ///
 /// \tparam T Type of the instance to create.
@@ -81,10 +81,10 @@ using DefaultAllocator = PoolAllocator;
 ///
 /// \return A new instance of the specified type.
 template <AllocatorType Allocator, RawType T, class... Args>
-AXIS_NODISCARD T* New(Args&&... args);
+AXIS_NODISCARD T* AllocatedNew(Args&&... args);
 
 /// \brief Creates the array of new instances of the specified type using
-///        the specified type on the heap. Uses \a `Axis::DeleteArray` to
+///        the specified allocator on the heap. Uses \a `Axis::DeleteArray` to
 ///        delete the array.
 ///
 /// \tparam T Type of the instance to create.
@@ -94,7 +94,7 @@ AXIS_NODISCARD T* New(Args&&... args);
 ///
 /// \return A new array of the specified type.
 template <AllocatorType Allocator, RawType T>
-AXIS_NODISCARD T* NewArray(Size elementCount);
+AXIS_NODISCARD T* AllocatedNewArray(Size elementCount);
 
 /// \brief Deletes the instance and frees the memory, must use the
 ///        same allocator type as the one used to allocate the instance.
@@ -103,8 +103,8 @@ AXIS_NODISCARD T* NewArray(Size elementCount);
 /// \tparam AllocatorType Type of the allocator to use.
 ///
 /// \param[in] instance Pointer to the instance to delete.
-template <AllocatorType Allocator, RawType T>
-void Delete(T* instance) noexcept;
+template <AllocatorType Allocator, RawConstableType T>
+void AllocatedDelete(T* instance) noexcept;
 
 /// \brief Deletes the array and frees the memory, must use the
 ///        same allocator type as the one used to allocate the array.
@@ -113,8 +113,46 @@ void Delete(T* instance) noexcept;
 /// \tparam AllocatorType Type of the allocator to use.
 ///
 /// \param[in] array Pointer to the array to delete.
-template <AllocatorType Allocator, RawType T>
-void DeleteArray(T* array) noexcept;
+template <AllocatorType Allocator, RawConstableType T>
+void AllocatedDeleteArray(T* array) noexcept;
+
+/// \brief Creates a new instance of the specified type using the
+///        default allocator on the heap. Uses \a `Axis::Delete` to delete
+///        the instance.
+///
+/// \tparam T Type of the instance to create.
+///
+/// \return A new instance of the specified type.
+template <RawType T, class... Args>
+AXIS_NODISCARD inline T* New(Args&&... args) { return AllocatedNew<DefaultAllocator, T>(std::forward<Args>(args)...); }
+
+/// \brief Creates the array of new instances of the specified type using
+///        the default allocator on the heap. Uses \a `Axis::DeleteArray` to
+///        delete the array.
+///
+/// \tparam T Type of the instance to create.
+///
+/// \param[in] elementCount Number of elements to allocate.
+///
+/// \return A new array of the specified type.
+template <RawType T>
+AXIS_NODISCARD inline T* NewArray(Size elementCount) { return AllocatedNewArray<DefaultAllocator, T>(elementCount); }
+
+/// \brief Deletes the instance and frees the memory
+///
+/// \tparam T Type of the instance to delete.
+///
+/// \param[in] instance Pointer to the instance to delete.
+template <RawConstableType T>
+inline void Delete(T* instance) noexcept { AllocatedDelete<DefaultAllocator, T>(instance); }
+
+/// \brief Deletes the array and frees the memory.
+///
+/// \tparam T Type of the instance to delete.
+///
+/// \param[in] array Pointer to the array to delete.
+template <RawConstableType T>
+inline void DeleteArray(T* array) noexcept { AllocatedDeleteArray<DefaultAllocator, T>(array); }
 
 } // namespace Axis
 

@@ -70,7 +70,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
             };
 
             // Creates an instance of `TestClass`
-            auto instace = Axis::New<DefaultAllocator, TestClass>(&objectAlive);
+            auto instace = Axis::AllocatedNew<DefaultAllocator, TestClass>(&objectAlive);
 
             // Checks if the instance is not null
             DOCTEST_CHECK(instace != nullptr);
@@ -79,7 +79,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
             DOCTEST_CHECK(objectAlive == true);
 
             // Destroys the instance
-            Axis::Delete<DefaultAllocator>(instace);
+            Axis::AllocatedDelete<DefaultAllocator>(instace);
 
             // Checks if the instance is dead
             DOCTEST_CHECK(objectAlive == false);
@@ -103,7 +103,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
 
             try
             {
-                auto instace = Axis::New<DefaultAllocator, TestClass>();
+                auto instace = Axis::AllocatedNew<DefaultAllocator, TestClass>();
             }
             catch (Int32& exception)
             {
@@ -141,7 +141,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
 
             try
             {
-                auto instances = Axis::NewArray<DefaultAllocator, TestClass>(20);
+                auto instances = Axis::AllocatedNewArray<DefaultAllocator, TestClass>(20);
             }
             catch (Int32& exception)
             {
@@ -175,10 +175,12 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
                 {
                     elementCount--;
                 }
+
+                Int32 Value = {};
             };
 
             // Creates an array of instances of `TestClass`
-            auto array = Axis::NewArray<DefaultAllocator, TestClass>(10);
+            auto array = Axis::NewArray<TestClass>(10);
 
             // Checks if the array is not null
             DOCTEST_CHECK(array != nullptr);
@@ -187,7 +189,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
             DOCTEST_CHECK(elementCount == 10);
 
             // Destroys the array
-            Axis::DeleteArray<DefaultAllocator>(array);
+            Axis::DeleteArray(array);
 
             // Checks if the array has 0 elements
             DOCTEST_CHECK(elementCount == 0);

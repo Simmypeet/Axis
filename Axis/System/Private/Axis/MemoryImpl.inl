@@ -26,7 +26,7 @@ struct ArrayMemoryHeader
 } // namespace Detail
 
 template <AllocatorType AllocatorType, RawType T, class... Args>
-inline T* New(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>)
+inline T* AllocatedNew(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>)
 {
     // Allocates memory of the specified size
     PVoid memoryPtr = AllocatorType::Allocate(sizeof(T), alignof(T));
@@ -58,13 +58,19 @@ inline T* New(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args..
 }
 
 template <AllocatorType AllocatorType, RawType T>
-inline T* NewArray(Size elementCount) noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_default_constructible_v<T>)
+inline T* AllocatedNewArray(Size elementCount) noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_default_constructible_v<T>)
 {
+    constexpr auto ElementSize  = sizeof(T);
+    constexpr auto ElementAlign = alignof(T);
+
     // Calculates the padding size.
     Int64 offset = alignof(T) - 1 + sizeof(Detail::ArrayMemoryHeader);
 
+    // Size of memory to allocate for the array
+    auto memorySize = (elementCount * sizeof(T)) + offset;
+
     // Malloc'ed memory
-    PVoid originalMemory = AllocatorType::Allocate(elementCount * sizeof(T) + offset, 1);
+    PVoid originalMemory = AllocatorType::Allocate(memorySize, 1);
 
     // Calculates the aligned memory address.
     PVoid* alignedMemory = (PVoid*)(((Size)(originalMemory) + offset) & ~(alignof(T) - 1)); // Aligned block
@@ -76,12 +82,14 @@ inline T* NewArray(Size elementCount) noexcept(std::is_nothrow_default_construct
     header->OriginalPtr  = originalMemory;
     header->ElementCount = elementCount;
 
+    T* objectArray = (T*)alignedMemory;
+
     if constexpr (::std::is_nothrow_default_constructible_v<T>)
     {
         for (Size i = 0; i < elementCount; ++i)
         {
             // Placement new construct
-            new ((T*)(alignedMemory + i)) T();
+            new (objectArray + i) T();
         }
     }
     else
@@ -93,7 +101,7 @@ inline T* NewArray(Size elementCount) noexcept(std::is_nothrow_default_construct
             for (Size i = 0; i < elementCount; ++i)
             {
                 // Placement new construct
-                new ((T*)(alignedMemory) + i) T();
+                new (objectArray + i) T();
 
                 // Increments the constructed element count
                 ++constructedElementCount;
@@ -103,7 +111,7 @@ inline T* NewArray(Size elementCount) noexcept(std::is_nothrow_default_construct
         {
             // Destructs the already constructed elements
             for (Size i = 0; i < constructedElementCount; ++i)
-                ((T*)(alignedMemory) + i)->~T();
+                objectArray[i].~T();
 
             // Frees the memory
             AllocatorType::Deallocate(originalMemory);
@@ -114,23 +122,23 @@ inline T* NewArray(Size elementCount) noexcept(std::is_nothrow_default_construct
     }
 
     // Returns the pointer to the allocated memory
-    return (T*)alignedMemory;
+    return objectArray;
 }
 
-template <AllocatorType AllocatorType, RawType T>
-void Delete(T* instance) noexcept
+template <AllocatorType AllocatorType, RawConstableType T>
+void AllocatedDelete(T* instance) noexcept
 {
     // Invokes the destructor
     instance->~T();
 
     // Frees the memory
-    AllocatorType::Deallocate(instance);
+    AllocatorType::Deallocate((PVoid) const_cast<std::remove_const_t<T*>>(instance));
 }
 
-template <AllocatorType AllocatorType, RawType T>
-void DeleteArray(T* array) noexcept
+template <AllocatorType AllocatorType, RawConstableType T>
+void AllocatedDeleteArray(T* array) noexcept
 {
-    PVoid rawMemoryPointer = (PVoid)array;
+    PVoid rawMemoryPointer = (PVoid) const_cast<std::remove_const_t<T*>>(array);
 
     // Gets the header of the array
     Detail::ArrayMemoryHeader* header = ((Detail::ArrayMemoryHeader*)rawMemoryPointer) - 1;
@@ -143,7 +151,7 @@ void DeleteArray(T* array) noexcept
 
     // Destructs the elements
     for (Size i = 0; i < elementCount; ++i)
-        ((T*)(rawMemoryPointer) + i)->~T();
+        array[i].~T();
 
     // Frees the memory
     AllocatorType::Deallocate(originalMemory);

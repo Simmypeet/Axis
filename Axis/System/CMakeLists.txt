@@ -15,6 +15,7 @@ set(AXIS_SYSTEM_HEADER_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Vector3.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Rectangle.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Random.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/SmartPointer.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Trait.hpp")
 
 # Collects all system's source files
@@ -32,6 +33,7 @@ set(AXIS_SYSTEM_PRIVATE_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/Vector3Impl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/RectangleImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/RandomImpl.inl"
+   "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/SmartPointerImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/StringImpl.inl")
 
 # Collects all target's source files
