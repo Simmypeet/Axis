@@ -118,7 +118,7 @@ inline T* NewArray(Size elementCount) noexcept(std::is_nothrow_default_construct
 }
 
 template <AllocatorType AllocatorType, RawType T>
-void Delete(T* instance) noexcept(std::is_nothrow_destructible_v<T>)
+void Delete(T* instance) noexcept
 {
     // Invokes the destructor
     instance->~T();
@@ -128,7 +128,7 @@ void Delete(T* instance) noexcept(std::is_nothrow_destructible_v<T>)
 }
 
 template <AllocatorType AllocatorType, RawType T>
-void DeleteArray(T* array) noexcept(std::is_nothrow_destructible_v<T>)
+void DeleteArray(T* array) noexcept
 {
     PVoid rawMemoryPointer = (PVoid)array;
 

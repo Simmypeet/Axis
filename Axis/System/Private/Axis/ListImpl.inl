@@ -17,7 +17,7 @@ namespace Axis
 {
 
 template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>::List(const List<T, Allocator>& other) noexcept(std::is_nothrow_copy_constructible_v<T>) requires(std::is_copy_constructible_v<T>)
+inline List<T, Allocator>::List(const List<T, Allocator>& other) requires(std::is_copy_constructible_v<T>)
 {
     if (other._length > 0)
     {
@@ -45,7 +45,7 @@ inline List<T, Allocator>::List(NullptrType) noexcept {}
 
 template <RawType T, AllocatorType Allocator>
 template <class... Args>
-inline List<T, Allocator>::List(Size length, Args... args) noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_constructible_v<T, Args...>)
+inline List<T, Allocator>::List(Size length, Args... args) requires(std::is_constructible_v<T, Args...>)
 {
     if (length > 0)
     {
@@ -57,7 +57,7 @@ inline List<T, Allocator>::List(Size length, Args... args) noexcept(std::is_noth
 }
 
 template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>::List(const std::initializer_list<T>& other) noexcept(std::is_nothrow_copy_constructible_v<T>) requires(std::is_copy_constructible_v<T>)
+inline List<T, Allocator>::List(const std::initializer_list<T>& other) requires(std::is_copy_constructible_v<T>)
 {
     if (other.size() > 0)
     {
@@ -75,7 +75,7 @@ inline List<T, Allocator>::~List() noexcept
 }
 
 template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>& List<T, Allocator>::operator=(const List<T, Allocator>& other) noexcept(std::is_nothrow_copy_constructible_v<T>) requires(std::is_copy_constructible_v<T>)
+inline List<T, Allocator>& List<T, Allocator>::operator=(const List<T, Allocator>& other) requires(std::is_copy_constructible_v<T>)
 {
     if (this == std::addressof(other))
         return *this;
@@ -85,10 +85,12 @@ inline List<T, Allocator>& List<T, Allocator>::operator=(const List<T, Allocator
         // Clears the current list
         if (other._length > _allocatedLength)
         {
-            ClearInternal<true>(_buffer, _length);
             auto allocatedLength = Math::RoundToNextPowerOfTwo(other._length);
-            _buffer              = (T*)Allocator::Allocate(allocatedLength, alignof(T));
-            _allocatedLength     = allocatedLength;
+
+            ClearInternal<true>(_buffer, _length);
+
+            _buffer          = (T*)Allocator::Allocate(allocatedLength, alignof(T));
+            _allocatedLength = allocatedLength;
         }
         else
             ClearInternal<false>(_buffer, _length);
@@ -100,11 +102,11 @@ inline List<T, Allocator>& List<T, Allocator>::operator=(const List<T, Allocator
     }
     else
     {
-        // Creates new buffer to provide strong exception guarantee
-        auto newMemory = ConstructsNewList<false, true, true>(other._length, Math::RoundToNextPowerOfTwo(other._length), const_cast<T*>(other._buffer));
-
         // Clears the current list
         ClearInternal<true>(_buffer, _length);
+
+        // Creates new buffer to provide strong exception guarantee
+        auto newMemory = ConstructsNewList<false, true, true>(other._length, Math::RoundToNextPowerOfTwo(other._length), const_cast<T*>(other._buffer));
 
         _allocatedLength = GetTuple<1>(newMemory);
         _length          = other._length;
@@ -189,7 +191,7 @@ inline void List<T, Allocator>::Reset() noexcept(std::is_nothrow_default_constru
 
 template <RawType T, AllocatorType Allocator>
 template <class... Args>
-inline T* List<T, Allocator>::EmplaceBack(Args... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>))
+inline T* List<T, Allocator>::EmplaceBack(Args... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>))
 {
     if (_length == _allocatedLength)
     {
@@ -211,13 +213,13 @@ inline T* List<T, Allocator>::EmplaceBack(Args... args) noexcept(std::is_nothrow
 }
 
 template <RawType T, AllocatorType Allocator>
-inline T* List<T, Allocator>::Append(const T& element) noexcept(std::is_nothrow_copy_constructible_v<T>) requires(std::is_copy_constructible_v<T>)
+inline T* List<T, Allocator>::Append(const T& element) requires(std::is_copy_constructible_v<T>)
 {
     return EmplaceBack<const T&>(element);
 }
 
 template <RawType T, AllocatorType Allocator>
-inline T* List<T, Allocator>::Append(T&& element) noexcept(std::is_nothrow_move_constructible_v<T>) requires(std::is_move_constructible_v<T>)
+inline T* List<T, Allocator>::Append(T&& element) requires(std::is_move_constructible_v<T>)
 {
     return EmplaceBack<T&&>(std::move(element));
 }
@@ -337,20 +339,6 @@ inline T* List<T, Allocator>::Emplace(Size index, Args... args) requires(std::is
 }
 
 template <RawType T, AllocatorType Allocator>
-inline Bool List<T, Allocator>::Contains(const T& element) const
-{
-    for (Size i = 0; i < _length; i++)
-    {
-        auto result = _buffer[i] == element;
-
-        if (result)
-            return true;
-    }
-
-    return false;
-}
-
-template <RawType T, AllocatorType Allocator>
 inline void List<T, Allocator>::PopBack() noexcept
 {
     // Checks if the array is empty, if so, does nothing.
@@ -372,7 +360,7 @@ inline void List<T, Allocator>::RemoveAt(Size index) requires(std::is_move_const
         throw ArgumentOutOfRangeException("`index` was out of range!");
 
     // No need to allocate new memory if
-    if constexpr (std::is_nothrow_move_constructible_v<T> ? true : std::is_nothrow_copy_constructible_v<T>)
+    if constexpr (std::is_nothrow_move_constructible_v<T> || std::is_nothrow_copy_constructible_v<T>)
     {
         // Destruct the element at the index.
         _buffer[index].~T();
@@ -446,7 +434,7 @@ inline const T* List<T, Allocator>::GetData() const noexcept
 }
 
 template <RawType T, AllocatorType Allocator>
-inline void List<T, Allocator>::Resize(Size length) noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_default_constructible_v<T>)
+inline void List<T, Allocator>::Resize(Size length) requires(std::is_default_constructible_v<T>)
 {
     if (length <= _allocatedLength && std::is_nothrow_default_constructible_v<T>)
     {

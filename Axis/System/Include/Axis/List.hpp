@@ -36,7 +36,7 @@ public:
     /// \brief Copy constructor.
     ///
     /// \param other List to copy from.
-    List(const List& other) noexcept(std::is_nothrow_copy_constructible_v<T>) requires(std::is_copy_constructible_v<T>);
+    List(const List& other) requires(std::is_copy_constructible_v<T>);
 
     /// \brief Move constructor.
     ///
@@ -56,12 +56,12 @@ public:
     /// \param[in] length The length of the list.
     /// \param[in] args Arguments to forward to the constructor of the object to insert.
     template <class... Args>
-    List(Size length, Args... args) noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_constructible_v<T, Args...>);
+    List(Size length, Args... args) requires(std::is_constructible_v<T, Args...>);
 
     /// \brief Initializer list constructor.
     ///
     /// \param[in] init Initializer list to copy from.
-    List(const std::initializer_list<T>& init) noexcept(std::is_nothrow_copy_constructible_v<T>) requires(std::is_copy_constructible_v<T>);
+    List(const std::initializer_list<T>& init) requires(std::is_copy_constructible_v<T>);
 
     /// \brief Destructor.
     ~List() noexcept;
@@ -69,7 +69,7 @@ public:
     /// \brief Copy assignment operator.
     ///
     /// \param[in] other List to copy from.
-    List& operator=(const List& other) noexcept(std::is_nothrow_copy_constructible_v<T>) requires(std::is_copy_constructible_v<T>);
+    List& operator=(const List& other) requires(std::is_copy_constructible_v<T>);
 
     /// \brief Move assignment operator.
     ///
@@ -107,9 +107,8 @@ public:
     ///
     /// \returns An iterator to the newly constructed element.
     template <class... Args>
-    T* EmplaceBack(Args... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>));
+    T* EmplaceBack(Args... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>));
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Appends an element at the end of the list.
     ///
     /// - The list is expanded to accommodate the new element.
@@ -118,11 +117,8 @@ public:
     /// \param[in] element The element to append.
     ///
     /// \returns An iterator to the newly constructed element.
-    ///
-    /////////////////////////////////////////////////////////////////
-    T* Append(const T& element) noexcept(std::is_nothrow_copy_constructible_v<T>) requires(std::is_copy_constructible_v<T>);
+    T* Append(const T& element) requires(std::is_copy_constructible_v<T>);
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Appends an element at the end of the list.
     ///
     /// - The list is expanded to accommodate the new element.
@@ -131,11 +127,8 @@ public:
     /// \param[in] element The element to append.
     ///
     /// \returns An iterator to the newly constructed element.
-    ///
-    /////////////////////////////////////////////////////////////////
-    T* Append(T&& element) noexcept(std::is_nothrow_move_constructible_v<T>) requires(std::is_move_constructible_v<T>);
+    T* Append(T&& element) requires(std::is_move_constructible_v<T>);
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Constructs an element at the end of the list.
     ///
     /// An insertion pushes all the elements after the insertion point to the right.
@@ -151,33 +144,15 @@ public:
     /// \remark If the index is equal to the list's length, the function calls \a `EmplaceBack` instead.
     ///
     /// \return An iterator to the inserted element.
-    ///
-    /////////////////////////////////////////////////////////////////
     template <class... Args>
     T* Emplace(Size index, Args... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>));
 
-    /////////////////////////////////////////////////////////////////
-    /// \brief Checks if the element is in the list.
-    ///
-    /// \param[in] element The element to check.
-    ///
-    /// The operation uses simple linear search and is O(n).
-    ///
-    /// \returns True if the element is in the list, false otherwise.
-    ///
-    /////////////////////////////////////////////////////////////////
-    AXIS_NODISCARD Bool Contains(const T& element) const;
-
-    /////////////////////////////////////////////////////////////////
     /// \brief Removes the element at the end of the list.
     ///
     /// - The list memory is not deallocated. The element is only destroyed.
     /// - The list is shrunk to accommodate the removed element.
-    ///
-    /////////////////////////////////////////////////////////////////
     void PopBack() noexcept;
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Removes the element at the specified index.
     ///
     /// - The list memory is not deallocated. The element is only destroyed.
@@ -186,97 +161,57 @@ public:
     /// \pre The index must be less than or equal ot the list's length, otherwise the program will terminate.
     ///
     /// \param[in] index The index of the element to remove.
-    ///
-    /////////////////////////////////////////////////////////////////
     void RemoveAt(Size index) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>);
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Gets the pointer to the first element of the list.
-    ///
-    /////////////////////////////////////////////////////////////////
     AXIS_NODISCARD T* GetData() noexcept;
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Gets the pointer to the first element of the list.
-    ///
-    /////////////////////////////////////////////////////////////////
     AXIS_NODISCARD const T* GetData() const noexcept;
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Resizes the list with the specified length. The object is constructed via default constructor.
-    ///
-    /////////////////////////////////////////////////////////////////
-    void Resize(Size length) noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_default_constructible_v<T>);
+    void Resize(Size length) requires(std::is_default_constructible_v<T>);
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Index operator
     ///
     /// \param[in] index The index of the element to access.
     ///
     /// \returns A reference to the element at the specified index.
-    ///
-    /// \pre The index must be less than the list's length, otherwise the program will terminate.
-    ///
-    /////////////////////////////////////////////////////////////////
     AXIS_NODISCARD T& operator[](Size index);
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Constant index operator
     ///
     /// \param[in] index The index of the element to access.
     ///
     /// \returns A reference to the element at the specified index.
-    ///
-    /// \pre The index must be less than the list's length, otherwise the program will terminate.
-    ///
-    /////////////////////////////////////////////////////////////////
     AXIS_NODISCARD const T& operator[](Size index) const;
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Iterator to the beginning of the list.
     ///
     /// \returns An iterator to the beginning of the list.
-    ///
-    /////////////////////////////////////////////////////////////////
     AXIS_NODISCARD T* begin() noexcept;
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Iterator to the beginning of the list.
     ///
     /// \returns An iterator to the beginning of the list.
-    ///
-    /////////////////////////////////////////////////////////////////
     AXIS_NODISCARD const T* begin() const noexcept;
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Iterator to the end of the list.
     ///
     /// \returns An iterator to the end of the list.
-    ///
-    /////////////////////////////////////////////////////////////////
     AXIS_NODISCARD T* end() noexcept;
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Iterator to the end of the list.
     ///
     /// \returns An iterator to the end of the list.
-    ///
-    /////////////////////////////////////////////////////////////////
     AXIS_NODISCARD const T* end() const noexcept;
 
-    /////////////////////////////////////////////////////////////////
     /// \brief Implicit conversion: checks if the list is empty or not.
     ///
     /// \returns `false` if the list is empty, `true` otherwise.
-    ///
-    /////////////////////////////////////////////////////////////////
     AXIS_NODISCARD operator Bool() const noexcept;
 
 private:
-    /////////////////////////////////////////////////////////////////
-    /// Private methods
-    ///
-    /////////////////////////////////////////////////////////////////
     template <Bool CleanWhenThrow = true, Bool ListInitialize = false, Bool CopyConstructor = true, class... Args>
     Tuple<T*, Size>                        ConstructsNewList(Size elementCount,
                                                              Size allocationSize, // Specifies zero if not specified
@@ -285,13 +220,9 @@ private:
     template <Bool FreeMemory> static void ClearInternal(T*   buffer,
                                                          Size length);
 
-    /////////////////////////////////////////////////////////////////
-    /// Private members
-    ///
-    /////////////////////////////////////////////////////////////////
-    T*   _buffer          = nullptr;
-    Size _allocatedLength = 0;
-    Size _length          = 0;
+    T*   _buffer          = nullptr; ///< Pointer to the list's buffer.
+    Size _allocatedLength = 0;       ///< The length of the allocated buffer.
+    Size _length          = 0;       ///< The length of the list.
 };
 
 } // namespace Axis

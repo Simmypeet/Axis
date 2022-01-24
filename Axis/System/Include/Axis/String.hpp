@@ -76,7 +76,7 @@ public:
     /// \brief Copy assignment operator
     ///
     /// \param[in] other instance to copy
-    String& operator=(const String& other) noexcept;
+    String& operator=(const String& other);
 
     /// \brief Move assignment operator
     ///
@@ -155,7 +155,7 @@ public:
     AXIS_NODISCARD Size GetLength() const noexcept;
 
 private:
-    T* Reserve(Size size) noexcept;
+    T* Reserve(Size size);
 
     union
     {

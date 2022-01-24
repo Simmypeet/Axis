@@ -22,7 +22,7 @@ inline const Char* CopyMessageValue(const Char* message) noexcept
     std::memcpy(pointer, message, (length * sizeof(Char)));
 
     pointer[length] = '\0';
-
+    
     return pointer;
 }
 

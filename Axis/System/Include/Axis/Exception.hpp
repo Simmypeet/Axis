@@ -90,6 +90,10 @@ public:
     ArgumentOutOfRangeException(const Char* message) noexcept;
 };
 
+/// \brief Raised when requested memory is not sufficient.
+class AXIS_SYSTEM_API OutOfMemoryException : public Exception
+{};
+
 } // namespace Axis
 
 #endif // AXIS_SYSTEM_EXCEPTION_HPP

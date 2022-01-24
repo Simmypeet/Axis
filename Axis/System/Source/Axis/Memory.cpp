@@ -5,17 +5,18 @@
 #include <Axis/SystemPch.hpp>
 
 #include <Axis/Assert.hpp>
+#include <Axis/Exception.hpp>
 #include <Axis/Memory.hpp>
 
 
 namespace Axis
 {
 
-PVoid MallocAllocator::Allocate(Size size, Size alignment) noexcept
+PVoid MallocAllocator::Allocate(Size size, Size alignment)
 {
     // Arguments validation
-    AXIS_VALIDATE((alignment & (alignment - 1)) == 0, "alignment must be a power of two!");
-    AXIS_VALIDATE(alignment, "alignment must be greater than zero!");
+    if ((alignment & (alignment - 1)) != 0)
+        throw InvalidArgumentException("`alignment` was not a power of two!");
 
     // Calculates the padding size.
     Int64 offset = alignment - 1 + sizeof(PVoid);
@@ -24,7 +25,8 @@ PVoid MallocAllocator::Allocate(Size size, Size alignment) noexcept
     PVoid originalMemory = std::malloc(size + offset);
 
     // Failed to allocate memory
-    AXIS_VALIDATE(originalMemory, "Failed to allocate memory!");
+    if (originalMemory == nullptr)
+        throw OutOfMemoryException();
 
     // Calculates the aligned memory address.
     PVoid* alignedMemory = (PVoid*)(((Size)(originalMemory) + offset) & ~(alignment - 1)); // Aligned block
@@ -76,7 +78,7 @@ public:
     }
 
     // Allocates memory with the given size and alignment
-    PVoid Allocate() noexcept
+    PVoid Allocate()
     {
         // There are available blocks
         if (_memoryBlockHeader)
@@ -98,7 +100,8 @@ public:
             PVoid originalMemory = std::malloc(_size);
 
             // Failed to allocate memory
-            AXIS_VALIDATE(originalMemory, "Failed to allocate memory!");
+            if (originalMemory == nullptr)
+                throw OutOfMemoryException();
 
             // Calculates the aligned memory address.
             PVoid* alignedMemory = (PVoid*)(((Size)(originalMemory) + offset) & ~(_alignment - 1)); // Aligned block
@@ -169,11 +172,11 @@ static PoolAllocatorMap s_poolAllocatorMap      = {}; // Global pool allocator m
 static std::mutex       s_poolAllocatorMapMutex = {}; // Mutex for accessing the pool allocator map
 
 PVoid PoolAllocator::Allocate(Size size,
-                              Size alignment) noexcept
+                              Size alignment)
 {
     // Arguments validation
-    AXIS_VALIDATE((alignment & (alignment - 1)) == 0, "alignment must be a power of two!");
-    AXIS_VALIDATE(alignment, "alignment must be greater than zero!");
+    if ((alignment & (alignment - 1)) != 0)
+        throw InvalidArgumentException("`alignment` was not a power of two!");
 
     // Calculates the actual size to allocate
     Size actualSize = size + sizeof(FixedPoolAllocator::MemoryBlockHeader) + alignment - 1;

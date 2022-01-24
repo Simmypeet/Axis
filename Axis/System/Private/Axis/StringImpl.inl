@@ -27,7 +27,7 @@ inline void CopyElement(const T* source,
                         Size     sourceSize) noexcept requires(sizeof(T) == sizeof(U))
 {
     // use memcpy directly
-    memcpy(destination, source, sourceSize * sizeof(T));
+    std::memcpy(destination, source, sourceSize * sizeof(T));
 
     // terminate the string
     destination[sourceSize] = U(0);
@@ -121,7 +121,7 @@ inline String<T, Allocator>::~String() noexcept
 }
 
 template <CharType T, AllocatorType Allocator>
-String<T, Allocator>& String<T, Allocator>::operator=(const String<T, Allocator>& other) noexcept
+String<T, Allocator>& String<T, Allocator>::operator=(const String<T, Allocator>& other)
 {
     if (this == std::addressof(other))
         return *this;
@@ -194,7 +194,7 @@ inline const T* String<T, Allocator>::GetCString() const noexcept
 }
 
 template <CharType T, AllocatorType Allocator>
-inline T* String<T, Allocator>::Reserve(Size size) noexcept
+inline T* String<T, Allocator>::Reserve(Size size)
 {
     if (size <= SmallStringSize && _isSmallString)
     {
@@ -210,13 +210,19 @@ inline T* String<T, Allocator>::Reserve(Size size) noexcept
     /// Once allocated dynamic memory, the string is always using dynamic
     else
     {
+        auto actualDynamicMemoryAllocatedSize = (Math::RoundToNextPowerOfTwo(size + 1)) * sizeof(T);
+        auto dynamicMemoryAllocatedSize       = actualDynamicMemoryAllocatedSize - sizeof(T);
+
+        // Allocates the new memory
+        auto newDynamicMemory = (T*)Allocator::Allocate(actualDynamicMemoryAllocatedSize, alignof(T));
+
+        // No exception thrown, so we can deallocate the old memory
         // Deallocate the old dynamic memory
-        if (!_isSmallString)
-            Allocator::Deallocate(DynamicStringBuffer);
+        if (!_isSmallString) Allocator::Deallocate(DynamicStringBuffer);
 
         _isSmallString             = false;
-        DynamicMemoryAllocatedSize = Math::RoundToNextPowerOfTwo(size);
-        DynamicStringBuffer        = (T*)Allocator::Allocate(DynamicMemoryAllocatedSize * sizeof(T), alignof(T));
+        DynamicMemoryAllocatedSize = dynamicMemoryAllocatedSize;
+        DynamicStringBuffer        = newDynamicMemory;
         return DynamicStringBuffer;
     }
 }

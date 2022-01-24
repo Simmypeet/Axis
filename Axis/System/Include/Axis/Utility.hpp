@@ -55,6 +55,19 @@ struct VariadicIterate
     }
 };
 
+/// \brief Struct that ignores assignment
+struct IgnoreImpl
+{
+    template <class T> // Ignores the assignment
+    inline constexpr const IgnoreImpl& operator=(const T&) const noexcept
+    {
+        return *this;
+    }
+};
+
+/// \brief Objects which ignores assignment
+inline constexpr IgnoreImpl Ignore = {};
+
 /// \brief Iterating throught variadic template arguments.
 ///
 /// \note Reference: https://gist.github.com/nabijaczleweli/37cdd8c28039ea41a999
