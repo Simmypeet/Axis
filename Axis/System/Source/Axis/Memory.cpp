@@ -7,6 +7,7 @@
 #include <Axis/Assert.hpp>
 #include <Axis/Exception.hpp>
 #include <Axis/Memory.hpp>
+#include <functional>
 
 
 namespace Axis

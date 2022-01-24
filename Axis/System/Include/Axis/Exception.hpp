@@ -54,45 +54,43 @@ private:
 class AXIS_SYSTEM_API NullPointerException : public Exception
 {
 public:
-    /// \brief Constructs exception object with custom message.
-    NullPointerException(const Char* message) noexcept;
+    using Exception::Exception;
 };
 
 /// \brief Raised when external error occurs.
 class AXIS_SYSTEM_API ExternalException : public Exception
 {
 public:
-    /// \brief Constructs exception object with custom message.
-    ExternalException(const Char* message) noexcept;
+    using Exception::Exception;
 };
 
 /// \brief Raised when a method call is invalid in an object's current state.
 class AXIS_SYSTEM_API InvalidOperationException : public Exception
 {
 public:
-    /// \brief Constructs exception object with custom message.
-    InvalidOperationException(const Char* message) noexcept;
+    using Exception::Exception;
 };
 
 /// \brief Raised when passed argument is invalid.
 class AXIS_SYSTEM_API InvalidArgumentException : public Exception
 {
 public:
-    /// \brief Constructs exception object with custom message.
-    InvalidArgumentException(const Char* message) noexcept;
+    using Exception::Exception;
 };
 
 /// \brief Raised when passed argument is out of expected range.
-class AXIS_SYSTEM_API ArgumentOutOfRangeException : public Exception
+class AXIS_SYSTEM_API ArgumentOutOfRangeException : public InvalidArgumentException
 {
 public:
-    /// \brief Constructs exception object with custom message.
-    ArgumentOutOfRangeException(const Char* message) noexcept;
+    using InvalidArgumentException::InvalidArgumentException;
 };
 
 /// \brief Raised when requested memory is not sufficient.
 class AXIS_SYSTEM_API OutOfMemoryException : public Exception
-{};
+{
+public:
+    using Exception::Exception;
+};
 
 } // namespace Axis
 

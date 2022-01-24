@@ -27,6 +27,16 @@ concept SameAs = requires
 template <class T>
 concept RawType = !std::is_reference_v<T> && !std::is_const_v<T> && !std::is_array_v<T> && std::is_nothrow_destructible_v<std::decay_t<T>>;
 
+/// \brief Concept for checking if a type is a callable object.
+template <class T, class ReturnType, class... Args>
+concept Callable = requires(T t, Args&&... args)
+{
+    {
+        t(std::forward<Args>(args)...)
+        } -> SameAs<ReturnType>;
+}
+&&RawType<T>&& std::is_nothrow_move_constructible_v<T>&& std::is_nothrow_copy_constructible_v<T>;
+
 } // namespace Axis
 
 #endif // AXIS_SYSTEM_TRAIT_HPP

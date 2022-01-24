@@ -8,6 +8,7 @@ set(AXIS_SYSTEM_TEST_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/Random.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/Math.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/List.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/Function.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/StaticArray.cpp")
 
 # Targets to link with system test target

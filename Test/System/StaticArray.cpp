@@ -1,8 +1,6 @@
 #include <Axis/StaticArray.hpp>
 #include <Axis/Utility.hpp>
 #include <doctest.h>
-#include <tuple>
-
 
 DOCTEST_TEST_CASE("Static array : [Axis::System]")
 {
@@ -10,7 +8,6 @@ DOCTEST_TEST_CASE("Static array : [Axis::System]")
     {
         using namespace Axis;
 
-        int                 test = 2;
         StaticArray<int, 3> array;
 
         DOCTEST_CHECK(array.GetLength() == 3);

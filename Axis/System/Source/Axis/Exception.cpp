@@ -22,7 +22,7 @@ inline const Char* CopyMessageValue(const Char* message) noexcept
     std::memcpy(pointer, message, (length * sizeof(Char)));
 
     pointer[length] = '\0';
-    
+
     return pointer;
 }
 
@@ -76,20 +76,5 @@ Exception& Exception::operator=(Exception&& other) noexcept
 
     return *this;
 }
-
-NullPointerException::NullPointerException(const Char* message) noexcept :
-    Exception(message) {}
-
-ExternalException::ExternalException(const Char* message) noexcept :
-    Exception(message) {}
-
-InvalidOperationException::InvalidOperationException(const Char* message) noexcept :
-    Exception(message) {}
-
-InvalidArgumentException::InvalidArgumentException(const Char* message) noexcept :
-    Exception(message) {}
-
-ArgumentOutOfRangeException::ArgumentOutOfRangeException(const Char* message) noexcept :
-    Exception(message) {}
 
 } // namespace Axis
