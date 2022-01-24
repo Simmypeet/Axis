@@ -81,7 +81,7 @@ using DefaultAllocator = PoolAllocator;
 ///
 /// \return A new instance of the specified type.
 template <AllocatorType Allocator, RawType T, class... Args>
-AXIS_NODISCARD T* AllocatedNew(Args&&... args);
+AXIS_NODISCARD T* AllocatedNew(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>);
 
 /// \brief Creates the array of new instances of the specified type using
 ///        the specified allocator on the heap. Uses \a `Axis::DeleteArray` to
@@ -94,7 +94,7 @@ AXIS_NODISCARD T* AllocatedNew(Args&&... args);
 ///
 /// \return A new array of the specified type.
 template <AllocatorType Allocator, RawType T>
-AXIS_NODISCARD T* AllocatedNewArray(Size elementCount);
+AXIS_NODISCARD T* AllocatedNewArray(Size elementCount) noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_default_constructible_v<T>);
 
 /// \brief Deletes the instance and frees the memory, must use the
 ///        same allocator type as the one used to allocate the instance.
