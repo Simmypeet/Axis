@@ -1,16 +1,10 @@
-/////////////////////////////////////////////////////////////////
 /// \copyright Simmypeet - Copyright (C)
 ///            This file is subject to the terms and conditions defined in
-///            file 'LICENSE.txt', which is part of this source code package.
-///
-/////////////////////////////////////////////////////////////////
+///            file 'LICENSE', which is part of this source code package.
 
-/////////////////////////////////////////////////////////////////
 /// \file Random.hpp
 ///
 /// \brief Contains pseudo random number generator \a `Axis::Math::Random` class.
-///
-/////////////////////////////////////////////////////////////////
 
 #ifndef AXIS_SYSTEM_RANDOM_HPP
 #define AXIS_SYSTEM_RANDOM_HPP
