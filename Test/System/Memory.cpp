@@ -193,6 +193,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
 
             // Checks if the array has 0 elements
             DOCTEST_CHECK(elementCount == 0);
+
         }
     }
 }
