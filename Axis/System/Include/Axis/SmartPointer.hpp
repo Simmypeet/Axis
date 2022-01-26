@@ -255,10 +255,10 @@ private:
     friend class SharedPointer;
 
     template <SmartPointerType U, AllocatorType Allocator, class... Args, typename>
-    friend SharedPointer<U> AllocatedMakeShared(Args&&...); // friend function to allow the AllocatedMakeShared function to access the private members
+    friend SharedPointer<U> AllocatedMakeShared(Args&&...) requires(std::is_constructible_v<U, Args...>); // friend function to allow the AllocatedMakeShared function to access the private members
 
     template <SmartPointerType U, AllocatorType Allocator, typename>
-    friend SharedPointer<U> AllocatedMakeShared(Size); // friend function to allow the AllocatedMakeShared function to access the private members
+    friend SharedPointer<U> AllocatedMakeShared(Size) requires(std::is_default_constructible_v<std::remove_all_extents_t<U>>); // friend function to allow the AllocatedMakeShared function to access the private members
 };
 
 /// \brief A reference-counted smart pointer; it will automatically delete the object when it the
