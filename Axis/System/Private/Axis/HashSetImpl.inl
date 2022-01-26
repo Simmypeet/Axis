@@ -284,7 +284,7 @@ private:
     friend class HashSet;
 
     template <class, class>
-    friend class Iterator;
+    friend struct Iterator;
 };
 
 template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
