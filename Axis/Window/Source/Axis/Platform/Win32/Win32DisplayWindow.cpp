@@ -13,6 +13,11 @@
 #    define UNICODE
 #endif
 
+#ifdef _MSC_VER
+#    pragma warning(push)
+#    pragma warning(disable : 4244)
+#endif
+
 #include <Windows.h>
 #include <Windowsx.h>
 
@@ -539,3 +544,8 @@ void DisplayWindow::GrabCursor(Bool grabbed) const noexcept
 }
 
 } // namespace Axis
+
+
+#ifdef _MSC_VER
+#    pragma warning(pop)
+#endif

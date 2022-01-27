@@ -207,8 +207,11 @@ private:
     template <SmartPointerType T>
     friend class SharedPointer; // Friend class
 
-    template <SmartPointerType U, AllocatorType Allocator, class... Args, typename>
+    template <SmartPointerType U, AllocatorType Allocator, class... Args>
     friend SharedPointer<U> AllocatedMakeShared(Args&&...) requires(std::is_constructible_v<U, Args...>); // friend function to allow the AllocatedMakeShared function to access the private members
+
+    template <SmartPointerType U, AllocatorType Allocator>
+    friend SharedPointer<U> AllocatedMakeShared(Size) requires(std::is_default_constructible_v<std::remove_all_extents_t<U>>); // friend function to allow the AllocatedMakeShared function to access the private members
 };
 
 
@@ -325,10 +328,10 @@ private:
     template <SmartPointerType U>
     friend class SharedPointer;
 
-    template <SmartPointerType U, AllocatorType Allocator, class... Args, typename>
+    template <SmartPointerType U, AllocatorType Allocator, class... Args>
     friend SharedPointer<U> AllocatedMakeShared(Args&&...) requires(std::is_constructible_v<U, Args...>); // friend function to allow the AllocatedMakeShared function to access the private members
 
-    template <SmartPointerType U, AllocatorType Allocator, typename>
+    template <SmartPointerType U, AllocatorType Allocator>
     friend SharedPointer<U> AllocatedMakeShared(Size) requires(std::is_default_constructible_v<std::remove_all_extents_t<U>>); // friend function to allow the AllocatedMakeShared function to access the private members
 };
 
