@@ -98,7 +98,7 @@ inline UniquePointer<T, Deleter>& UniquePointer<T, Deleter>::operator=(UniquePoi
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 template <SmartPointerType U, typename>
-inline std::add_lvalue_reference_t<std::remove_all_extents<T>> UniquePointer<T, Deleter>::operator*() const noexcept
+inline std::add_lvalue_reference_t<std::remove_all_extents_t<T>> UniquePointer<T, Deleter>::operator*() const noexcept
 {
     return *_objectPointer;
 }
@@ -413,7 +413,7 @@ inline SharedPointer<T>& SharedPointer<T>::operator=(SharedPointer<U>&& other) n
 
 template <SmartPointerType T>
 template <SmartPointerType U, typename>
-inline std::add_lvalue_reference_t<std::remove_all_extents<T>> SharedPointer<T>::operator*() const noexcept
+inline std::add_lvalue_reference_t<std::remove_all_extents_t<T>> SharedPointer<T>::operator*() const noexcept
 {
     return *_objectPointer;
 }
@@ -849,6 +849,36 @@ inline SharedPointer<T> AllocatedMakeShared(Size elementCount) requires(std::is_
 
 
     return sharedPointer;
+}
+
+template <SmartPointerType T>
+SharedPointer<T> ISharedFromThis::CreateSharedPointerFromThis(T& object) noexcept requires(!std::is_array_v<T> && std::is_base_of_v<ISharedFromThis, T> && std::is_convertible_v<T*, ISharedFromThis*>)
+{
+    ISharedFromThis* sharedFromThis = std::addressof(object);
+
+    SharedPointer<T> sharedPointer  = {};
+    sharedPointer._objectPointer    = (T*)sharedFromThis->_objectPtr;
+    sharedPointer._referenceCounter = (Detail::IReferenceCounter*)sharedFromThis->_referenceCounter;
+
+    if (sharedPointer._referenceCounter)
+        sharedPointer._referenceCounter->AddStrongCount();
+
+    return sharedPointer;
+}
+
+template <SmartPointerType T>
+WeakPointer<T> ISharedFromThis::CreateWeakPointerFromThis(T& object) noexcept requires(!std::is_array_v<T> && std::is_base_of_v<ISharedFromThis, T> && std::is_convertible_v<T*, ISharedFromThis*>)
+{
+    ISharedFromThis* sharedFromThis = std::addressof(object);
+
+    WeakPointer<T> weakPointer    = {};
+    weakPointer._objectPointer    = (T*)sharedFromThis->_objectPtr;
+    weakPointer._referenceCounter = (Detail::IReferenceCounter*)sharedFromThis->_referenceCounter;
+
+    if (weakPointer._referenceCounter)
+        weakPointer._referenceCounter->AddWeakCount();
+
+    return weakPointer;
 }
 
 } // namespace Axis
