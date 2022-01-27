@@ -19,7 +19,7 @@ namespace Axis
 
 /// \brief Type which can be used with the smart pointer.
 template <class T>
-concept SmartPointerType = std::is_same_v<T, void> || !std::is_reference_v<T> && std::is_nothrow_destructible_v<std::decay_t<std::remove_all_extents_t<T>>> && !std::is_bounded_array_v<T>;
+concept SmartPointerType = std::is_same_v<T, void> || !std::is_reference_v<T> && !std::is_bounded_array_v<T>;
 
 // clang-format off
 
@@ -133,6 +133,16 @@ using Scope = UniquePointer<T, Deleter>;
 /// \brief Atomic unsigned integer type used in reference counting.
 using ReferenceCounter = std::atomic<Size>;
 
+/// \brief A reference-counted smart pointer; it will automatically delete the object when it the
+///        reference count reaches zero. This container manipulates the strong reference count.
+template <SmartPointerType T>
+class SharedPointer;
+
+/// \brief A reference-counted smart pointer; it will automatically delete the object when it the
+///        reference count reaches zero. This container manipulates the weak reference count.
+template <SmartPointerType T>
+class WeakPointer;
+
 namespace Detail
 {
 
@@ -140,6 +150,67 @@ namespace Detail
 class IReferenceCounter;
 
 } // namespace Detail
+
+/// \brief Inherits this class to be able to generate \a `Axis::SharedPointer`
+///        via the reference to the object itself when the object is created via SharedPointer.
+class AXIS_SYSTEM_API ISharedFromThis
+{
+public:
+    /// \brief Default constructor
+    ISharedFromThis() noexcept;
+
+    /// \brief Pure virtual destructor
+    virtual ~ISharedFromThis() noexcept;
+
+    /// This class can't be moved and copied
+    ISharedFromThis(const ISharedFromThis&) = delete;
+    ISharedFromThis(ISharedFromThis&&)      = delete;
+    ISharedFromThis& operator=(const ISharedFromThis&) = delete;
+    ISharedFromThis& operator=(ISharedFromThis&&) = delete;
+
+    /// \brief Generates the \a `Axis::SharedPointer` and increments
+    ///        the strong reference count by one.
+    ///
+    /// \warning If the object which is passed to the function is still under construction (constructor),
+    ///          the function will return `nullptr`.
+    ///
+    /// \warning This function will return nullptr \a `Axis::ReferencePointer`
+    ///          if the function is called in the constructor or the object
+    ///          is not created by SharedPointer
+    template <SmartPointerType T>
+    AXIS_NODISCARD static SharedPointer<T> CreateSharedPointerFromThis(T& object) noexcept requires(!std::is_array_v<T> && std::is_base_of_v<ISharedFromThis, T> && std::is_convertible_v<T*, ISharedFromThis*>);
+
+    /////////////////////////////////////////////////////////////////
+    /// \brief Generates the \a Axis::WeakReferencePointer and increments
+    ///        the weak reference count by 1.
+    ///
+    /// \warning If the object which is passed to the function is still under construction (constructor),
+    ///          the function will return nullptr.
+    ///
+    /// \warning This function will return nullptr \a Axis::WeakReferencePointer
+    ///          if the function is called in the constructor or the object
+    ///          is not created by SharedPointer
+    ///
+    /////////////////////////////////////////////////////////////////
+    template <SmartPointerType T>
+    AXIS_NODISCARD static WeakPointer<T> CreateWeakPointerFromThis(T& object) noexcept requires(!std::is_array_v<T> && std::is_base_of_v<ISharedFromThis, T> && std::is_convertible_v<T*, ISharedFromThis*>);
+
+private:
+    /////////////////////////////////////////////////////////////////
+    /// Private members
+    ///
+    /////////////////////////////////////////////////////////////////
+    PVoid _objectPtr = nullptr;        /// Raw pointer to the object. The pointer is stored as it
+                                       /// was created with Axis::CreateRef, Axis::CreateRaw.
+    PVoid _referenceCounter = nullptr; /// Pointer to the reference counter object.
+
+    template <SmartPointerType T>
+    friend class SharedPointer; // Friend class
+
+    template <SmartPointerType U, AllocatorType Allocator, class... Args, typename>
+    friend SharedPointer<U> AllocatedMakeShared(Args&&...) requires(std::is_constructible_v<U, Args...>); // friend function to allow the AllocatedMakeShared function to access the private members
+};
+
 
 /// \brief A reference-counted smart pointer; it will automatically delete the object when it the
 ///        reference count reaches zero. This container manipulates the strong reference count.

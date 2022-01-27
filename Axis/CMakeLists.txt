@@ -1,2 +1,5 @@
 # Adds system module to project
-add_subdirectory("System")
+add_subdirectory(System)
+
+# Adds window module to project
+add_subdirectory(Window)

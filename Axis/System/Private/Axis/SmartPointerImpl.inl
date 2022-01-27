@@ -283,7 +283,14 @@ inline SharedPointer<T>::SharedPointer(PointerType ptr,
                                        Deleter     deleter) noexcept :
     _objectPointer(ptr),
     _referenceCounter(Axis::New<Detail::ReferenceCounterConstructor<T, DefaultDeleter<T>>>(ptr, std::move(deleter)))
-{}
+{
+    if constexpr (!std::is_array_v<T> && std::is_base_of_v<ISharedFromThis, T> && std::is_convertible_v<T*, ISharedFromThis*>)
+    {
+        ISharedFromThis* referenceFromThis   = static_cast<ISharedFromThis*>(ptr);
+        referenceFromThis->_referenceCounter = (PVoid)_referenceCounter;
+        referenceFromThis->_objectPtr        = (PVoid)_objectPointer;
+    }
+}
 
 template <SmartPointerType T>
 inline SharedPointer<T>::SharedPointer(const SharedPointer<T>& other) noexcept :
@@ -753,6 +760,14 @@ inline SharedPointer<T> AllocatedMakeShared(Args&&... args) requires(std::is_con
 
     sharedPointer._objectPointer    = (T*)memory;
     sharedPointer._referenceCounter = referenceCounterPointer;
+
+    if constexpr (!std::is_array_v<T> && std::is_base_of_v<ISharedFromThis, T> && std::is_convertible_v<T*, ISharedFromThis*>)
+    {
+        T*               objectPointer       = (T*)memory;
+        ISharedFromThis* referenceFromThis   = objectPointer;
+        referenceFromThis->_objectPtr        = (PVoid)objectPointer;
+        referenceFromThis->_referenceCounter = (PVoid)referenceCounterPointer;
+    }
 
     return sharedPointer;
 }

@@ -142,6 +142,9 @@ private:
     alignas(StorageAlign) Uint8 _staticStorage[StorageSize];
 };
 
+/// \brief bit mask for the specified number of bits.
+#define AXIS_BIT(x) (1 << (x - 1))
+
 } // namespace Axis
 
 #endif // AXIS_SYSTEM_UTILITY_HPP
