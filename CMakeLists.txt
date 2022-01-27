@@ -4,6 +4,12 @@ cmake_minimum_required(VERSION 3.8.0)
 # Axis library top level project
 project(Axis VERSION 0.1.0)
 
+# Define GNU standard installation directories such as CMAKE_INSTALL_INCLUDEDIR, CMAKE_INSTALL_LIBDIR, etc.
+include(GNUInstallDirs)
+
+option(AXIS_BUILD_TESTS "Build Axis's test cases" OFF)
+option(AXIS_BUILD_EXAMPLES "Build Axis's example executables" ON)
+
 # Uses C++20 standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -44,8 +50,12 @@ message(NOTICE ${AXIS_GRAPHICS_VULKAN_MESSAGE})
 # Adds Axis framework subdirectory
 add_subdirectory(Axis)
 
-# Enables testing
-enable_testing()
+if(${AXIS_BUILD_TESTS})
 
-# Adds test subdirectory
-add_subdirectory(Test)
+    # Enables testing
+    enable_testing()
+
+    # Adds test subdirectory
+    add_subdirectory(Test)
+
+endif()
