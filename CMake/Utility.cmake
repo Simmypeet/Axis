@@ -71,7 +71,7 @@ macro(axis_add_test target)
     # parse the arguments
     cmake_parse_arguments(THIS "" "RELATIVE_PATH;FOLDER;" "SOURCES;TARGETS_TO_LINK;INCLUDE_DIRECTORIES;" ${ARGN})
 
-    # Adds library as shared library
+    # Adds executable
     add_executable(${target} ${THIS_SOURCES})
 
     # Target folder
@@ -101,3 +101,42 @@ macro(axis_add_test target)
     endforeach()
 
 endmacro(axis_add_test)
+
+# Links shared library to the executable and also adds a custom command to copy the shared library to the executable folder
+macro(axis_add_example target)
+# parse the arguments
+    cmake_parse_arguments(THIS "" "RELATIVE_PATH;FOLDER;" "SOURCES;TARGETS_TO_LINK;INCLUDE_DIRECTORIES;" ${ARGN})
+
+    # Adds as win32 subsystem in windows platform
+    if (${WIN32})
+        add_executable(${target} WIN32 ${THIS_SOURCES})
+    else()
+        add_executable(${target} ${THIS_SOURCES})
+    endif()
+
+    # Target folder
+    set_target_properties(${target} PROPERTIES FOLDER ${THIS_FOLDER})
+
+    # Uses C++20 standard
+    set_target_properties(${target} PROPERTIES CXX_STANDARD 20)
+
+    # C++20 standard is required
+    set_target_properties(${target} PROPERTIES CXX_STANDARD_REQUIRED TRUE)
+
+    # Adds target to the list of targets to link
+    target_link_libraries(${target} PRIVATE ${THIS_TARGETS_TO_LINK})
+
+    # Adds include directories
+    target_include_directories(${target} PRIVATE ${THIS_INCLUDE_DIRECTORIES})
+
+    # Adds source files to the source group
+    axis_assign_source_group("${THIS_SOURCES}" "${THIS_RELATIVE_PATH}")
+
+    # Copies shared library binary to the executable folder
+    foreach(TARGET_TO_LINK ${THIS_TARGETS_TO_LINK})
+        add_custom_command(TARGET ${target} PRE_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy
+                           $<TARGET_FILE:${TARGET_TO_LINK}>
+                           $<TARGET_FILE_DIR:${target}>)
+    endforeach()
+endmacro(axis_add_example)

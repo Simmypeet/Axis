@@ -59,3 +59,10 @@ if(${AXIS_BUILD_TESTS})
     add_subdirectory(Test)
 
 endif()
+
+if (${AXIS_BUILD_EXAMPLES})
+
+    # Adds examples subdirectory
+    add_subdirectory(Example/SimpleApplicationLoop)
+
+endif()

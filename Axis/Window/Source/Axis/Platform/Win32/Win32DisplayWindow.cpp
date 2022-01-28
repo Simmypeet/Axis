@@ -498,8 +498,7 @@ String8 DisplayWindow::GetScreenDeviceName() const
 
 void DisplayWindow::ShowWindow()
 {
-    if (!::ShowWindow((HWND)_hwnd, SW_SHOW))
-        throw ExternalException("Failed to ShowWindow!");
+    ::ShowWindow((HWND)_hwnd, SW_SHOW);
 }
 
 void DisplayWindow::PollEvent()
@@ -514,11 +513,13 @@ void DisplayWindow::PollEvent()
 
 void DisplayWindow::WaitEvent()
 {
-    MSG msg = {};
-    while (GetMessageW(&msg, (HWND)_hwnd, 0, 0) > 0)
+    WaitMessage();
+
+    MSG message;
+    while (PeekMessageW(&message, (HWND)_hwnd, 0, 0, PM_REMOVE))
     {
-        TranslateMessage(&msg);
-        DispatchMessageW(&msg);
+        TranslateMessage(&message);
+        DispatchMessageW(&message);
     }
 }
 

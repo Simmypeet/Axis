@@ -73,6 +73,7 @@ MouseState Mouse::GetMouseState() const
     HWND hwnd = (HWND)_window->GetWindowHandle();
 
     POINT mouseCursorPosition;
+    
     if (!GetCursorPos(&mouseCursorPosition))
         throw ExternalException("Failed to GetCursorPos!");
 
