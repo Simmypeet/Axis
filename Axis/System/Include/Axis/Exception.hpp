@@ -50,13 +50,6 @@ private:
     const Char* _message = nullptr; // The message of the exception.
 };
 
-/// \brief Raised when a null value pointer is de-referenced.
-class AXIS_SYSTEM_API NullPointerException : public Exception
-{
-public:
-    using Exception::Exception;
-};
-
 /// \brief Raised when external error occurs.
 class AXIS_SYSTEM_API ExternalException : public Exception
 {
@@ -90,6 +83,28 @@ class AXIS_SYSTEM_API OutOfMemoryException : public Exception
 {
 public:
     using Exception::Exception;
+};
+
+/// \brief The exception that is thrown when an I/O error occurs.
+class AXIS_SYSTEM_API IOException : public Exception
+{
+public:
+    using Exception::Exception;
+};
+
+/// \brief The exception that is thrown when the operating system denies access because
+///        of an I/O error or a specific type of security error.
+class AXIS_SYSTEM_API UnauthorizedAccessException : public IOException
+{
+public:
+    using IOException::IOException;
+};
+
+/// \brief The exception that is thrown when an attempt to access a file that does not exist on disk fails.
+class AXIS_SYSTEM_API FileNotFoundException : public IOException
+{
+public:
+    using IOException::IOException;
 };
 
 } // namespace Axis

@@ -33,7 +33,7 @@ public:
     explicit Mouse(const SharedPointer<DisplayWindow>& window);
 
     /// \brief Destructor
-    ~Mouse();
+    ~Mouse() noexcept;
 
     /// \brief Retrieves a \a `Axis::Window::MouseState` which contains mouse
     ///        buttons' states and position.

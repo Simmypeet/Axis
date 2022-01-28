@@ -30,7 +30,7 @@ Mouse::Mouse(const SharedPointer<DisplayWindow>& window)
     _eventToken = _window->GetMouseWheelScrollEvent().Add(mouseWheelScrollEventHandler, (UintPtr)this);
 }
 
-Mouse::~Mouse()
+Mouse::~Mouse() noexcept
 {
     if (_window)
         _window->GetMouseWheelScrollEvent().Remove(_eventToken);
@@ -73,7 +73,7 @@ MouseState Mouse::GetMouseState() const
     HWND hwnd = (HWND)_window->GetWindowHandle();
 
     POINT mouseCursorPosition;
-    
+
     if (!GetCursorPos(&mouseCursorPosition))
         throw ExternalException("Failed to GetCursorPos!");
 

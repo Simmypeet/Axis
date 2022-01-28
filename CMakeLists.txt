@@ -47,6 +47,9 @@ endif()
 
 message(NOTICE ${AXIS_GRAPHICS_VULKAN_MESSAGE})
 
+# Adds Axis framework's third party libraries
+add_subdirectory(Library)
+
 # Adds Axis framework subdirectory
 add_subdirectory(Axis)
 

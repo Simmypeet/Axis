@@ -14,6 +14,21 @@ namespace Axis
 {
 
 template <RawType T, AllocatorType Allocator>
+template <Bool FreeMemory>
+inline void List<T, Allocator>::ClearInternal(T*   buffer,
+                                              Size length)
+{
+    if (buffer)
+    {
+        for (Size i = 0; i < length; i++)
+            buffer[i].~T();
+
+        if constexpr (FreeMemory)
+            Allocator::Deallocate(buffer);
+    }
+}
+
+template <RawType T, AllocatorType Allocator>
 inline List<T, Allocator>::List(const List<T, Allocator>& other) requires(std::is_copy_constructible_v<T>)
 {
     if (other._length > 0)
@@ -550,11 +565,7 @@ inline Tuple<T*, Size> List<T, Allocator>::ConstructsNewList(Size elementCount,
             for (Size i = 0; i < constructedCount; i++)
                 array[i].~T();
 
-            // If an exception is thrown, we need to free the memory we allocated.
-            Allocator::Deallocate(array);
-
-            if constexpr (CleanWhenThrow)
-                ClearInternal<true>();
+            ClearInternal<CleanWhenThrow>(array, constructedCount);
 
             throw;
         }
@@ -568,21 +579,6 @@ template <RawType T, AllocatorType Allocator>
 inline List<T, Allocator>::operator Bool() const noexcept
 {
     return _length > 0;
-}
-
-template <RawType T, AllocatorType Allocator>
-template <Bool FreeMemory>
-inline void List<T, Allocator>::ClearInternal(T*   buffer,
-                                              Size length)
-{
-    if (buffer)
-    {
-        for (Size i = 0; i < length; i++)
-            buffer[i].~T();
-
-        if constexpr (FreeMemory)
-            Allocator::Deallocate(buffer);
-    }
 }
 
 } // namespace Axis
