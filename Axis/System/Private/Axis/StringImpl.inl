@@ -48,8 +48,8 @@ inline void CopyElement(const T* source,
 
 } // namespace Detail
 
-template <CharType T>
-constexpr Size GetStringLength(const T* strPtr) noexcept
+template <CharType T, AllocatorType Allocator>
+constexpr Size String<T, Allocator>::GetStringLength(const T* strPtr) noexcept
 {
     if (!strPtr)
         return 0;
@@ -68,7 +68,7 @@ inline String<T, Allocator>::String(NullptrType) noexcept {}
 template <CharType T, AllocatorType Allocator>
 template <CharType U>
 inline String<T, Allocator>::String(const U* str) noexcept :
-    _stringLength(GetStringLength(str))
+    _stringLength(::Axis::String<U, Allocator>::GetStringLength(str))
 {
     auto pointer = Reserve(_stringLength);
 

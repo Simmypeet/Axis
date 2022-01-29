@@ -17,7 +17,7 @@ Size VertexBindingDescription::GetStride() const
     Size size = 0;
     for (const auto& attrib : Attributes)
     {
-        size += GetShaderDataTypeSize(attrib.Type);
+        size += Graphics::GetShaderDataTypeSize(attrib.Type);
     }
 
     return size;

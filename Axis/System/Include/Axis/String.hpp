@@ -21,16 +21,6 @@ namespace Axis
 template <class T>
 concept CharType = std::is_same_v<T, Char> || std::is_same_v<T, WChar> || std::is_same_v<T, char8_t> || std::is_same_v<T, char16_t> || std::is_same_v<T, char32_t>;
 
-/// \brief Counts the element in string pointer until the
-///        null terminated character is found. Null terminated character
-///        is not included.
-///
-/// \tparam T string data type.
-///
-/// \return Returns the number of elements in C-style null terminated string.
-template <CharType T>
-constexpr Size GetStringLength(const T* strPtr) noexcept;
-
 /// \brief Container which contains a null terminated character sequence.
 ///
 /// \tparam T internal string data type.
@@ -153,6 +143,9 @@ public:
     ///
     /// \return Returns the number of elements in the string.
     AXIS_NODISCARD Size GetLength() const noexcept;
+
+    /// \brief Gets the number of elements in the string (null terminated character is not included).
+    AXIS_NODISCARD constexpr static Size GetStringLength(const T* str) noexcept;
 
 private:
     T* Reserve(Size size);

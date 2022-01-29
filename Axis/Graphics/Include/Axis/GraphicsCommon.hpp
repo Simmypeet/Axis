@@ -450,6 +450,9 @@ enum class ResourceMapType : Uint8
 /// \brief The state of the graphics resource. (Bit mask)
 typedef ResourceState ResourceStateFlags;
 
+namespace Graphics
+{
+
 /// \brief States that can only be found in texture
 constexpr ResourceStateFlags TextureStatesExclusive =
     ResourceState::DepthStencilRead |
@@ -477,7 +480,6 @@ inline constexpr Bool IsTextureState(ResourceState state) noexcept
 }
 
 /// \brief Checks if the specified resource state is belong to the buffer.
-///
 inline constexpr Bool IsBufferState(ResourceState state) noexcept
 {
     return (Bool)(state & (BufferStatesExclusive | CommonStates)) && !(Bool)(state & TextureStatesExclusive) /* Make sure that doesn't contain texture states also. */;
@@ -543,14 +545,12 @@ inline constexpr Size GetShaderDataTypeSize(ShaderDataType shaderDataType)
 }
 
 /// \brief Checks whether if the specified resource usage is mappable or not.
-///
 inline constexpr Bool IsResourceUsageMappable(ResourceUsage resourceUsage)
 {
     return (Bool)(resourceUsage & (ResourceUsage::Dynamic | ResourceUsage::StagingSource));
 }
 
 /// \brief Gets \a `MemoryAccess` from \a `ResourceState`.
-///
 inline constexpr MemoryAccessFlags GetMemoryAccessFromResourceState(ResourceState state)
 {
     switch (state)
@@ -573,6 +573,8 @@ inline constexpr MemoryAccessFlags GetMemoryAccessFromResourceState(ResourceStat
             throw InvalidArgumentException("`state` was invalid!");
     }
 }
+
+} // namespace Graphics
 
 } // namespace Axis
 

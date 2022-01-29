@@ -41,10 +41,10 @@ void IDeviceContext::TransitTextureState(const SharedPointer<ITexture>& textureR
     if (!textureResource)
         throw InvalidArgumentException("textureResource was nullptr!");
 
-    if (!IsTextureState(initialState))
+    if (!Graphics::IsTextureState(initialState))
         throw InvalidArgumentException("initialState was not a valid texture state!");
 
-    if (!IsTextureState(finalState))
+    if (!Graphics::IsTextureState(finalState))
         throw InvalidArgumentException("finalState was not a valid texture state!");
 
     if (baseArrayIndex + arrayLevelCount > textureResource->Description.ArraySize)
@@ -63,10 +63,10 @@ void IDeviceContext::TransitBufferState(const SharedPointer<IBuffer>& bufferReso
     if (!bufferResource)
         throw InvalidArgumentException("bufferResource was nullptr!");
 
-    if (!IsBufferState(initialState))
+    if (!Graphics::IsBufferState(initialState))
         throw InvalidArgumentException("initialState was not a valid buffer state!");
 
-    if (!IsBufferState(finalState))
+    if (!Graphics::IsBufferState(finalState))
         throw InvalidArgumentException("finalState was not a valid buffer state!");
 }
 
