@@ -52,7 +52,7 @@ void VulkanResourceHeap::BindBuffers(Uint32                              binding
         VulkanBufferBinding vulkanBufferBinding = {
             .VulkanBuffer = (SharedPointer<VulkanBuffer>)buffers[i],
             .Offset       = offsets == nullptr ? 0 : offsets[i],
-            .BufferSize   = sizes == nullptr ? 0 : buffers[i]->Description.BufferSize - (offsets == nullptr ? 0 : offsets[i])};
+            .BufferSize   = sizes == nullptr ? buffers[i]->Description.BufferSize - (offsets == nullptr ? 0 : offsets[i]) : 0};
 
         ResourceLocation resourceLocation = {bindingIndex,
                                              (Uint32)(startingArrayIndex + i)};

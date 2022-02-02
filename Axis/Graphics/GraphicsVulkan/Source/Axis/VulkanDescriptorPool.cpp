@@ -53,14 +53,6 @@ VulkanDescriptorPool::VulkanDescriptorPool(const ResourceHeapDescription& descri
     vulkanGraphicsDevice.AddDeviceChild(*this);
 }
 
-VulkanDescriptorPool::~VulkanDescriptorPool() noexcept
-{
-    for (const auto& descriptorPool : _descriptorPools)
-    {
-        vkDestroyDescriptorPool(((VulkanGraphicsDevice*)GetCreatorDevice())->GetVkDeviceHandle(), descriptorPool, nullptr);
-    }
-}
-
 UniquePointer<VulkanDescriptorSetGroup> VulkanDescriptorPool::GetDescriptorSetGroup()
 {
     UniquePointer<VulkanDescriptorSetGroup> descriptorSetGroupToReturn;

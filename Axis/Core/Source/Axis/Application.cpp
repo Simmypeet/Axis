@@ -29,6 +29,7 @@ SharedPointer<DisplayWindow> Application::CreateWindow() const
     windowDescription.WindowPosition    = {WindowDescription::UndefinedPosition, WindowDescription::UndefinedPosition};
     windowDescription.WindowSize        = {800, 480};
     windowDescription.WindowStyle       = WindowStyle::TitleBar | WindowStyle::Resizeable | WindowStyle::CloseButton;
+    windowDescription.Title             = L"Axis";
 
     return Axis::MakeShared<DisplayWindow>(windowDescription);
 }

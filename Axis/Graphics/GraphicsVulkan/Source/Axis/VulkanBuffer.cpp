@@ -35,6 +35,8 @@ inline Tuple<List<Uint32>, VkBufferCreateInfo> GetBufferCreationInfosFromBufferD
 
     auto indices = VulkanUtility::ExtractDeviceQueueFamilyIndices(description.DeviceQueueFamilyMask);
 
+    bufferUsage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
     // Vulkan buffer
     VkBufferCreateInfo bufferCreateInfo    = {};
     bufferCreateInfo.sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

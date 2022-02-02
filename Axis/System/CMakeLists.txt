@@ -24,6 +24,7 @@ set(AXIS_SYSTEM_HEADER_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/TimePeriod.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Assembly.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/System.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Matrix.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/System"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Trait.hpp")
 
@@ -52,6 +53,7 @@ set(AXIS_SYSTEM_PRIVATE_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/EnumImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/SpanImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/TimePeriodImpl.inl"
+   "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/MatrixImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/StringImpl.inl")
 
 # Win32 platform specific header and source files

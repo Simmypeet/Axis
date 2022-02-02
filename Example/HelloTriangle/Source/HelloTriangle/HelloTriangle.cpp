@@ -42,149 +42,143 @@ void main()
 
 int main()
 {
-    try
+    // Derived application
+    class HelloTriangle : public Application
     {
-        // Derived application
-        class HelloTriangle : public Application
+    public:
+        HelloTriangle() noexcept = default;
+
+    private:
+        // Loads graphics content here!
+        void LoadContent() noexcept override final
         {
-        public:
-            HelloTriangle() noexcept = default;
+            // Compiles vertex shader source code.
+            ShaderModuleDescription vertexShaderDescription = {};
+            vertexShaderDescription.EntryPoint              = "main";
+            vertexShaderDescription.Language                = ShaderLanguage::GLSL;
+            vertexShaderDescription.Stage                   = ShaderStage::Vertex;
 
-        private:
-            // Loads graphics content here!
-            void LoadContent() noexcept override final
+            _vertexShader = GetGraphicsDevice()->CompileShaderModule(vertexShaderDescription, VertexShaderCode);
+
+            // Compiles fragment shader source code.
+            ShaderModuleDescription fragmentShaderDescription = {};
+            fragmentShaderDescription.EntryPoint              = "main";
+            fragmentShaderDescription.Language                = ShaderLanguage::GLSL;
+            fragmentShaderDescription.Stage                   = ShaderStage::Fragment;
+
+            _fragmentShader = GetGraphicsDevice()->CompileShaderModule(fragmentShaderDescription, FragmentShaderCode);
+
+            // Creates graphics pipeline.
+            GraphicsPipelineDescription graphicsPipelineDescription   = {};
+            graphicsPipelineDescription.Binding                       = PipelineBinding::Graphics;
+            graphicsPipelineDescription.DepthStencil.DepthTestEnable  = false; // Disables depth testing
+            graphicsPipelineDescription.DepthStencil.StencilEnable    = false; // Disables stencil testing
+            graphicsPipelineDescription.FragmentShader                = _fragmentShader;
+            graphicsPipelineDescription.VertexShader                  = _vertexShader;
+            graphicsPipelineDescription.RenderTargetViewFormats       = {GetSwapChain()->Description.RenderTargetFormat}; // Passes swapchain's render target view format.
+            graphicsPipelineDescription.DepthStencilViewFormat        = {GetSwapChain()->Description.DepthStencilFormat}; // Passes swapchain's depth stencil view format.
+            graphicsPipelineDescription.SampleCount                   = 1;
+            graphicsPipelineDescription.VertexBindingDescriptions     = List<VertexBindingDescription>(1); // Only 1 vertex binding slot.
+            graphicsPipelineDescription.Blend.LogicOperationEnable    = false;
+            graphicsPipelineDescription.Blend.LogicOp                 = LogicOperation::NoOperation;
+            graphicsPipelineDescription.Blend.RenderTargetBlendStates = List<AttachmentBlendState>(1, AttachmentBlendState::GetAlphaBlend());
+            graphicsPipelineDescription.Rasterizer                    = RasterizerState::GetCullNone();
+            graphicsPipelineDescription.DepthStencil                  = DepthStencilState::GetNone();
+
+            auto& vertexBindingDescription = graphicsPipelineDescription.VertexBindingDescriptions[0];
+
+            // Specifies the vertex inputs
+            vertexBindingDescription.BindingSlot = 0;
+            vertexBindingDescription.Attributes  = List<VertexAttribute>(2);
+
+            // Specifies vertex position attribute
+            vertexBindingDescription.Attributes[0].Location = 0;
+            vertexBindingDescription.Attributes[0].Type     = ShaderDataType::Float3; // Vector3F equivalent
+
+            // Specifies vertex color attribute
+            vertexBindingDescription.Attributes[1].Location = 1;
+            vertexBindingDescription.Attributes[1].Type     = ShaderDataType::Float4; // ColorF equivalent
+
+            _graphicsPipeline = GetGraphicsDevice()->CreateGraphicsPipeline(graphicsPipelineDescription); 
+
+            /// Vertex data structure.
+            struct Vertex
             {
-                // Compiles vertex shader source code.
-                ShaderModuleDescription vertexShaderDescription = {};
-                vertexShaderDescription.EntryPoint              = "main";
-                vertexShaderDescription.Language                = ShaderLanguage::GLSL;
-                vertexShaderDescription.Stage                   = ShaderStage::Vertex;
+                // Defines vertex position
+                Vector3F Position; // vec3 equivalent in GLSL
 
-                _vertexShader = GetGraphicsDevice()->CompileShaderModule(vertexShaderDescription, VertexShaderCode);
+                // Defines vertex color
+                ColorF Color; // vec4 equivalent in GLSL
+            };
 
-                // Compiles fragment shader source code.
-                ShaderModuleDescription fragmentShaderDescription = {};
-                fragmentShaderDescription.EntryPoint              = "main";
-                fragmentShaderDescription.Language                = ShaderLanguage::GLSL;
-                fragmentShaderDescription.Stage                   = ShaderStage::Fragment;
+            // clang-format off
 
-                _fragmentShader = GetGraphicsDevice()->CompileShaderModule(fragmentShaderDescription, FragmentShaderCode);
+            // Vertex data
+            Vertex vertrices[] = {
+                {{ 0.0f, -0.5f,  0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
+                {{ 0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}},
+                {{-0.5f,  0.5f,  0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+            };
 
-                // Creates graphics pipeline.
-                GraphicsPipelineDescription graphicsPipelineDescription   = {};
-                graphicsPipelineDescription.Binding                       = PipelineBinding::Graphics;
-                graphicsPipelineDescription.DepthStencil.DepthTestEnable  = false; // Disables depth testing
-                graphicsPipelineDescription.DepthStencil.StencilEnable    = false; // Disables stencil testing
-                graphicsPipelineDescription.FragmentShader                = _fragmentShader;
-                graphicsPipelineDescription.VertexShader                  = _vertexShader;
-                graphicsPipelineDescription.RenderTargetViewFormats       = {GetSwapChain()->Description.RenderTargetFormat}; // Passes swapchain's render target view format.
-                graphicsPipelineDescription.DepthStencilViewFormat        = {GetSwapChain()->Description.DepthStencilFormat}; // Passes swapchain's depth stencil view format.
-                graphicsPipelineDescription.SampleCount                   = 1;
-                graphicsPipelineDescription.VertexBindingDescriptions     = List<VertexBindingDescription>(1); // Only 1 vertex binding slot.
-                graphicsPipelineDescription.Blend.LogicOperationEnable    = false;
-                graphicsPipelineDescription.Blend.LogicOp                 = LogicOperation::NoOperation;
-                graphicsPipelineDescription.Blend.RenderTargetBlendStates = List<AttachmentBlendState>(1, AttachmentBlendState::GetAlphaBlend());
-                graphicsPipelineDescription.Rasterizer                    = RasterizerState::GetCullNone();
-                graphicsPipelineDescription.DepthStencil                  = DepthStencilState::GetNone();
+            // clang-format on
 
-                auto& vertexBindingDescription = graphicsPipelineDescription.VertexBindingDescriptions[0];
+            // Creates vertex buffer which contains out vertex data.
+            BufferDescription vertexBufferDescription = {};
+            vertexBufferDescription.BufferBinding     = BufferBinding::Vertex;
+            vertexBufferDescription.BufferSize        = sizeof(vertrices);        // Size of our vertex data.
+            vertexBufferDescription.Usage             = ResourceUsage::Immutable; // Immutable buffer (GPU local memory, fastest).
 
-                // Specifies the vertex inputs
-                vertexBindingDescription.BindingSlot = 0;
-                vertexBindingDescription.Attributes  = List<VertexAttribute>(2);
+            // Specifies that our immediate graphics device context can use the buffer.
+            vertexBufferDescription.DeviceQueueFamilyMask = Math::AssignBitToPosition(vertexBufferDescription.DeviceQueueFamilyMask, GetImmediateGraphicsContext()->DeviceQueueFamilyIndex, true);
 
-                // Specifies vertex position attribute
-                vertexBindingDescription.Attributes[0].Location = 0;
-                vertexBindingDescription.Attributes[0].Type     = ShaderDataType::Float3; // Vector3F equivalent
+            // Specifies the data to initialize into our immutable vertex buffer.
+            BufferInitialData vertexBufferData = {};
+            vertexBufferData.Data              = vertrices;
+            vertexBufferData.DataSize          = sizeof(vertrices);
+            vertexBufferData.ImmediateContext  = GetImmediateGraphicsContext();
+            vertexBufferData.Offset            = 0;
 
-                // Specifies vertex color attribute
-                vertexBindingDescription.Attributes[1].Location = 1;
-                vertexBindingDescription.Attributes[1].Type     = ShaderDataType::Float4; // ColorF equivalent
+            _vertexBuffer = GetGraphicsDevice()->CreateBuffer(vertexBufferDescription, &vertexBufferData);
+        }
 
-                _graphicsPipeline = GetGraphicsDevice()->CreateGraphicsPipeline(graphicsPipelineDescription);
+        // Updates loop goes here!
+        void Update(const TimePeriod& deltaTime) noexcept override final {}
 
-                /// Vertex data structure.
-                struct Vertex
-                {
-                    // Defines vertex position
-                    Vector3F Position; // vec3 equivalent in GLSL
+        // Render loop goes here!
+        void Render(const TimePeriod& deltaTime) noexcept override final
+        {
+            // The window clear color value (XNA cornflower blue, good old days.....)
+            const ColorF clearColor = ColorF(100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f);
 
-                    // Defines vertex color
-                    ColorF Color; // vec4 equivalent in GLSL
-                };
+            // Gets the current swap chain's back buffer. (Color view)
+            auto currentBackBuffer = GetSwapChain()->GetCurrentRenderTargetView();
 
-                // clang-format off
+            // Clears the swapChain's back buffer to the specified color.
+            GetImmediateGraphicsContext()->ClearRenderTarget(currentBackBuffer, clearColor);
 
-                // Vertex data
-                Vertex vertrices[] = {
-                    {{ 0.0f, -0.5f,  0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
-                    {{ 0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}},
-                    {{-0.5f,  0.5f,  0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
-                };
+            // Binds the graphics pipeline.
+            GetImmediateGraphicsContext()->BindPipeline(_graphicsPipeline);
 
-                // clang-format on
+            // Binds the vertex buffer.
+            SharedPointer<IBuffer> vertexBuffers[] = {_vertexBuffer};
+            GetImmediateGraphicsContext()->BindVertexBuffers(0,             // Starts at vertex binding 0
+                                                             vertexBuffers, // Only one vertex buffer is bound.
+                                                             nullptr);      // No offsets
 
-                // Creates vertex buffer which contains out vertex data.
-                BufferDescription vertexBufferDescription = {};
-                vertexBufferDescription.BufferBinding     = BufferBinding::Vertex;
-                vertexBufferDescription.BufferSize        = sizeof(vertrices);        // Size of our vertex data.
-                vertexBufferDescription.Usage             = ResourceUsage::Immutable; // Immutable buffer (GPU local memory, fastest).
+            // Draws the triangle.
+            GetImmediateGraphicsContext()->Draw(3, 1, 0, 0);
+        }
 
-                // Specifies that our immediate graphics device context can use the buffer.
-                vertexBufferDescription.DeviceQueueFamilyMask = Math::AssignBitToPosition(vertexBufferDescription.DeviceQueueFamilyMask, GetImmediateGraphicsContext()->DeviceQueueFamilyIndex, true);
+        // Private members
+        SharedPointer<IShaderModule>     _vertexShader     = {};
+        SharedPointer<IShaderModule>     _fragmentShader   = {};
+        SharedPointer<IGraphicsPipeline> _graphicsPipeline = {};
+        SharedPointer<IBuffer>           _vertexBuffer     = {};
+    };
 
-                // Specifies the data to initialize into our immutable vertex buffer.
-                BufferInitialData vertexBufferData = {};
-                vertexBufferData.Data              = vertrices;
-                vertexBufferData.DataSize          = sizeof(vertrices);
-                vertexBufferData.ImmediateContext  = GetImmediateGraphicsContext();
-                vertexBufferData.Offset            = 0;
+    HelloTriangle application = {};
 
-                _vertexBuffer = GetGraphicsDevice()->CreateBuffer(vertexBufferDescription, &vertexBufferData);
-            }
-
-            // Updates loop goes here!
-            void Update(const TimePeriod& deltaTime) noexcept override final {}
-
-            // Render loop goes here!
-            void Render(const TimePeriod& deltaTime) noexcept override final
-            {
-                // The window clear color value (XNA cornflower blue, good old days.....)
-                const ColorF clearColor = ColorF(100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f);
-
-                // Gets the current swap chain's back buffer. (Color view)
-                auto currentBackBuffer = GetSwapChain()->GetCurrentRenderTargetView();
-
-                // Clears the swapChain's back buffer to the specified color.
-                GetImmediateGraphicsContext()->ClearRenderTarget(currentBackBuffer, clearColor);
-
-                // Binds the graphics pipeline.
-                GetImmediateGraphicsContext()->BindPipeline(_graphicsPipeline);
-
-                // Binds the vertex buffer.
-                SharedPointer<IBuffer> vertexBuffers[] = {_vertexBuffer};
-                GetImmediateGraphicsContext()->BindVertexBuffers(0,             // Starts at vertex binding 0
-                                                                 vertexBuffers, // Only one vertex buffer is bound.
-                                                                 nullptr);      // No offsets
-
-                // Draws the triangle.
-                GetImmediateGraphicsContext()->Draw(3, 1, 0, 0);
-            }
-
-            // Private members
-            SharedPointer<IShaderModule>     _vertexShader     = {};
-            SharedPointer<IShaderModule>     _fragmentShader   = {};
-            SharedPointer<IGraphicsPipeline> _graphicsPipeline = {};
-            SharedPointer<IBuffer>           _vertexBuffer     = {};
-        };
-
-        HelloTriangle application = {};
-
-        application.Run();
-    }
-    catch (...)
-    {
-    }
+    application.Run();
 
     return 0;
 }

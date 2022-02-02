@@ -608,7 +608,10 @@ inline void HashSet<T, Hasher, Comparer, Allocator>::ClearInternal(Node** pTable
     }
 
     if constexpr (ClearTable)
-        Allocator::Deallocate(pTable);
+    {
+        if (pTable)
+            Allocator::Deallocate(pTable);
+    }
 }
 
 template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>

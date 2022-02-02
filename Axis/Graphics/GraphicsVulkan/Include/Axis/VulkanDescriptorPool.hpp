@@ -60,9 +60,6 @@ public:
     VulkanDescriptorPool(const ResourceHeapDescription& description,
                          VulkanGraphicsDevice&          vulkanGraphicsDevice);
 
-    /// Destructor
-    ~VulkanDescriptorPool() noexcept override final;
-
     /// \brief Gets the existing descriptor group in the pool / allocates new descriptor set group.
     ///
     /// \return Returns nullptr if the error occurred.
@@ -70,7 +67,7 @@ public:
 
     /// \brief Returns the descriptor set group back to the pool for future uses.
     void ReturnDescriptorSetGroup(UniquePointer<VulkanDescriptorSetGroup>&& descriptorSetGroup) noexcept;
-    
+
     /// \brief Makes all pooled descriptors marked as not up to date.
     void MarkAllAsNotUpToDate() noexcept;
 

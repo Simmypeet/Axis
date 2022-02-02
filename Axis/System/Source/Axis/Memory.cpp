@@ -217,6 +217,9 @@ PVoid PoolAllocator::Allocate(Size size,
 
 void PoolAllocator::Deallocate(PVoid ptr) noexcept
 {
+    if (ptr == nullptr)
+        return;
+
     // Backwards the userPtr to the memory block header
     auto block = (FixedPoolAllocator::MemoryBlockHeader*)((Size)ptr - sizeof(FixedPoolAllocator::MemoryBlockHeader));
 

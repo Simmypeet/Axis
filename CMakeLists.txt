@@ -68,5 +68,6 @@ if (${AXIS_BUILD_EXAMPLES})
     # Adds examples subdirectory
     add_subdirectory(Example/SimpleApplicationLoop)
     add_subdirectory(Example/HelloTriangle)
+    add_subdirectory(Example/RotatingCube)
 
 endif()
