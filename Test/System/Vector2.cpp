@@ -1,5 +1,4 @@
-#include <Axis/Math.hpp>
-#include <Axis/Vector2.hpp>
+#include <Axis/System>
 #include <doctest.h>
 
 DOCTEST_TEST_CASE("Vector2 template class : [Axis-System]")

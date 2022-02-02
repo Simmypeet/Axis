@@ -169,7 +169,7 @@ public:
     ///
     /// \return Returns a pair of iterator and \a `Bool` value. The iterator points to the inserted element.
     ///         If the element is already present, the iterator points to the existing element and the \a `Bool` value is \a `false`.
-    Pair<Bool, const_iterator> Insert(const T& value) requires(std::is_copy_constructible_v<T>);
+    Pair<Bool, iterator> Insert(const T& value) requires(std::is_copy_constructible_v<T>);
 
     /// \brief Inserts new element into the hash set. If the element is already present, the function does nothing.
     ///
@@ -177,12 +177,12 @@ public:
     ///
     /// \return Returns a pair of iterator and \a `Bool` value. The iterator points to the inserted element.
     ///         If the element is already present, the iterator points to the existing element and the \a `Bool` value is \a `false`.
-    Pair<Bool, const_iterator> Insert(T&& value) requires(std::is_move_constructible_v<T>);
+    Pair<Bool, iterator> Insert(T&& value) requires(std::is_move_constructible_v<T>);
 
     /// \brief Reserves memory space for the specified number of elements.
     ///
     /// \param[in] elementSize Number of elements to be reserved.
-    void Reserve(Size elementSize) requires(std::is_copy_constructible_v<T>);
+    void Reserve(Size elementSize);
 
     /// \brief Removes the specified element from the hash set.
     ///
@@ -251,7 +251,7 @@ protected:
 
 private:
     template <class IteratorVariant = const_iterator, class... Args> Pair<Bool, IteratorVariant> InsertInternal(Node** pTable, Size tableSize, Args&&... args);
-    template <class... Args> Pair<Bool, const_iterator>                                          InsertPerfectForwarding(Args&&... args);
+    template <class... Args> Pair<Bool, iterator>                                                InsertPerfectForwarding(Args&&... args);
     template <Bool ClearTable> void                                                              ClearInternal(Node** pTable, Size tableSize);
     template <class IteratorVariant> Pair<Bool, IteratorVariant>                                 RemoveInternal(const T& element) requires(std::is_same_v<IteratorVariant, iterator> || std::is_same_v<IteratorVariant, const_iterator>);
     template <class IteratorVariant> IteratorVariant                                             Begin() const requires(std::is_same_v<IteratorVariant, iterator> || std::is_same_v<IteratorVariant, const_iterator>);

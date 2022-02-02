@@ -1,0 +1,19 @@
+/// \copyright Simmypeet - Copyright (C)
+///            This file is subject to the terms and conditions defined in
+///            file 'LICENSE', which is part of this source code package.
+
+/// \file Window
+///
+/// \brief Contains all header files of the Axis::Window module.
+
+#ifndef AXIS_WINDOW_WINDOWHEADER_HPP
+#define AXIS_WINDOW_WINDOWHEADER_HPP
+#pragma once
+
+#include "DisplayWindow.hpp"
+#include "Input.hpp"
+#include "Keyboard.hpp"
+#include "Mouse.hpp"
+#include "WindowExport.hpp"
+
+#endif // AXIS_WINDOW_WINDOWHEADER_HPP

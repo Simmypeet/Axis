@@ -1,10 +1,13 @@
-#include <Axis/DisplayWindow.hpp>
-#include <Axis/Enum.hpp>
-#include <Axis/Keyboard.hpp>
+/// \copyright Simmypeet - Copyright (C)
+///            This file is subject to the terms and conditions defined in
+///            file `LICENSE`, which is part of this source code package.
+
+#include <Axis/System>
+#include <Axis/Window>
 
 using namespace Axis;
 
-Int32 ExampleMain()
+int main()
 {
     // Creates a window with the specified description.
     WindowDescription windowDescription = {
@@ -36,20 +39,3 @@ Int32 ExampleMain()
 
     return 0;
 }
-
-#ifdef AXIS_PLATFORM_WINDOWS
-#    include <Windows.h>
-
-int WINAPI WinMain(HINSTANCE hInstance,
-                   HINSTANCE hPrevInstance,
-                   LPSTR     lpCmdLine,
-                   int       nCmdShow)
-{
-    return ExampleMain();
-}
-#else
-int main()
-{
-    return ExampleMain();
-}
-#endif

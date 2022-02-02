@@ -1,4 +1,4 @@
-#include <Axis/Vector3.hpp>
+#include <Axis/System>
 #include <doctest.h>
 
 DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")

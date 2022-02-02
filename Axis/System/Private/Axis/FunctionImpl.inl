@@ -247,6 +247,17 @@ Bool Function<ReturnType(Args...), Allocator>::operator!=(decltype(nullptr)) con
 {
     return _pVtable != nullptr;
 }
+
+template <AllocatorType Allocator, class ReturnType, class... Args>
+Function<ReturnType(Args...), Allocator>& Function<ReturnType(Args...), Allocator>::operator=(decltype(nullptr)) noexcept
+{
+    Destroy();
+
+    _pVtable = nullptr;
+
+    return *this;
+}
+
 template <AllocatorType Allocator, class ReturnType, class... Args>
 Function<ReturnType(Args...), Allocator>::operator Bool() const noexcept
 {

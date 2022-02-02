@@ -101,7 +101,7 @@ inline List<T, Allocator>& List<T, Allocator>::operator=(const List<T, Allocator
 
             ClearInternal<true>(_buffer, _length);
 
-            _buffer          = (T*)Allocator::Allocate(allocatedLength, alignof(T));
+            _buffer          = (T*)Allocator::Allocate(allocatedLength * sizeof(T), alignof(T));
             _allocatedLength = allocatedLength;
         }
         else
@@ -203,7 +203,7 @@ inline void List<T, Allocator>::Reset() noexcept(std::is_nothrow_default_constru
 
 template <RawType T, AllocatorType Allocator>
 template <class... Args>
-inline T* List<T, Allocator>::EmplaceBack(Args... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>))
+inline T* List<T, Allocator>::EmplaceBack(Args&&... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>))
 {
     if (_length == _allocatedLength)
     {
@@ -238,7 +238,7 @@ inline T* List<T, Allocator>::Append(T&& element) requires(std::is_move_construc
 
 template <RawType T, AllocatorType Allocator>
 template <class... Args>
-inline T* List<T, Allocator>::Emplace(Size index, Args... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>))
+inline T* List<T, Allocator>::Emplace(Size index, Args&&... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>))
 {
     if (index > _length)
         throw ArgumentOutOfRangeException("`index` was out of range!");

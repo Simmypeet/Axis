@@ -1,4 +1,4 @@
-#include <Axis/Math.hpp>
+#include <Axis/System>
 #include <doctest.h>
 
 DOCTEST_TEST_CASE("Math functions : [Axis::System]")

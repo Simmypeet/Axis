@@ -52,7 +52,6 @@ struct RenderTargetBinding final
 };
 
 /// \brief Integer types available to use as index buffer data.
-///
 enum class IndexType : Uint8
 {
     /// \brief Unsigned 16-Bit integer.
@@ -76,6 +75,35 @@ enum class ClearDepthStencil : Uint8
 
     /// \brief Required for enum reflection.
     MaximumEnumValue = Stencil,
+};
+
+/// \brief Memory access type when maps the resource memory.
+enum class MapAccess : Uint8
+{
+    /// \brief Maps buffer for read operations.
+    Read = AXIS_BIT(1),
+
+    /// \brief Maps buffer for write operations.
+    Write = AXIS_BIT(2),
+
+    /// \brief Maps buffer for read and write operations
+    ReadWrite = Read | Write,
+};
+
+/// \brief Resource mapping type;
+enum class MapType : Uint8
+{
+    /// \brief Default resource binding.
+    Default = 0,
+
+    /// \brief Discards the old buffer content; looks for new memory region
+    ///        to map immediately.
+    Discard = 1,
+
+    /// \brief Returns the mapped memory pointer immediately; be careful with
+    ///        synchronization issues cause, GPU might be using the resource while
+    ///        it's content is being modified.
+    Overwrite = 2,
 };
 
 /// \brief Specifies the depth stencil buffer clear values. (Bit mask)
@@ -341,6 +369,26 @@ public:
     virtual void GenerateMips(const SharedPointer<ITextureView>& textureView,
                               StateTransition                    stateTransition = StateTransition::Transit) = 0;
 
+    /// \brief Mpas the buffer for read or write operations.
+    ///
+    /// \note Supported queu types : All
+    ///       Render pass scope    : Outside
+    ///
+    /// \param[in] buffer Buffer to map the memory.
+    /// \param[in] mapAccess Specifies which memory access to operate to the mapped memory.
+    /// \param[in] mapType Specifies meomry mapping behaviour.
+    virtual PVoid MapBuffer(const SharedPointer<IBuffer>& buffer,
+                            MapAccess                     mapAccess,
+                            MapType                       mapType) = 0;
+
+    /// \brief Unmaps the buffer memory
+    ///
+    /// \note Supported queu types : All
+    ///       Render pass scope    : Outside
+    ///
+    /// \param[in] buffer Buffer to unmap its memory.
+    virtual void UnmapBuffer(const SharedPointer<IBuffer>& buffer) = 0;
+
     /// \brief Appends fence to signal upon the next Flush call and all works are done.
     ///
     /// \param[in] fence Fence to be signaled.
@@ -449,6 +497,10 @@ protected:
     inline const List<SharedPointer<IResourceHeap>>& GetCurrentBindingResourceHeaps() const noexcept { return _bindingResourceHeaps; }
     // Resets the storing render target state.
     inline void ResetRenderTarget() noexcept { _currentRenderTargetBinding = {}; }
+    // Resets the storing vertex buffer.
+    inline void ResetVertexBuffers() noexcept { _bindingVertexBuffers.Reset(); }
+    // Resets the storing index buffer.
+    inline void ResetIndexBuffer() noexcept { _bindingIndexBuffer = {}; }
 
 private:
     /// Private members

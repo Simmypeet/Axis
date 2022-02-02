@@ -75,36 +75,6 @@ public:
     /// \brief The description of IBuffer resource.
     const BufferDescription Description;
 
-    /// \brief Maps the resource's memory. The resource must contains the flag of ResourceUsage::Dynamic or ResourceUsage::StagingSource.
-    ///        The user should taking care of synchronization issues that might happen e.g., mapping the data and write to the vertex buffer while the
-    ///        memory is being read by the vertex shader.
-    ///
-    /// \param[in] mapType Specifies the texture mapping behaviour.
-    ///
-    /// \return Mapped memory region. The user should be aware of accessing the mapped memory, or else
-    ///         memory access violation might occur.
-    AXIS_NODISCARD virtual PVoid MapMemory(ResourceMapType mapType = ResourceMapType::Default) = 0;
-
-    /// \brief Unmaps the resource memory.
-    ///
-    virtual void UnmapMemory() = 0;
-
-    /// \brief Flushes the mapped memory, makes sure that all written memory from the CPU appears correctly on the GPU.
-    ///
-    /// \param[in] offset Offset (in bytes) of the buffer to flush the memory.
-    /// \param[in] size Size (in bytes) of memory to be flushed after the offset.
-    ///
-    virtual void FlushMappedMemoryRange(Size offset,
-                                        Size size) = 0;
-
-    /// \brief Invalidates the mapped memory, makes sure that all written memory from the GPU appears correctly on the CPU.
-    ///
-    /// \param[in] offset Offset (in bytes) of the buffer to invalidate the memory.
-    /// \param[in] size Size (in bytes) of memory to be invalidated after the offset.
-    ///
-    virtual void InvalidateMappedMemoryRange(Size offset,
-                                             Size size) = 0;
-
 protected:
     /// \brief Constructor
     ///

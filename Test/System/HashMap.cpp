@@ -1,4 +1,4 @@
-#include <Axis/HashMap.hpp>
+#include <Axis/System>
 #include <doctest.h>
 
 DOCTEST_TEST_CASE("Hash map : [Axis::System]")

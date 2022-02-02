@@ -1,0 +1,42 @@
+/// \copyright Simmypeet - Copyright (C)
+///            This file is subject to the terms and conditions defined in
+///            file 'LICENSE', which is part of this source code package.
+
+/// \file System
+///
+/// \brief Contains all header files of the Axis::System module.
+
+#ifndef AXIS_SYSTEM_SYSTEMHEADER_HPP
+#define AXIS_SYSTEM_SYSTEMHEADER_HPP
+#pragma once
+
+#include "Assert.hpp"
+#include "Assembly.hpp"
+#include "Config.hpp"
+#include "Enum.hpp"
+#include "Event.hpp"
+#include "Exception.hpp"
+#include "FileStream.hpp"
+#include "Function.hpp"
+#include "HashMap.hpp"
+#include "HashSet.hpp"
+#include "LinkedList.hpp"
+#include "List.hpp"
+#include "Math.hpp"
+#include "Memory.hpp"
+#include "Random.hpp"
+#include "Rectangle.hpp"
+#include "SmartPointer.hpp"
+#include "Span.hpp"
+#include "StaticArray.hpp"
+#include "Stream.hpp"
+#include "String.hpp"
+#include "SystemExport.hpp"
+#include "System.hpp"
+#include "Trait.hpp"
+#include "Timer.hpp"
+#include "Utility.hpp"
+#include "Vector2.hpp"
+#include "Vector3.hpp"
+
+#endif // AXIS_SYSTEM_SYSTEMHEADER_HPP

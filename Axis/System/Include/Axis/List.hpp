@@ -107,7 +107,7 @@ public:
     ///
     /// \returns An iterator to the newly constructed element.
     template <class... Args>
-    T* EmplaceBack(Args... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>));
+    T* EmplaceBack(Args&&... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>));
 
     /// \brief Appends an element at the end of the list.
     ///
@@ -145,7 +145,7 @@ public:
     ///
     /// \return An iterator to the inserted element.
     template <class... Args>
-    T* Emplace(Size index, Args... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>));
+    T* Emplace(Size index, Args&&... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>));
 
     /// \brief Removes the element at the end of the list.
     ///

@@ -1,0 +1,18 @@
+/// \copyright Simmypeet - Copyright (C)
+///            This file is subject to the terms and conditions defined in
+///            file 'LICENSE', which is part of this source code package.
+
+/// \file Core
+///
+/// \brief Contains all header files of the Axis::Core module.
+
+#ifndef AXIS_CORE_COREHEADER_HPP
+#define AXIS_CORE_COREHEADER_HPP
+#pragma once
+
+#include "Application.hpp"
+#include "ApplicationComponent.hpp"
+#include "ComponentCollection.hpp"
+#include "CoreExport.hpp"
+
+#endif // AXIS_CORE_COREHEADER_HPP

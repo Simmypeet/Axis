@@ -1,4 +1,4 @@
-#include <Axis/SmartPointer.hpp>
+#include <Axis/System>
 #include <doctest.h>
 
 DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")

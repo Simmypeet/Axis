@@ -1,4 +1,4 @@
-#include <Axis/HashSet.hpp>
+#include <Axis/System>
 #include <doctest.h>
 
 DOCTEST_TEST_CASE("Hash set : [Axis::System]")

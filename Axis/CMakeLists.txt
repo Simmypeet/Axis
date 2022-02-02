@@ -6,3 +6,6 @@ add_subdirectory(Window)
 
 # Adds graphics module to project
 add_subdirectory(Graphics)
+
+# Adds graphics module to project
+add_subdirectory(Core)

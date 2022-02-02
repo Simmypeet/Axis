@@ -7,6 +7,7 @@ set(AXIS_WINDOW_HEADER_FILES
     "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/WindowExport.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Mouse.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Keyboard.hpp"
+    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Window"
     "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/DisplayWindow.hpp")
 
 # Collects all source files

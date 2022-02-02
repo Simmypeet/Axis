@@ -24,6 +24,7 @@ set(AXIS_GRAPHICS_HEADER_FILES
     "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/ResourceHeap.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/SwapChain.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Texture.hpp"
+    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Graphics"
     "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/TextureLoader.hpp")
 
 # Collects all source files
@@ -72,3 +73,5 @@ target_precompile_headers(Axis-Graphics PRIVATE "${CMAKE_CURRENT_LIST_DIR}/Inclu
 
 # Links to the library
 target_link_libraries(Axis-Graphics PUBLIC stb_image)
+
+add_subdirectory(GraphicsVulkan)

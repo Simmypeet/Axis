@@ -174,7 +174,7 @@ public:
     ///
     /// \param[in] ptr The pointer to construct the smart pointer from
     template <SmartPointerDeleterType<T> Deleter = DefaultDeleter<T>>
-    SharedPointer(PointerType ptr, Deleter deleter = {}) noexcept;
+    explicit SharedPointer(PointerType ptr, Deleter deleter = {}) noexcept;
 
     /// \brief Copy constructor.
     SharedPointer(const SharedPointer<T>& other) noexcept;
@@ -251,8 +251,23 @@ public:
     /// \return True if the pointers are not equal, false otherwise
     AXIS_NODISCARD Bool operator!=(const SharedPointer<T>& other) const noexcept;
 
+    /// \brief Gets current reference counter strong count.
+    AXIS_NODISCARD const ReferenceCounter& GetStrongCount() const noexcept;
+
+    /// \brief Gets current reference counter strong count.
+    AXIS_NODISCARD const ReferenceCounter& GetWeakCount() const noexcept;
+
     /// \brief Nullptr assignment
     SharedPointer<T>& operator=(NullptrType) noexcept;
+
+    /// \brief Implicit conversion operator
+    template <SmartPointerType U>
+    AXIS_NODISCARD explicit operator SharedPointer<U>() const noexcept requires(!std::is_unbounded_array_v<T> && !std::is_unbounded_array_v<U>);
+
+    /// \brief Implicit conversion operator
+    template <SmartPointerType U>
+    AXIS_NODISCARD explicit operator U*() const noexcept requires(!std::is_unbounded_array_v<T> && !std::is_unbounded_array_v<U>);
+
 
 private:
     PointerType                _objectPointer    = nullptr; ///< Pointer to the object.
@@ -263,6 +278,9 @@ private:
 
     template <SmartPointerType U>
     friend class SharedPointer;
+
+    template <SmartPointerType U>
+    friend class WeakPointer;
 
     friend class ISharedFromThis;
 
@@ -340,6 +358,12 @@ public:
 
     /// \brief Checks if the pointer is not null.
     AXIS_NODISCARD Bool operator!=(NullptrType) const noexcept;
+
+    /// \brief Gets current reference counter strong count.
+    AXIS_NODISCARD const ReferenceCounter& GetStrongCount() const noexcept;
+
+    /// \brief Gets current reference counter strong count.
+    AXIS_NODISCARD const ReferenceCounter& GetWeakCount() const noexcept;
 
     /// \brief Implicit conversion to bool
     AXIS_NODISCARD operator Bool() const noexcept;

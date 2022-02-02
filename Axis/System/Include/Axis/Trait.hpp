@@ -25,11 +25,11 @@ concept SameAs = requires
 
 /// \brief Checks if a type doesn't have reference, const or array qualifiers.
 template <class T>
-concept RawType = !std::is_reference_v<T> && !std::is_const_v<T> && !std::is_array_v<T> && std::is_nothrow_destructible_v<std::decay_t<T>>;
+concept RawType = !std::is_reference_v<T> && !std::is_const_v<T> && !std::is_array_v<T>;
 
 /// \brief Checks if a type doesn't have reference, const or array qualifiers.
 template <class T>
-concept RawConstableType = !std::is_reference_v<T> && !std::is_array_v<T> && std::is_nothrow_destructible_v<std::decay_t<T>>;
+concept RawConstableType = !std::is_reference_v<T> && !std::is_array_v<T>;
 
 /// \brief Concept for checking if a type is a callable object.
 template <class T, class ReturnType, class... Args>
@@ -40,7 +40,6 @@ concept Callable = requires(T t, Args&&... args)
         } -> SameAs<ReturnType>;
 }
 &&RawType<T>&& std::is_nothrow_move_constructible_v<T>&& std::is_nothrow_copy_constructible_v<T>;
-
 
 } // namespace Axis
 

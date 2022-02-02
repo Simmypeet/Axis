@@ -12,12 +12,31 @@ namespace Axis
 {
 
 // Default constructor
-IGraphicsSystem::IGraphicsSystem(const GraphicsSystemDescription& graphicsSystemDescription,
-                                 const List<GraphicsAdapter>&     graphicsAdapters) :
-    Description(graphicsSystemDescription),
-    GraphicsAdapters(graphicsAdapters) {}
+IGraphicsSystem::IGraphicsSystem() noexcept = default;
 
-// Create graphics system function pointer type.
-typedef void (*CreateGraphicsSystemFunctionPointerType)(IGraphicsSystem**);
+void IGraphicsSystem::ValidateCreateGraphicsDeviceAndContexts(Uint32                                  adapterIndex,
+                                                              const Span<ImmediateContextCreateInfo>& immediateContextCreateInfos)
+{
+    auto graphicsAdapters = GetGraphicsAdapters();
+
+    if (adapterIndex >= graphicsAdapters.GetLength())
+        throw ArgumentOutOfRangeException("`adapterIndex` was out of range!");
+
+    if (!immediateContextCreateInfos)
+        throw InvalidArgumentException("`immediateContextCreateInfos` was nullptr!");
+
+    List<DeviceQueueFamily> currentDeviceQueueFamilies = graphicsAdapters[adapterIndex].DeviceQueueFamilies;
+
+    for (Uint64 i = 0; i < immediateContextCreateInfos.GetLength(); i++)
+    {
+        if (immediateContextCreateInfos[i].DeviceQueueFamilyIndex >= currentDeviceQueueFamilies.GetLength())
+            throw InvalidArgumentException("`immediateContextCreateInfos` contained out of range device queue family indices!");
+
+        if (!currentDeviceQueueFamilies[immediateContextCreateInfos[i].DeviceQueueFamilyIndex].QueueCount)
+            throw InvalidArgumentException("`immediateContextCreateInfos` requested more device queue than provided!");
+
+        currentDeviceQueueFamilies[immediateContextCreateInfos[i].DeviceQueueFamilyIndex].QueueCount--;
+    }
+}
 
 } // namespace Axis

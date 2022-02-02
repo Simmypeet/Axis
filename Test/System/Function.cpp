@@ -1,4 +1,4 @@
-#include <Axis/Function.hpp>
+#include <Axis/System>
 #include <doctest.h>
 
 DOCTEST_TEST_CASE("Function object : [Axis::System]")

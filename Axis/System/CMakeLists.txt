@@ -21,6 +21,10 @@ set(AXIS_SYSTEM_HEADER_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/LinkedList.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Enum.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Span.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/TimePeriod.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Assembly.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/System.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/System"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Trait.hpp")
 
 # Collects all system's source files
@@ -31,7 +35,6 @@ set(AXIS_SYSTEM_SOURCE_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Stream.cpp"
    "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/FileStream.cpp"
    "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/SmartPointer.cpp")
-
 
 # Collects all system's private files
 set(AXIS_SYSTEM_PRIVATE_FILES
@@ -48,7 +51,19 @@ set(AXIS_SYSTEM_PRIVATE_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/LinkedListImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/EnumImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/SpanImpl.inl"
+   "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/TimePeriodImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/StringImpl.inl")
+
+# Win32 platform specific header and source files
+if(${AXIS_PLATFORM_WIN32})
+    list(APPEND AXIS_SYSTEM_HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Platform/Win32/Win32Timer.hpp")
+    list(APPEND AXIS_SYSTEM_HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Platform/Win32/Win32Assembly.hpp")
+
+    list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Assembly.cpp")
+    list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Timer.cpp")
+    list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32System.cpp")
+endif()
+
 
 # Collects all target's source files
 set(AXIS_SYSTEM_ALL_SOURCE_FILES ${AXIS_SYSTEM_HEADER_FILES} ${AXIS_SYSTEM_SOURCE_FILES} ${AXIS_SYSTEM_PRIVATE_FILES})

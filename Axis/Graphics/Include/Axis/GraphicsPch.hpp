@@ -13,6 +13,8 @@
 #pragma once
 
 /// Precompiled headers
+#include "../../System/Include/Axis/System"
+#include "../../Window/Include/Axis/Window"
 #include <atomic>
 #include <exception>
 #include <mutex>

@@ -1,4 +1,4 @@
-#include <Axis/Rectangle.hpp>
+#include <Axis/System>
 #include <doctest.h>
 
 DOCTEST_TEST_CASE("Rectangle data structure : [Axis::System]")

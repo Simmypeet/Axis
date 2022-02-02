@@ -9,17 +9,16 @@
 #include <Axis/HashMap.hpp>
 #include <Axis/Platform/Win32/Win32DisplayWindow.hpp>
 
-#ifndef UNICODE
-#    define UNICODE
-#endif
-
 #ifdef _MSC_VER
 #    pragma warning(push)
 #    pragma warning(disable : 4244)
 #endif
 
+#ifndef UNICODE
+#    define UNICODE
+#endif
+
 #include <Windows.h>
-#include <Windowsx.h>
 
 namespace Axis
 {
@@ -366,7 +365,7 @@ DisplayWindow::DisplayWindow(const WindowDescription& description)
             s_WindowClass.hIconSm       = ::LoadIcon(GetModuleHandle(NULL), NULL);
 
             if (!RegisterClassExW(&s_WindowClass))
-                throw std::runtime_error("Failed to register Win32 window class!");
+                throw ExternalException("Failed to register Win32 window class!");
 
             else
                 s_ClassCreated = true;
@@ -397,7 +396,7 @@ DisplayWindow::DisplayWindow(const WindowDescription& description)
 
     // Checks for errors
     if (!_hwnd)
-        throw std::runtime_error("Failed to create Win32 window!");
+        throw ExternalException("Failed to create Win32 window!");
 
     // Adjust the window size to the real size (At first the window was created
     // with the size which included the tilebar size).

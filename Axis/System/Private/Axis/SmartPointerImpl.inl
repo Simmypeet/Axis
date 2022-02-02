@@ -8,7 +8,6 @@
 
 #include "../../Include/Axis/Assert.hpp"
 #include "../../Include/Axis/SmartPointer.hpp"
-#include <memory>
 
 namespace Axis
 {
@@ -59,7 +58,7 @@ inline UniquePointer<T, Deleter>::~UniquePointer() noexcept
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline UniquePointer<T, Deleter>& UniquePointer<T, Deleter>::operator=(UniquePointer<T, Deleter>&& other) noexcept
 {
-    if (*this == std::addressof(other))
+    if (this == std::addressof(other))
         return *this;
 
     if (_objectPointer != nullptr)
@@ -479,10 +478,43 @@ inline Bool SharedPointer<T>::operator!=(const SharedPointer<T>& other) const no
 }
 
 template <SmartPointerType T>
+inline const ReferenceCounter& SharedPointer<T>::GetStrongCount() const noexcept
+{
+    return _referenceCounter->GetStrongCount();
+}
+
+template <SmartPointerType T>
+inline const ReferenceCounter& SharedPointer<T>::GetWeakCount() const noexcept
+{
+    return _referenceCounter->GetWeakCount();
+}
+
+template <SmartPointerType T>
 inline SharedPointer<T>& SharedPointer<T>::operator=(NullptrType) noexcept
 {
     Reset();
     return *this;
+}
+
+template <SmartPointerType T>
+template <SmartPointerType U>
+inline SharedPointer<T>::operator SharedPointer<U>() const noexcept requires(!std::is_unbounded_array_v<T> && !std::is_unbounded_array_v<U>)
+{
+    SharedPointer<U> castedPointer = {};
+
+    castedPointer._objectPointer    = (U*)_objectPointer;
+    castedPointer._referenceCounter = _referenceCounter;
+
+    _referenceCounter->AddStrongCount();
+
+    return castedPointer;
+}
+
+template <SmartPointerType T>
+template <SmartPointerType U>
+inline SharedPointer<T>::operator U*() const noexcept requires(!std::is_unbounded_array_v<T> && !std::is_unbounded_array_v<U>)
+{
+    return (U*)_objectPointer;
 }
 
 // ===> WeakPointer vvv
@@ -649,6 +681,18 @@ template <SmartPointerType T>
 inline Bool WeakPointer<T>::operator!=(NullptrType) const noexcept
 {
     return _objectPointer != nullptr;
+}
+
+template <SmartPointerType T>
+inline const ReferenceCounter& WeakPointer<T>::GetStrongCount() const noexcept
+{
+    return _referenceCounter->GetStrongCount();
+}
+
+template <SmartPointerType T>
+inline const ReferenceCounter& WeakPointer<T>::GetWeakCount() const noexcept
+{
+    return _referenceCounter->GetWeakCount();
 }
 
 template <SmartPointerType T>

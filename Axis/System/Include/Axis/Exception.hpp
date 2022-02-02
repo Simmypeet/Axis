@@ -50,25 +50,39 @@ private:
     const Char* _message = nullptr; // The message of the exception.
 };
 
-/// \brief Raised when external error occurs.
-class AXIS_SYSTEM_API ExternalException : public Exception
+/// \brief Raised when possible runtime error occurred.
+class AXIS_SYSTEM_API RuntimeException : public Exception
 {
 public:
     using Exception::Exception;
+};
+
+/// \brief Raised when program logics are
+class AXIS_SYSTEM_API LogicException : public Exception
+{
+public:
+    using Exception::Exception;
+};
+
+/// \brief Raised when external error occurs.
+class AXIS_SYSTEM_API ExternalException : public RuntimeException
+{
+public:
+    using RuntimeException::RuntimeException;
 };
 
 /// \brief Raised when a method call is invalid in an object's current state.
-class AXIS_SYSTEM_API InvalidOperationException : public Exception
+class AXIS_SYSTEM_API InvalidOperationException : public LogicException
 {
 public:
-    using Exception::Exception;
+    using LogicException::LogicException;
 };
 
 /// \brief Raised when passed argument is invalid.
-class AXIS_SYSTEM_API InvalidArgumentException : public Exception
+class AXIS_SYSTEM_API InvalidArgumentException : public LogicException
 {
 public:
-    using Exception::Exception;
+    using LogicException::LogicException;
 };
 
 /// \brief Raised when passed argument is out of expected range.
@@ -79,17 +93,17 @@ public:
 };
 
 /// \brief Raised when requested memory is not sufficient.
-class AXIS_SYSTEM_API OutOfMemoryException : public Exception
+class AXIS_SYSTEM_API OutOfMemoryException : public RuntimeException
 {
 public:
-    using Exception::Exception;
+    using RuntimeException::RuntimeException;
 };
 
 /// \brief The exception that is thrown when an I/O error occurs.
-class AXIS_SYSTEM_API IOException : public Exception
+class AXIS_SYSTEM_API IOException : public RuntimeException
 {
 public:
-    using Exception::Exception;
+    using RuntimeException::RuntimeException;
 };
 
 /// \brief The exception that is thrown when the operating system denies access because

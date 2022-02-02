@@ -170,6 +170,19 @@ protected:
     /// \brief Constructor
     IGraphicsDevice(const SharedPointer<IGraphicsSystem>& graphicsSystem,
                     Uint32                                graphicsAdapterIndex);
+
+    void        ValidateCreateSwapChain(const SwapChainDescription& description);
+    static void ValidateCreateTextureView(const TextureViewDescription& description);
+    static void ValidateCreateRenderPass(const RenderPassDescription& description);
+    static void ValidateCreateFramebuffer(const FramebufferDescription& description);
+    static void ValidateCompileShaderModule(const ShaderModuleDescription& description,
+                                            const char*                    sourceCode);
+    void        ValidateCreateResourceHeapLayout(const ResourceHeapLayoutDescription& description);
+    void        ValidateCreateGraphicsPipeline(const GraphicsPipelineDescription& description);
+    void        ValidateCreateBuffer(const BufferDescription& description,
+                                     const BufferInitialData* pInitialData);
+    void        ValidateCreateTexture(const TextureDescription& description);
+    void        ValidateCreateResourceHeap(const ResourceHeapDescription& description);
 };
 
 } // namespace Axis

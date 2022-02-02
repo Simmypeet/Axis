@@ -19,30 +19,23 @@ namespace Axis
 {
 
 /// Forward declarations
-///
 class IGraphicsDevice;
 
 /// \brief Represents the resource which was created by graphics device.
-///
 class AXIS_GRAPHICS_API DeviceChild : public ISharedFromThis
 {
 public:
     /// \brief Gets the IGraphicsDevice handle which created this resource.
-    ///
     AXIS_NODISCARD inline const SharedPointer<IGraphicsDevice>& GetCreatorDevice() const noexcept { return _graphicsDevice; }
 
 protected:
     /// \brief Default constructor
-    ///
     DeviceChild() noexcept;
 
 private:
-    /// Private members
-    ///
     SharedPointer<IGraphicsDevice> _graphicsDevice = nullptr;
 
     /// Forward declarations
-    ///
     friend class IGraphicsDevice;
 };
 

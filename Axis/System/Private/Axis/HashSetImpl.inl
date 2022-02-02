@@ -325,19 +325,19 @@ inline typename HashSet<T, Hasher, Comparer, Allocator>::const_iterator HashSet<
 }
 
 template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::const_iterator> HashSet<T, Hasher, Comparer, Allocator>::Insert(const T& value) requires(std::is_copy_constructible_v<T>)
+inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::iterator> HashSet<T, Hasher, Comparer, Allocator>::Insert(const T& value) requires(std::is_copy_constructible_v<T>)
 {
     return InsertPerfectForwarding<const T&>(value);
 }
 
 template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::const_iterator> HashSet<T, Hasher, Comparer, Allocator>::Insert(T&& value) requires(std::is_move_constructible_v<T>)
+inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::iterator> HashSet<T, Hasher, Comparer, Allocator>::Insert(T&& value) requires(std::is_move_constructible_v<T>)
 {
     return InsertPerfectForwarding<T&&>(std::move(value));
 }
 
 template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline void HashSet<T, Hasher, Comparer, Allocator>::Reserve(Size newSize) requires(std::is_copy_constructible_v<T>)
+inline void HashSet<T, Hasher, Comparer, Allocator>::Reserve(Size newSize)
 {
     if (newSize <= _capacity)
         return;
@@ -401,6 +401,8 @@ template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorTy
 inline void HashSet<T, Hasher, Comparer, Allocator>::Clear() noexcept
 {
     ClearInternal<false>(_pTable, _capacity);
+
+    _nodeCount = 0;
 }
 
 template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
@@ -566,7 +568,7 @@ inline Pair<Bool, IteratorVariant> HashSet<T, Hasher, Comparer, Allocator>::Inse
 
 template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
 template <class... Args>
-inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::const_iterator> HashSet<T, Hasher, Comparer, Allocator>::InsertPerfectForwarding(Args&&... args)
+inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::iterator> HashSet<T, Hasher, Comparer, Allocator>::InsertPerfectForwarding(Args&&... args)
 {
     // Load factor after insertion
     auto newLoadFactor = (Float32)_nodeCount / _capacity;
@@ -575,7 +577,7 @@ inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::const_iterat
     if (newLoadFactor > _maxLoadFactor || _capacity == 0)
         Reserve(_capacity == 0 ? 8 : _capacity * 2);
 
-    auto it = InsertInternal<const_iterator>(_pTable, _capacity, std::forward<Args>(args)...);
+    auto it = InsertInternal<iterator>(_pTable, _capacity, std::forward<Args>(args)...);
 
     if (it.First)
         ++_nodeCount;

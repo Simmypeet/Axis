@@ -57,10 +57,10 @@ public:
     const SwapChainDescription Description;
 
     /// \brief Gets the render target (color) view which will be presented to the window in the next \a `Axis::ISwapChain::Present` call.
-    AXIS_NODISCARD virtual SharedPointer<ITextureView> GetCurrentRenderTargetView() const = 0;
+    AXIS_NODISCARD virtual SharedPointer<ITextureView> GetCurrentRenderTargetView() = 0;
 
     /// \brief Gets the depth stencil view.
-    AXIS_NODISCARD virtual SharedPointer<ITextureView> GetCurrentDepthStencilView() const = 0;
+    AXIS_NODISCARD virtual SharedPointer<ITextureView> GetCurrentDepthStencilView() = 0;
 
     /// \brief Presents all the rendering to the window.
     virtual void Present(Uint8 syncIntervals) = 0;

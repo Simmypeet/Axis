@@ -1,4 +1,4 @@
-#include <Axis/Event.hpp>
+#include <Axis/System>
 #include <doctest.h>
 
 DOCTEST_TEST_CASE("Axis event : [Axis::System]")

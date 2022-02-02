@@ -79,6 +79,12 @@ public:
     /// \brief Move constructor
     HashMap(HashMap&& other) = default;
 
+    /// \brief Copy assingment operator
+    HashMap& operator=(const HashMap&) = default;
+
+    /// \brief Move assignment operator
+    HashMap& operator=(HashMap&&) = default;
+
     /// \brief Finds the key-value pair in the hash map by the given key.
     ///
     /// \param key Key object to find.
@@ -108,7 +114,6 @@ public:
     /// \brief Const iterator to the first key-value pair in the hash map.
     typename HashSetBase::iterator end() noexcept;
 
-    using HashSetBase::operator=;            ///< Inherits base class assignment operators.
     using HashSetBase::begin;                ///< Inherits base class iterators.
     using HashSetBase::end;                  ///< Inherits base class iterators.
     using HashSetBase::GetSize;              ///< Inherits base class size getter.

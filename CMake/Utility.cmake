@@ -94,9 +94,9 @@ macro(axis_add_test target)
 
     # Copies shared library binary to the test executable folder
     foreach(TARGET_TO_LINK ${THIS_TARGETS_TO_LINK})
-        add_custom_command(TARGET ${target} PRE_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy
-                           $<TARGET_FILE:${TARGET_TO_LINK}>
+        add_custom_command(TARGET ${target} POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_directory
+                           $<TARGET_FILE_DIR:${TARGET_TO_LINK}>
                            $<TARGET_FILE_DIR:${target}>)
     endforeach()
 
@@ -107,13 +107,8 @@ macro(axis_add_example target)
 # parse the arguments
     cmake_parse_arguments(THIS "" "RELATIVE_PATH;FOLDER;" "SOURCES;TARGETS_TO_LINK;INCLUDE_DIRECTORIES;" ${ARGN})
 
-    # Adds as win32 subsystem in windows platform
-    if (${WIN32})
-        add_executable(${target} WIN32 ${THIS_SOURCES})
-    else()
-        add_executable(${target} ${THIS_SOURCES})
-    endif()
-
+    add_executable(${target} ${THIS_SOURCES})
+    
     # Target folder
     set_target_properties(${target} PROPERTIES FOLDER ${THIS_FOLDER})
 
@@ -134,9 +129,9 @@ macro(axis_add_example target)
 
     # Copies shared library binary to the executable folder
     foreach(TARGET_TO_LINK ${THIS_TARGETS_TO_LINK})
-        add_custom_command(TARGET ${target} PRE_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy
-                           $<TARGET_FILE:${TARGET_TO_LINK}>
+        add_custom_command(TARGET ${target} POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_directory
+                           $<TARGET_FILE_DIR:${TARGET_TO_LINK}>
                            $<TARGET_FILE_DIR:${target}>)
     endforeach()
 endmacro(axis_add_example)

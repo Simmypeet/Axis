@@ -138,10 +138,10 @@ class AXIS_GRAPHICS_API IGraphicsSystem : public ISharedFromThis
 {
 public:
     /// \brief Description of the graphics system.
-    const GraphicsSystemDescription Description = {};
+    AXIS_NODISCARD virtual GraphicsSystemDescription GetGraphicsSystemDescription() const = 0;
 
     /// \brief Contains all graphics adapters info which supports this graphics system.
-    const List<GraphicsAdapter> GraphicsAdapters = {};
+    AXIS_NODISCARD virtual List<GraphicsAdapter> GetGraphicsAdapters() const = 0;
 
     /// \brief Creates graphics device and immediate device contexts.
     ///
@@ -153,7 +153,7 @@ public:
     ///
     /// \note The result in the pDeviceContextsOut are not guaranteed to be exactly corresponded to the pImmediateContextCreateInfos.
     AXIS_NODISCARD virtual Pair<SharedPointer<IGraphicsDevice>, List<SharedPointer<IDeviceContext>>> CreateGraphicsDeviceAndContexts(Uint32                                  adapterIndex,
-                                                                                                                                     const Span<ImmediateContextCreateInfo>& pImmediateContextCreateInfos)  = 0;
+                                                                                                                                     const Span<ImmediateContextCreateInfo>& immediateContextCreateInfos) = 0;
 
     /// \brief Gets the swap chain specification to the specified target window.
     ///
@@ -164,8 +164,11 @@ public:
 
 protected:
     /// \brief constructor
-    IGraphicsSystem(const GraphicsSystemDescription& graphicsSystemDescription,
-                    const List<GraphicsAdapter>&     graphicsAdapters);
+    IGraphicsSystem() noexcept;
+
+    // Throws the exceptions upon errors
+    void ValidateCreateGraphicsDeviceAndContexts(Uint32                                  adapterIndex,
+                                                 const Span<ImmediateContextCreateInfo>& immediateContextCreateInfos);
 };
 
 } // namespace Axis

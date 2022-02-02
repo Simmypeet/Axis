@@ -92,6 +92,7 @@ public:
     /// \brief Specifies whether this `Axis::Function` object is callable.
     operator Bool() const noexcept;
 
+
 private:
     /// Size of small buffer contained in the object.
     static constexpr Size SmallBufferOptimizationSize = Axis::PointerSize;

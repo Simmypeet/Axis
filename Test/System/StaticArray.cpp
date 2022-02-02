@@ -1,5 +1,4 @@
-#include <Axis/StaticArray.hpp>
-#include <Axis/Utility.hpp>
+#include <Axis/System>
 #include <doctest.h>
 
 DOCTEST_TEST_CASE("Static array : [Axis::System]")

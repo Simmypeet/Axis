@@ -23,7 +23,7 @@ IDeviceContext::IDeviceContext(IGraphicsDevice&    graphicsDevice,
                                Uint32              deviceQueueFamilyIndex,
                                Uint32              deviceIndex,
                                QueueOperationFlags supportedQueueOperations) :
-    _bindingVertexBuffers(graphicsDevice.GraphicsSystem->GraphicsAdapters[graphicsDevice.GraphicsAdapterIndex].Capability.MaxVertexInputBinding),
+    _bindingVertexBuffers(graphicsDevice.GraphicsSystem->GetGraphicsAdapters()[graphicsDevice.GraphicsAdapterIndex].Capability.MaxVertexInputBinding),
     DeviceQueueFamilyIndex(deviceQueueFamilyIndex),
     DeviceQueueIndex(deviceIndex),
     SupportedQueueOperations(supportedQueueOperations) {}
@@ -165,8 +165,6 @@ void IDeviceContext::ClearDepthStencilView(const SharedPointer<ITextureView>& de
 
     if (!(Bool)(clearDepthStencilFlags & (ClearDepthStencil::Depth | ClearDepthStencil::Stencil)))
         throw InvalidArgumentException("clearDepthStencilFlags did not contain any of the ClearDepthStencil flags!");
-
-
 
     if ((Bool)(clearDepthStencilFlags & ClearDepthStencil::Depth))
     {
