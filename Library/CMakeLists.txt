@@ -16,6 +16,8 @@ if(${AXIS_VULKAN_SUPPORT})
     add_subdirectory(VulkanMemoryAllocator)
     axis_set_directory_root_folder("VulkanMemoryAllocator" "Axis/Library/VulkanMemoryAllocator")
 
+    set(SPIRV_HEADERS_SKIP_INSTALL ON CACHE BOOL "Skip SPIRV headers installation")
+
     add_subdirectory("SPIRV-Headers")
     axis_set_directory_root_folder("SPIRV-Headers" "Axis/Library/SPRIV-Headers")
 
@@ -23,6 +25,7 @@ if(${AXIS_VULKAN_SUPPORT})
     set(SPIRV_SKIP_EXECUTABLES ON CACHE BOOL "Skip building SPIRV executable and tests along with the library")
     set(SPIRV_WERROR OFF CACHE BOOL "Do not enable error on warning")
     set(SKIP_SPIRV_TOOLS_INSTALL ON CACHE BOOL "Skip SPIRV tools installation")
+    set(SPIRV_HEADERS_SKIP_INSTALL ON CACHE BOOL "Skip SPIRV headers installation")
 
     add_subdirectory("SPIRV-Tools")
     axis_set_directory_root_folder("SPIRV-Tools" "Axis/Library/SPRIV-Tools")

@@ -7,8 +7,19 @@ project(Axis VERSION 0.1.0)
 # Define GNU standard installation directories such as CMAKE_INSTALL_INCLUDEDIR, CMAKE_INSTALL_LIBDIR, etc.
 include(GNUInstallDirs)
 
-option(AXIS_BUILD_TESTS "Build Axis's test cases" OFF)
-option(AXIS_BUILD_EXAMPLES "Build Axis's example executables" ON)
+# Default value for AXIS_BUILD_TESTS
+set(AXIS_BUILD_TESTS ON CACHE BOOL "Build tests")
+# Default value for AXIS_BUILD_EXAMPLES
+set(AXIS_BUILD_EXAMPLES ON CACHE BOOL "Build examples")
+# Default value for AXIS_BUILD_EXAMPLES
+set(AXIS_SKIP_INSTALLS OFF CACHE BOOL "Don't skip installation")
+
+option(AXIS_BUILD_TESTS "Build Axis's test cases" ${AXIS_BUILD_TESTS})
+option(AXIS_BUILD_EXAMPLES "Build Axis's example executables" ${AXIS_BUILD_EXAMPLES})
+option(AXIS_SKIP_INSTALLS "Includes Axis's installations" ${AXIS_SKIP_INSTALLS})
+
+# Sets default install prefix
+set(CMAKE_INSTALL_PREFIX "Install")
 
 # Uses C++20 standard
 set(CMAKE_CXX_STANDARD 20)
@@ -54,20 +65,15 @@ add_subdirectory(Library)
 add_subdirectory(Axis)
 
 if(${AXIS_BUILD_TESTS})
-
     # Enables testing
     enable_testing()
-
     # Adds test subdirectory
     add_subdirectory(Test)
-
 endif()
 
 if (${AXIS_BUILD_EXAMPLES})
-
     # Adds examples subdirectory
     add_subdirectory(Example/SimpleApplicationLoop)
     add_subdirectory(Example/HelloTriangle)
     add_subdirectory(Example/RotatingCube)
-
 endif()

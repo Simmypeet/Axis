@@ -69,7 +69,8 @@ if(${AXIS_VULKAN_SUPPORT})
         RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}/../"
         INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/Include"
         SOURCES ${AXIS_GRAPHICSVULKAN_ALL_SOURCE_FILES}
-        TARGETS_TO_LINK ${AXIS_GRAPHICSVULKAN_TARGET_TO_LINK})
+        TARGETS_TO_LINK ${AXIS_GRAPHICSVULKAN_TARGET_TO_LINK}
+        SKIP_INCLUDE_INSTALL TRUE)
 
     # Links external libraries privately
     target_link_libraries(Axis-GraphicsVulkan PRIVATE Vulkan::Vulkan SPIRV-Tools-opt SPIRV VulkanMemoryAllocator)

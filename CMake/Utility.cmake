@@ -12,10 +12,16 @@ function(axis_assign_source_group sourceFiles relativeToPath)
     endforeach()
 endfunction(axis_assign_source_group)
 
+# Returns path to the target relative to CMake root
+function(axis_get_relative_dir SOURCE DEST RELATIVE_DIR)
+    file(RELATIVE_PATH TARGET_RELATIVE_PATH ${SOURCE} ${DEST})
+    set(${RELATIVE_DIR} ${TARGET_RELATIVE_PATH} PARENT_SCOPE)
+endfunction()
+
 # Adds new axis library target
 macro(axis_add_library target)
     # parse the arguments
-    cmake_parse_arguments(THIS "" "RELATIVE_PATH;FOLDER;" "SOURCES;TARGETS_TO_LINK;INCLUDE_DIRECTORIES;" ${ARGN})
+    cmake_parse_arguments(THIS "SKIP_INCLUDE_INSTALL" "RELATIVE_PATH;FOLDER;" "SOURCES;TARGETS_TO_LINK;INCLUDE_DIRECTORIES;" ${ARGN})
     
     # Adds library as shared library
     add_library(${target} SHARED ${THIS_SOURCES})
@@ -42,6 +48,23 @@ macro(axis_add_library target)
     
     # Adds source files to the source group
     axis_assign_source_group("${THIS_SOURCES}" "${THIS_RELATIVE_PATH}")
+
+    if (NOT ${AXIS_SKIP_INSTALLS})
+        install(TARGETS ${target} EXPORT
+                RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT "bin"
+                ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT "lib")
+
+        string(REPLACE "Axis-" "" TARGET_NAME ${target})
+
+        if (NOT ${THIS_SKIP_INCLUDE_INSTALL})
+            if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Include")
+                install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Include" DESTINATION "include/Axis/${TARGET_NAME}")
+            endif()
+            if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Private")
+                install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Private" DESTINATION "include/Axis/${TARGET_NAME}")
+            endif()
+        endif()
+    endif()
 endmacro()
 
 # Taken from DiligentCore's BuildUtils.cmake. Reference: https://github.com/DiligentGraphics/DiligentCore/blob/master/BuildUtils.cmake

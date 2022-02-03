@@ -9,3 +9,7 @@ add_subdirectory(Graphics)
 
 # Adds graphics module to project
 add_subdirectory(Core)
+
+if (NOT ${AXIS_SKIP_INSTALLS})
+    install(FILES "Axis" DESTINATION "include/Axis")
+endif()
