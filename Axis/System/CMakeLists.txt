@@ -25,6 +25,9 @@ set(AXIS_SYSTEM_HEADER_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Assembly.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/System.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Matrix.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/FileStream.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Path.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/StringView.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/System"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Trait.hpp")
 
@@ -35,6 +38,7 @@ set(AXIS_SYSTEM_SOURCE_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Memory.cpp"
    "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Stream.cpp"
    "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/FileStream.cpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Path.cpp"
    "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/SmartPointer.cpp")
 
 # Collects all system's private files
@@ -54,6 +58,7 @@ set(AXIS_SYSTEM_PRIVATE_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/SpanImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/TimePeriodImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/MatrixImpl.inl"
+   "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/StringViewImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/StringImpl.inl")
 
 # Win32 platform specific header and source files
@@ -61,6 +66,7 @@ if(${AXIS_PLATFORM_WIN32})
     list(APPEND AXIS_SYSTEM_HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Platform/Win32/Win32Timer.hpp")
     list(APPEND AXIS_SYSTEM_HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Platform/Win32/Win32Assembly.hpp")
 
+    list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Path.cpp")
     list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Assembly.cpp")
     list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Timer.cpp")
     list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32System.cpp")

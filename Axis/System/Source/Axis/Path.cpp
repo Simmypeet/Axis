@@ -85,7 +85,7 @@ WString CombinePath(const Span<WString>& paths)
 
         if (combinedPath[combinedPath.GetLength() - 1] != '\\' && combinedPath[combinedPath.GetLength() - 1] != '/')
         {
-            combinedPath += DirectorySeparatorString;
+            combinedPath += DirectorySeparator;
         }
     }
 

@@ -515,7 +515,7 @@ inline Tuple<T*, Size> List<T, Allocator>::ConstructsNewList(Size elementCount,
                                                              Args&&... args)
 {
     if (elementCount == 0 && allocationSize == 0)
-        return {nullptr, (Size)0};
+        return {{nullptr}, {{Size(0)}}};
 
     // Allocates memory for the array.
     T* array = (T*)Allocator::Allocate(sizeof(T) * allocationSize, alignof(T));
@@ -572,7 +572,7 @@ inline Tuple<T*, Size> List<T, Allocator>::ConstructsNewList(Size elementCount,
     }
 
     // Done constructing the array.
-    return {array, (Size)allocationSize};
+    return {{array}, {{Size(allocationSize)}}};
 }
 
 template <RawType T, AllocatorType Allocator>

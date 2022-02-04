@@ -23,10 +23,10 @@ IDeviceContext::IDeviceContext(IGraphicsDevice&    graphicsDevice,
                                Uint32              deviceQueueFamilyIndex,
                                Uint32              deviceIndex,
                                QueueOperationFlags supportedQueueOperations) :
-    _bindingVertexBuffers(graphicsDevice.GraphicsSystem->GetGraphicsAdapters()[graphicsDevice.GraphicsAdapterIndex].Capability.MaxVertexInputBinding),
     DeviceQueueFamilyIndex(deviceQueueFamilyIndex),
     DeviceQueueIndex(deviceIndex),
-    SupportedQueueOperations(supportedQueueOperations) {}
+    SupportedQueueOperations(supportedQueueOperations),
+    _bindingVertexBuffers(graphicsDevice.GraphicsSystem->GetGraphicsAdapters()[graphicsDevice.GraphicsAdapterIndex].Capability.MaxVertexInputBinding) {}
 
 void IDeviceContext::TransitTextureState(const SharedPointer<ITexture>& textureResource,
                                          ResourceState                  initialState,

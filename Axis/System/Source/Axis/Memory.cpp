@@ -202,7 +202,7 @@ PVoid PoolAllocator::Allocate(Size size,
     if (it == s_poolAllocatorMap.end())
     {
         // Inserts the allocator
-        s_poolAllocatorMap.insert({key, std::move(std::make_unique<FixedPoolAllocator>(actualSize, alignment))});
+        s_poolAllocatorMap.insert({key, std::make_unique<FixedPoolAllocator>(actualSize, alignment)});
 
         // Gets the allocator
         it = s_poolAllocatorMap.find(key);

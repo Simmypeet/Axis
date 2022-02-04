@@ -164,7 +164,7 @@ SharedPointer<IFramebuffer> VulkanGraphicsDevice::CreateFramebuffer(const Frameb
 }
 
 SharedPointer<IShaderModule> VulkanGraphicsDevice::CompileShaderModule(const ShaderModuleDescription& description,
-                                                                       const char*                    sourceCode)
+                                                                       const StringView<Char>&        sourceCode)
 {
     ValidateCompileShaderModule(description, sourceCode);
 

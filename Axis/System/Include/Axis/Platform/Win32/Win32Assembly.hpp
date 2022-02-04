@@ -11,6 +11,7 @@
 #pragma once
 
 #include "../../SmartPointer.hpp"
+#include "../../StringView.hpp"
 #include "../../SystemExport.hpp"
 
 namespace Axis
@@ -28,7 +29,7 @@ public:
     /// \param[out] resultCode ResultCode for reporting errors
     ///
     /// \pre filePath should not be nullptr
-    explicit Assembly(const WChar* filePath);
+    explicit Assembly(const StringView<WChar>& filePath);
 
     /// \brief Destructor
     ~Assembly() noexcept;
@@ -36,7 +37,7 @@ public:
     /// \brief Loads the function symbol contained within the assembly.
     ///
     /// \param[in] symbol Symbol name to load
-    AXIS_NODISCARD PVoid LoadSymbol(const Char* symbol);
+    AXIS_NODISCARD PVoid LoadSymbol(const StringView<Char>& symbol);
 
 private:
     PVoid _libraryHandle = nullptr;

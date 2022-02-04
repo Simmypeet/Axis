@@ -76,7 +76,7 @@ UniquePointer<VulkanDescriptorSetGroup> VulkanDescriptorPool::GetDescriptorSetGr
         }
 
         if (descriptorSetGroupToReturn)
-            return std::move(descriptorSetGroupToReturn);
+            return descriptorSetGroupToReturn;
     }
 
     if (_currentAllocation == GetCurrentGroupSize() || _descriptorPools.GetLength() == 0)

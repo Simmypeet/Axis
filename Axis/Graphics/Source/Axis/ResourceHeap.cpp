@@ -135,7 +135,7 @@ void IResourceHeap::BindSamplers(Uint32                                   bindin
         if (!textureViews[i])
             throw InvalidArgumentException("`textureViews` contained a nullptr!");
 
-        if (textureViews[i]->Description.ViewTexture->Description.TextureBinding != TextureBinding::Sampled)
+        if (!(Bool)(textureViews[i]->Description.ViewTexture->Description.TextureBinding & TextureBinding::Sampled))
             throw InvalidArgumentException("`textureViews` contained a texture that was not a sampled texture!");
     }
 }

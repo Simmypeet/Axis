@@ -14,8 +14,7 @@
 #include "StaticArray.hpp"
 #include "String.hpp"
 #include "StringView.hpp"
-#include "SystemExport.hpp"
-
+#    include "SystemExport.hpp"
 
 namespace Axis
 {

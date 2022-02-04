@@ -132,7 +132,7 @@ extern "C" {
     extern PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties;
     extern PFN_vkGetPhysicalDeviceMemoryProperties vkGetPhysicalDeviceMemoryProperties;
     extern PFN_vkAllocateMemory vkAllocateMemory;
-    extern PFN_vkFreeMemory vkFreeMemory;
+    extern PFN_vkFreeMemory vkFreeMemory;#
     extern PFN_vkMapMemory vkMapMemory;
     extern PFN_vkUnmapMemory vkUnmapMemory;
     extern PFN_vkFlushMappedMemoryRanges vkFlushMappedMemoryRanges;
@@ -261,7 +261,7 @@ extern "C" {
 // see: https://clang.llvm.org/docs/AttributeReference.html#nullable
 #ifndef VMA_NULLABLE
     #ifdef __clang__
-        #define VMA_NULLABLE _Nullable
+        #define VMA_NULLABLE
     #else
         #define VMA_NULLABLE
     #endif
@@ -271,7 +271,7 @@ extern "C" {
 // see: https://clang.llvm.org/docs/AttributeReference.html#nonnull
 #ifndef VMA_NOT_NULL
     #ifdef __clang__
-        #define VMA_NOT_NULL _Nonnull
+        #define VMA_NOT_NULL
     #else
         #define VMA_NOT_NULL
     #endif

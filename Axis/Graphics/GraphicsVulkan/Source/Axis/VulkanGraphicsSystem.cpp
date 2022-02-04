@@ -71,19 +71,6 @@ extern "C"
 namespace Axis
 {
 
-static List<GraphicsAdapter> GetGraphicsAdapters(const List<VulkanPhysicalDevice>& vulkanPhysicalDevices)
-{
-    List<GraphicsAdapter> graphicsAdapters;
-    graphicsAdapters.ReserveFor(vulkanPhysicalDevices.GetLength());
-
-    for (const auto& vulkanPhysicalDevice : vulkanPhysicalDevices)
-    {
-        graphicsAdapters.Append(vulkanPhysicalDevice.GetGraphicsAdapterRepresentation());
-    }
-
-    return graphicsAdapters;
-}
-
 const List<const char*> VulkanGraphicsSystem::InstancecExtensions = {
 #ifdef AXIS_DEBUG
     VK_EXT_DEBUG_UTILS_EXTENSION_NAME,

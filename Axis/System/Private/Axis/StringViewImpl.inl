@@ -125,7 +125,9 @@ inline constexpr StringView<T>::operator String<T, Allocator>() const
 template <Axis::CharType T, Axis::CharType U, Axis::AllocatorType Allocator>
 Axis::String<T, Allocator>& operator+=(Axis::String<T, Allocator>& LHS, const Axis::StringView<U>& RHS)
 {
-    LHS.Append(RHS.begin(), RHS.end());
+    LHS.Insert(RHS.begin(),
+               RHS.end(),
+               LHS.GetLength());
     return LHS;
 }
 

@@ -21,7 +21,7 @@ class VulkanShaderModule final : public IShaderModule
 public:
     /// Constructor
     VulkanShaderModule(const ShaderModuleDescription& description,
-                       const char*                    sourceCode,
+                       const StringView<Char>&        sourceCode,
                        VulkanGraphicsDevice&          vulkanGraphicsDevice);
 
     /// \brief Gets internal VkShaderModule handle

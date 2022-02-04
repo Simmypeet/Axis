@@ -17,7 +17,7 @@ namespace Axis
 {
 
 VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription& description,
-                                       const char*                    sourceCode,
+                                       const StringView<Char>&        sourceCode,
                                        VulkanGraphicsDevice&          vulkanGraphicsDevice) :
     IShaderModule(description)
 {
@@ -183,7 +183,9 @@ VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription& descriptio
 
         glslang::TShader shader = glslang::TShader(shaderStage);
 
-        shader.setStrings(&sourceCode, 1);
+        const char* sourceCodeCopy = sourceCode.GetCString();
+
+        shader.setStrings(&sourceCodeCopy, 1);
         shader.setEntryPoint(description.EntryPoint.GetCString());
         shader.setEnvInput(shaderLanguage, shaderStage, glslang::EShClient::EShClientVulkan, 450);
 

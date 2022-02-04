@@ -96,7 +96,7 @@ int main(int argc, char** argv)
             _resourceHeapLayout = GetGraphicsDevice()->CreateResourceHeapLayout(resourceHeapLayoutDescription);
 
             // Creates resource heap from the pipeline layout.
-            _resourceHeap = GetGraphicsDevice()->CreateResourceHeap({_resourceHeapLayout});
+            _resourceHeap = GetGraphicsDevice()->CreateResourceHeap({_resourceHeapLayout}); 
 
             // Creates graphics pipeline.
             GraphicsPipelineDescription graphicsPipelineDescription   = {};
@@ -295,20 +295,18 @@ int main(int argc, char** argv)
             _period += deltaTime;
 
             // Gets the window size for the aspect ratio.
-            auto expectedWindowSize = GetWindow()->GetSize();
-
             auto windowSize = GetWindow()->GetSize();
 
             // Maps the buffer in discard mode (Discards the old buffer and create new one)
             PVoid mappedMemory = GetImmediateGraphicsContext()->MapBuffer(_uniformBuffer,
                                                                           MapAccess::Write,
-                                                                          MapType::Discard);
+                                                                          MapType::Discard); 
 
             // View to perspective
             FloatMatrix4x4 MVP = FloatMatrix4x4::GetMatrixPerspective((Float32)Math::ToRadians(45.0f),
                                                                       (windowSize.X / (Float32)windowSize.Y),
-                                                                      0.1f,
-                                                                      100.0f);
+                                                                      0.1f, 
+                                                                      100.0f); 
 
             // World to view
             MVP *= FloatMatrix4x4::GetMatrixLookAt(Vector3F(4.0f, 3.0f, -3.0f),

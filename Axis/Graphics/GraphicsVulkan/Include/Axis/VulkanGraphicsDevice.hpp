@@ -54,7 +54,7 @@ public:
 
     /// \brief An implementation of IGraphicsDevice::CompileShaderModule in Vulkan backend.
     SharedPointer<IShaderModule> CompileShaderModule(const ShaderModuleDescription& description,
-                                                     const char*                    sourceCode) override final;
+                                                     const StringView<Char>&        sourceCode) override final;
 
     /// \brief An implementation of IGraphicsDevice::CreateResourceHeapLayout in Vulkan backend.
     SharedPointer<IResourceHeapLayout> CreateResourceHeapLayout(const ResourceHeapLayoutDescription& description) override final;

@@ -12,7 +12,7 @@
 
 #include "Config.hpp"
 #include "Stream.hpp"
-#include "String.hpp"
+#include "StringView.hpp"
 #include "SystemExport.hpp"
 #include "Utility.hpp"
 
@@ -57,8 +57,8 @@ public:
     /// \param[in] fileMode Specifies how a file is to be opened .
     ///
     /// \see Axis::FileMode, Axis::FileAccess
-    FileStream(const WChar*  filePath,
-               FileModeFlags fileMode);
+    FileStream(const StringView<WChar>& filePath,
+               FileModeFlags            fileMode);
 
     /// \brief Destructor
     ~FileStream() noexcept override final;

@@ -30,5 +30,6 @@
 #include "StatedGraphicsResource.hpp"
 #include "SwapChain.hpp"
 #include "Texture.hpp"
+#include "TextureLoader.hpp"
 
 #endif // AXIS_GRAPHICS_GRAPHICSHEADER_HPP

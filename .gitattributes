@@ -35,4 +35,4 @@
 *.out   binary
 *.app   binary
 
-*text=auto
+*text=lf

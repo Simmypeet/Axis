@@ -43,6 +43,8 @@ TextureLoader::TextureLoader(FileStream&&                    fileStream,
 
     _pixels = stbi_load_from_file(_fileStream.GetFileHandle(), &_texWidth, &_texHeight, &_texChannels, STBI_rgb_alpha);
 
+    ValidateTextureLoadConfiguration(loadConfiguration);
+
     if (!_pixels)
         throw ExternalException("Failed to load image!");
 }
@@ -70,7 +72,7 @@ SharedPointer<ITexture> TextureLoader::CreateTexture()
         _stagingBuffer = _loadConfiguration.GraphicsDevice->CreateBuffer(bufferDescription, nullptr);
     }
 
-    PVoid mappedMemory = _loadConfiguration.ImmediateDeviceContext->MapBuffer(_stagingBuffer, MapAccess::Write, MapType::Default);
+    PVoid mappedMemory = _loadConfiguration.ImmediateDeviceContext->MapBuffer(_stagingBuffer, MapAccess::Write, MapType::Discard);
 
     std::memcpy(mappedMemory, _pixels, _texHeight * _texWidth * 4);
 

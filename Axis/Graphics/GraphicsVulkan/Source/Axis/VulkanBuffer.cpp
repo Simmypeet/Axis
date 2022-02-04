@@ -47,7 +47,7 @@ inline Tuple<List<Uint32>, VkBufferCreateInfo> GetBufferCreationInfosFromBufferD
     bufferCreateInfo.queueFamilyIndexCount = (Uint32)indices.GetLength();
     bufferCreateInfo.pQueueFamilyIndices   = indices.GetData();
 
-    return {std::move(indices), bufferCreateInfo};
+    return {{std::move(indices)}, {{bufferCreateInfo}}};
 }
 
 inline BufferDescription AppendTransferDestination(const BufferDescription& description, Bool append)

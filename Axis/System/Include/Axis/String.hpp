@@ -19,7 +19,7 @@ namespace Axis
 
 /// \brief Type of character with different size.
 template <class T>
-concept CharType = std::is_same_v<T, Char> || std::is_same_v<T, WChar> || std::is_same_v<T, char8_t> || std::is_same_v<T, char16_t> || std::is_same_v<T, char32_t>;
+concept CharType = std::is_same_v<T, Char> ||(std::is_same_v<T, WChar> || std::is_same_v<T, char8_t> || std::is_same_v<T, char16_t> || std::is_same_v<T, char32_t>);
 
 /// \brief Container which contains a null terminated character sequence.
 ///
@@ -42,12 +42,20 @@ public:
     ///
     /// \param[in] str null terminated character sequence.
     template <CharType U>
-    String(const U* str) noexcept;
+    String(const U* str);
+
+    /// \brief Constructs a string from the specified character range.
+    ///
+    /// \param[in] begin The beginning of the character range.
+    /// \param[in] end The end of the character range.
+    template <CharType U>
+    String(const U* begin,
+           const U* end);
 
     /// \brief Copy constructor
     ///
     /// \param[in] other instance to copy
-    String(const String& other) noexcept;
+    String(const String& other);
 
     /// \brief Move constructor
     ///
@@ -58,7 +66,7 @@ public:
     ///
     /// \param[in] other instance to copy
     template <CharType U, AllocatorType OtherAllocator>
-    String(const String<U, OtherAllocator>& other) noexcept;
+    String(const String<U, OtherAllocator>& other);
 
     /// \brief Destructor
     ~String() noexcept;
@@ -139,15 +147,53 @@ public:
     /// \return Returns the element at the specified index.
     AXIS_NODISCARD const T& operator[](Size index) const;
 
+    /// \brief Gets begin const iterator.
+    AXIS_NODISCARD const T* begin() const noexcept;
+
+    /// \brief Gets end const iterator.
+    AXIS_NODISCARD const T* end() const noexcept;
+
+    /// \brief Gets begin iterator.
+    AXIS_NODISCARD T* begin() noexcept;
+
+    /// \brief Gets end iterator.
+    AXIS_NODISCARD T* end() noexcept;
+
+    /// \brief Inserts the range of the string at the specified position.
+    ///
+    /// \param[in] begin The beginning of the character range.
+    /// \param[in] end The end of the character range.
+    /// \param[in] index The position to insert the range.
+    template <CharType U>
+    void Insert(const U* begin,
+                const U* end,
+                Size     index);
+
+    /// \brief Removes the range of the string at the specified position and length.
+    void RemoveAt(Size index,
+                  Size count = 1);
+
+    /// \brief Reseves the capacity of the string buffer for the specified number of elements.
+    void ReserveFor(Size count);
+
     /// \brief Gets the number of elements in the string (null terminated character is not included).
     ///
     /// \return Returns the number of elements in the string.
     AXIS_NODISCARD Size GetLength() const noexcept;
 
+    /// \brief Appends a single character to the string.
+    template <CharType U>
+    String& operator+=(const U& character);
+
+    /// \brief Apeends the string.
+    template <CharType U, AllocatorType OtherAllocator>
+    String& operator+=(const String<U, OtherAllocator>& string);
+
     /// \brief Gets the number of elements in the string (null terminated character is not included).
     AXIS_NODISCARD constexpr static Size GetStringLength(const T* str) noexcept;
 
 private:
+    template <Bool Move = true>
     T* Reserve(Size size);
 
     union

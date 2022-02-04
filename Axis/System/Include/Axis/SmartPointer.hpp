@@ -19,7 +19,7 @@ namespace Axis
 
 /// \brief Type which can be used with the smart pointer.
 template <class T>
-concept SmartPointerType = std::is_same_v<T, void> || !std::is_reference_v<T> && !std::is_bounded_array_v<T>;
+concept SmartPointerType = std::is_same_v<T, void> ||(!std::is_reference_v<T> && !std::is_bounded_array_v<T>);
 
 // clang-format off
 

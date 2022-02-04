@@ -159,7 +159,7 @@ void IGraphicsDevice::ValidateCreateFramebuffer(const FramebufferDescription& de
 }
 
 void IGraphicsDevice::ValidateCompileShaderModule(const ShaderModuleDescription& description,
-                                                  const char*                    sourceCode)
+                                                  const StringView<Char>&        sourceCode)
 {
     if (!sourceCode)
         throw InvalidArgumentException("sourceCode was nullptr!");

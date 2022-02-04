@@ -32,7 +32,7 @@ inline Tuple<List<Uint32>, VkImageCreateInfo> GetTextureCreationInfosFromTexture
     imageCreateInfo.pQueueFamilyIndices   = indices.GetData();
     imageCreateInfo.initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    return {std::move(indices), imageCreateInfo};
+    return {{std::move(indices)}, {{imageCreateInfo}}};
 }
 
 VulkanTexture::VulkanTexture(const TextureDescription& description,
@@ -46,7 +46,7 @@ VulkanTexture::VulkanTexture(const TextureDescription& description,
         return {vulkanImage, VK_NULL_HANDLE};
     };
 
-    auto DestroyVkImage = [this](VulkanImageAllocation vkImage) {
+    auto DestroyVkImage = [](VulkanImageAllocation vkImage) {
         // Do nothing ...
     };
 

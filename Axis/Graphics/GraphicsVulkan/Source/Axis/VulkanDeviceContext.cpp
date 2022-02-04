@@ -35,7 +35,6 @@ VulkanDeviceContext::VulkanDeviceContext(Uint32                deviceQueueFamily
                    supportedQueueOperations),
     _deviceQueueFamilyIndex(deviceQueueFamilyIndex),
     _deviceQueueIndex(deviceQueueIndex),
-    _supportedQueueOperations(supportedQueueOperations),
     _framebufferCache(vulkanGraphicsDevice)
 {
     vulkanGraphicsDevice.AddDeviceChild(*this);

@@ -15,8 +15,8 @@
 namespace Axis
 {
 
-FileStream::FileStream(const WChar*  filePath,
-                       FileModeFlags fileModes) :
+FileStream::FileStream(const StringView<WChar>& filePath,
+                       FileModeFlags            fileModes) :
     _filePath(filePath),
     _fileModes(fileModes)
 {

@@ -10,9 +10,9 @@
 #define AXIS_GRAPHICS_GRAPHICSDEVICE_HPP
 #pragma once
 
-#include "../../../System/Include/Axis/Config.hpp"
 #include "../../../System/Include/Axis/List.hpp"
 #include "../../../System/Include/Axis/SmartPointer.hpp"
+#include "../../../System/Include/Axis/StringView.hpp"
 #include "GraphicsExport.hpp"
 
 namespace Axis
@@ -116,7 +116,7 @@ public:
     /// \param[in] description Description of IShaderModule resource used in its creation.
     /// \param[in] sourceCode Shader program's source code to compile.
     AXIS_NODISCARD virtual SharedPointer<IShaderModule> CompileShaderModule(const ShaderModuleDescription& description,
-                                                                            const char*                    sourceCode) = 0;
+                                                                            const StringView<Char>&        sourceCode) = 0;
 
     /// \brief Creates IResourceHeapLayout resource.
     ///
@@ -176,7 +176,7 @@ protected:
     static void ValidateCreateRenderPass(const RenderPassDescription& description);
     static void ValidateCreateFramebuffer(const FramebufferDescription& description);
     static void ValidateCompileShaderModule(const ShaderModuleDescription& description,
-                                            const char*                    sourceCode);
+                                            const StringView<Char>&        sourceCode);
     void        ValidateCreateResourceHeapLayout(const ResourceHeapLayoutDescription& description);
     void        ValidateCreateGraphicsPipeline(const GraphicsPipelineDescription& description);
     void        ValidateCreateBuffer(const BufferDescription& description,

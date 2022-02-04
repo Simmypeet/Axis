@@ -179,7 +179,6 @@ private:
 
     Uint32                             _deviceQueueFamilyIndex      = 0;
     Uint32                             _deviceQueueIndex            = 0;
-    QueueOperationFlags                _supportedQueueOperations    = {};
     UniquePointer<VulkanCommandPool>   _vulkanCommandPool           = {};
     UniquePointer<VulkanCommandBuffer> _currentVulkanCommandBuffer  = {};
     Bool                               _renderPassUpToDate          = true;
