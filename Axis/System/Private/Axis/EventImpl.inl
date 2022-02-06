@@ -47,7 +47,7 @@ inline Size Event<ReturnType(Args...)>::Register::Add(const Function<ReturnType(
 }
 
 template <class ReturnType, class... Args>
-inline Bool Event<ReturnType(Args...)>::Register::Remove(Size token)
+inline Bool Event<ReturnType(Args...)>::Register::Remove(Size token) noexcept
 {
     auto result = _handlers.Remove(token);
 
@@ -58,6 +58,71 @@ template <class ReturnType, class... Args>
 inline Bool Event<ReturnType(Args...)>::Register::TokenExists(Size token) const noexcept
 {
     return _handlers.Find(token) != _handlers.end();
+}
+
+template <class ReturnType, class... Args>
+inline EventToken<ReturnType(Args...)>::EventToken(typename Event<ReturnType(Args...)>::Register& event,
+                                                   const Function<ReturnType(Args...)>&           handler,
+                                                   Size                                           token) :
+    _event(std::addressof(event))
+{
+    _token = _event->Add(handler, token);
+}
+
+template <class ReturnType, class... Args>
+inline EventToken<ReturnType(Args...)>::EventToken(typename Event<ReturnType(Args...)>::Register& event,
+                                                   Function<ReturnType(Args...)>&&                handler,
+                                                   Size                                           token) :
+    _event(std::addressof(event))
+{
+    _token = _event->Add(std::move(handler), token);
+}
+
+template <class ReturnType, class... Args>
+inline EventToken<ReturnType(Args...)>::~EventToken() noexcept
+{
+    if (_event != nullptr)
+        _event->Remove(_token);
+}
+
+template <class ReturnType, class... Args>
+inline EventToken<ReturnType(Args...)>::EventToken(EventToken<ReturnType(Args...)>&& other) noexcept :
+    _token(other._token),
+    _event(other._event)
+{
+    other._token = 0;
+    other._event = nullptr;
+}
+
+template <class ReturnType, class... Args>
+inline EventToken<ReturnType(Args...)>& EventToken<ReturnType(Args...)>::operator=(EventToken<ReturnType(Args...)>&& other) noexcept
+{
+    if (_event != nullptr)
+        _event->Remove(_token);
+
+    _token = other._token;
+    _event = other._event;
+
+    other._token = 0;
+    other._event = nullptr;
+
+    return *this;
+}
+
+template <class ReturnType, class... Args>
+inline void EventToken<ReturnType(Args...)>::Unsubscribe() noexcept
+{
+    if (_event != nullptr)
+        _event->Remove(_token);
+
+    _token = 0;
+    _event = nullptr;
+}
+
+template <class ReturnType, class... Args>
+inline Bool EventToken<ReturnType(Args...)>::IsSubscribed() const noexcept
+{
+    return _event != nullptr;
 }
 
 } // namespace Axis

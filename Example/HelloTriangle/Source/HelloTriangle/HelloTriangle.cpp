@@ -99,7 +99,7 @@ int main()
             vertexBindingDescription.Attributes[1].Location = 1;
             vertexBindingDescription.Attributes[1].Type     = ShaderDataType::Float4; // ColorF equivalent
 
-            _graphicsPipeline = GetGraphicsDevice()->CreateGraphicsPipeline(graphicsPipelineDescription); 
+            _graphicsPipeline = GetGraphicsDevice()->CreateGraphicsPipeline(graphicsPipelineDescription);
 
             /// Vertex data structure.
             struct Vertex

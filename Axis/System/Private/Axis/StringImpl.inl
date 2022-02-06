@@ -7,7 +7,6 @@
 #pragma once
 
 #include "../../Include/Axis/Exception.hpp"
-#include "../../Include/Axis/Math.hpp"
 #include "../../Include/Axis/String.hpp"
 
 namespace Axis
@@ -36,7 +35,7 @@ inline void CopyElement(const T* source,
 template <Bool NullTerminated, CharType T, CharType U>
 inline void CopyElement(const T* source,
                         U*       destination,
-                        Size     sourceSize) noexcept requires(sizeof(T) != sizeof(U))
+                        Size     sourceSize) noexcept requires(!std::is_same_v<T, U>)
 {
     // Convert each element
     for (Size i = 0; i < sourceSize; ++i)
@@ -44,6 +43,18 @@ inline void CopyElement(const T* source,
 
     if constexpr (NullTerminated)
         destination[sourceSize] = U(0);
+}
+
+template <ArithmeticType U, CharType T, AllocatorType Allocator>
+inline void AppendNumerics(String<T, Allocator>& str,
+                           U                     value) noexcept
+{
+    if (value >= 10)
+        AppendNumerics(str, value / 10);
+
+    U digit = value % 10;
+
+    str.Append(static_cast<T>(digit + '0'));
 }
 
 } // namespace Detail
@@ -388,7 +399,7 @@ template <CharType T, AllocatorType Allocator>
 template <CharType U>
 inline String<T, Allocator>& String<T, Allocator>::operator+=(const U& character)
 {
-    Insert(std::addressof(character), std::addressof(character) + 1, _stringLength);
+    Append(std::addressof(character), std::addressof(character) + 1);
 
     return *this;
 }
@@ -397,7 +408,16 @@ template <CharType T, AllocatorType Allocator>
 template <CharType U, AllocatorType OtherAllocator>
 inline String<T, Allocator>& String<T, Allocator>::operator+=(const String<U, OtherAllocator>& string)
 {
-    Insert(string.begin(), string.end(), _stringLength);
+    Append(string.begin(), string.end());
+
+    return *this;
+}
+
+template <CharType T, AllocatorType Allocator>
+template <CharType U>
+inline String<T, Allocator>& String<T, Allocator>::operator+=(const U* string)
+{
+    Append(string, string + String<U>::GetStringLength(string));
 
     return *this;
 }
@@ -416,6 +436,13 @@ inline void String<T, Allocator>::Insert(const U* begin,
 
     if (begin == end)
         return;
+
+    if (index == _stringLength)
+    {
+        // Redirects the insertion to the append function
+        Append(begin, end);
+        return;
+    }
 
     Size insertSize = end - begin;
 
@@ -472,7 +499,94 @@ inline void String<T, Allocator>::Insert(const U* begin,
 }
 
 template <CharType T, AllocatorType Allocator>
-inline Size String<T, Allocator>::GetLength() const noexcept { return _stringLength; }
+template <CharType U>
+inline void String<T, Allocator>::Append(const U* begin,
+                                         const U* end)
+{
+    // Checks the argument
+    if (begin > end)
+        throw ArgumentOutOfRangeException("`begin` was greater than `end`!");
+
+    if (begin == end)
+        return;
+
+    // Calculates the size of the string
+    Size size = end - begin;
+
+    // Reserves the memory for the string
+    auto pointer = Reserve(_stringLength + size);
+
+    // Copies the string to the string
+    Detail::CopyElement<true>(begin, pointer + _stringLength, size);
+
+    _stringLength += size;
+}
+
+template <CharType T, AllocatorType Allocator>
+template <CharType U>
+inline void String<T, Allocator>::Append(const U& character)
+{
+    // Reserves the memory for the string
+    auto pointer = Reserve(_stringLength + 1);
+
+    // Copies the string to the string
+    Detail::CopyElement<true>(std::addressof(character), pointer + _stringLength, 1);
+
+    _stringLength += 1;
+}
+
+template <CharType T, AllocatorType Allocator>
+inline Size String<T, Allocator>::GetLength() const noexcept
+{
+    return _stringLength;
+}
+
+template <CharType T, AllocatorType Allocator>
+template <ArithmeticType U>
+inline String<T, Allocator> String<T, Allocator>::ToString(const U& value)
+{
+    String<T, Allocator> stringToReturn = {};
+
+    if (value == 0)
+    {
+        T* buffer = stringToReturn.Reserve(1);
+
+        T zero = T('0');
+
+        stringToReturn.Append(std::addressof(zero), std::addressof(zero) + 1);
+
+        return stringToReturn;
+    }
+
+    Size stringSize  = 0;
+    U    absIntegral = value;
+
+    if constexpr (std::is_signed_v<U>)
+    {
+        // Includes minus sign `-`
+        if (value < 0)
+        {
+            absIntegral = value * -1;
+            stringSize++;
+        }
+    }
+
+    // Gets the integer digit count
+    stringSize += (Size)std::ceil(std::log10(absIntegral));
+
+    stringToReturn.ReserveFor(stringSize);
+
+    if constexpr (std::is_signed_v<U>)
+    {
+        // Includes minus sign `-`
+        if (value < 0)
+            stringToReturn.Append(T('-'));
+    }
+
+    Detail::AppendNumerics(stringToReturn, absIntegral);
+
+    return stringToReturn;
+}
 
 } // namespace Axis
 

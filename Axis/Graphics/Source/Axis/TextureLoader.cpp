@@ -72,7 +72,9 @@ SharedPointer<ITexture> TextureLoader::CreateTexture()
         _stagingBuffer = _loadConfiguration.GraphicsDevice->CreateBuffer(bufferDescription, nullptr);
     }
 
-    PVoid mappedMemory = _loadConfiguration.ImmediateDeviceContext->MapBuffer(_stagingBuffer, MapAccess::Write, MapType::Discard);
+    PVoid mappedMemory = _loadConfiguration.ImmediateDeviceContext->MapBuffer(_stagingBuffer,
+                                                                              MapAccess::Write,
+                                                                              MapType::Discard);
 
     std::memcpy(mappedMemory, _pixels, _texHeight * _texWidth * 4);
 

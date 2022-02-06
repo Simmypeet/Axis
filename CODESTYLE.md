@@ -69,8 +69,8 @@ Int32 Multiply(Int32 num, Int32 num1)
 
 ### Namespace
 
-- Use Pascal case naming convention.
-- Don't indent the contents inside the namespace, for example:
+-   Use Pascal case naming convention.
+-   Don't indent the contents inside the namespace, for example:
 
 ```CXX
 namespace Axis
@@ -87,7 +87,7 @@ Int32 Multiply(Int32 num, Int32 num1)
 
 ### Nested namespace
 
-- Don't indent any nested namespaces and contents:
+-   Don't indent any nested namespaces and contents:
 
 ```cxx
 namespace Axis
@@ -124,8 +124,8 @@ public:
     void Flush();
 
 private:
-    Ref<IBuffer> _vertexBuffer;
-    Ref<IBuffer> _indexBuffer;
+    SharedPointer<IBuffer> _vertexBuffer;
+    SharedPointer<IBuffer> _indexBuffer;
 };
 
 } // namespace Axis
@@ -146,8 +146,8 @@ public:
     void Flush();
 
 private:
-    Ref<IBuffer> _vertexBuffer = nullptr; // default member initializer
-    Ref<IBuffer> _indexBuffer = nullptr;  // default member initializer
+    SharedPointer<IBuffer> _vertexBuffer = nullptr; // default member initializer
+    SharedPointer<IBuffer> _indexBuffer = nullptr;  // default member initializer
     Size _batchCount = 0;                 // default member initializer
 };
 

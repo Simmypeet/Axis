@@ -58,7 +58,7 @@ public:
         /// \param[in] token Token to identify the handler.
         ///
         /// \return Returns true if the handler was removed successfully.
-        Bool Remove(Size token);
+        Bool Remove(Size token) noexcept;
 
         /// \brief Checks if the event has any handlers with the given token
         ///        subscribed to it.
@@ -98,6 +98,64 @@ public:
 
     // ReturnType must be void
     static_assert(std::is_same_v<ReturnType, void>);
+};
+
+template <class T>
+class EventToken;
+
+/// \brief RAII wrapper for event subscription and unsubscription.
+///        When the object is destroyed, it will unsubscribe the handler
+template <class ReturnType, class... Args>
+class EventToken<ReturnType(Args...)>
+{
+public:
+    /// \brief Default constructor
+    EventToken() noexcept = default;
+
+    /// \brief Constructor
+    ///
+    /// \param[in] event Event to subscribe to.
+    /// \param[in] handler Callable object to subscribe to the event.
+    /// \param[in] token The token that may be used in event subscription.
+    EventToken(typename Event<ReturnType(Args...)>::Register& event,
+               const Function<ReturnType(Args...)>&           handler,
+               Size                                           token = 0);
+
+    /// \brief Constructor
+    ///
+    /// \param[in] event Event to subscribe to.
+    /// \param[in] handler Callable object to subscribe to the event.
+    /// \param[in] token The token that may be used in event subscription.
+    EventToken(typename Event<ReturnType(Args...)>::Register& event,
+               Function<ReturnType(Args...)>&&                handler,
+               Size                                           token = 0);
+
+    /// \brief Destructor
+    ~EventToken() noexcept;
+
+    /// \brief Copy constructor is deleted
+    EventToken(const EventToken& other) = delete;
+
+    /// \brief Move constructor
+    EventToken(EventToken&& other) noexcept;
+
+    /// \brief Copy assignment operator is deleted
+    EventToken& operator=(const EventToken& other) = delete;
+
+    /// \brief Move assignment operator
+    EventToken& operator=(EventToken&& other) noexcept;
+
+    /// \brief Unsubscribes the handler from the event
+    void Unsubscribe() noexcept;
+
+    /// \brief Checks if the event token has been subscribed to an event or not
+    ///
+    /// \return Returns true if the event token has been subscribed to an event.
+    Bool IsSubscribed() const noexcept;
+
+private:
+    Size                                           _token = {};      ///< Token used in registration
+    typename Event<ReturnType(Args...)>::Register* _event = nullptr; ///< Event to subscribe to
 };
 
 } // namespace Axis

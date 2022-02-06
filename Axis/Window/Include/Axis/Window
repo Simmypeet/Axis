@@ -14,6 +14,5 @@
 #include "Input.hpp"
 #include "Keyboard.hpp"
 #include "Mouse.hpp"
-#include "WindowExport.hpp"
 
 #endif // AXIS_WINDOW_WINDOWHEADER_HPP

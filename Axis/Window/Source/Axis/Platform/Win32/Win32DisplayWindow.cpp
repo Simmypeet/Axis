@@ -454,10 +454,20 @@ void DisplayWindow::SetWindowStyle(WindowStyleFlags windowStyleFlags)
         throw ExternalException("Failed to adjust window position!");
 }
 
-void DisplayWindow::SetWindowTitle(const wchar_t* windowTitle)
+void DisplayWindow::SetWindowTitle(const StringView<WChar>& windowTitle)
 {
-    if (!SetWindowTextW((HWND)_hwnd, windowTitle))
-        throw ExternalException("Failed to set window text!");
+    if (windowTitle.IsNullTerminated())
+    {
+        if (!SetWindowTextW((HWND)_hwnd, windowTitle.GetCString()))
+            throw ExternalException("Failed to set window text!");
+    }
+    else
+    {
+        WString windowTitleCopy = windowTitle;
+
+        if (!SetWindowTextW((HWND)_hwnd, windowTitleCopy.GetCString()))
+            throw ExternalException("Failed to set window text!");
+    }
 }
 
 RectangleI DisplayWindow::GetClientBounds() const

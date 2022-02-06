@@ -212,7 +212,7 @@ void VulkanDeviceContext::CopyBuffer(const SharedPointer<IBuffer>& sourceBuffer,
                                sourceBufferStateTransition,
                                destBufferStateTransition);
 
-    if (sourceBufferStateTransition != StateTransition::Transit)
+    if (sourceBufferStateTransition == StateTransition::Transit)
     {
         TransitBufferState(sourceBuffer,
                            sourceBuffer->GetCurrentResourceState(),
@@ -221,7 +221,7 @@ void VulkanDeviceContext::CopyBuffer(const SharedPointer<IBuffer>& sourceBuffer,
                            true);
     }
 
-    if (destBufferStateTransition != StateTransition::Transit)
+    if (destBufferStateTransition == StateTransition::Transit)
     {
         TransitBufferState(destBuffer,
                            destBuffer->GetCurrentResourceState(),
@@ -237,6 +237,12 @@ void VulkanDeviceContext::CopyBuffer(const SharedPointer<IBuffer>& sourceBuffer,
     bufferCopy.srcOffset    = sourceOffset;
     bufferCopy.dstOffset    = destOffset;
     bufferCopy.size         = copySize;
+
+    if (_currentVulkanCommandBuffer->IsRenderPassActivating())
+    {
+        _currentVulkanCommandBuffer->EndRenderPass();
+        _renderPassUpToDate = false;
+    }
 
     vkCmdCopyBuffer(_currentVulkanCommandBuffer->GetVkCommandBufferHandle(),
                     ((VulkanBuffer*)sourceBuffer)->GetVkBufferHandle(),

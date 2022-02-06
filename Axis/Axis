@@ -8,6 +8,7 @@
 
 #include "Core/Include/Axis/Core"
 #include "Graphics/Include/Axis/Graphics"
+#include "Renderer/Include/Axis/Renderer"
 #include "System/Include/Axis/System"
 #include "Window/Include/Axis/Window"
 

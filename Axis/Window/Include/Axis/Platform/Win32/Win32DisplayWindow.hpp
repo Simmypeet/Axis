@@ -117,7 +117,7 @@ public:
     void SetWindowStyle(WindowStyleFlags windowStyleFlags);
 
     /// \brief Sets new window title text.
-    void SetWindowTitle(const wchar_t* windowTitle);
+    void SetWindowTitle(const StringView<WChar>& windowTitle);
 
     /// \brief Gets the client rectangle of the window.
     AXIS_NODISCARD RectangleI GetClientBounds() const;

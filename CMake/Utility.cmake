@@ -50,7 +50,7 @@ macro(axis_add_library target)
     axis_assign_source_group("${THIS_SOURCES}" "${THIS_RELATIVE_PATH}")
 
     if (NOT ${AXIS_SKIP_INSTALLS})
-        install(TARGETS ${target} EXPORT
+        install(TARGETS ${target} EXPORT AxisConfigExport
                 RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT "bin"
                 ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT "lib")
 

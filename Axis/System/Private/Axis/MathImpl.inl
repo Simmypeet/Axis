@@ -59,7 +59,7 @@ inline constexpr T Clamp(T value,
         throw InvalidArgumentException("`min` value was greater than `max` value.");
 
     return value < min ?
-                      min :
+        min :
         value > max ? max :
                       value;
 }
@@ -128,6 +128,12 @@ inline constexpr T RoundUp(T numToRound, T multipleOf) noexcept
 
         return numToRound + multipleOf - remainder;
     }
+}
+
+template <IntegralType T>
+inline constexpr T RoundDown(T numToRound, T multipleOf) noexcept
+{
+    return numToRound - (numToRound % multipleOf);
 }
 
 template <ArithmeticType T>

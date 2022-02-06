@@ -10,6 +10,7 @@
 #define AXIS_SYSTEM_STRING_HPP
 #pragma once
 
+#include "Math.hpp"
 #include "Memory.hpp"
 #include "Trait.hpp"
 #include <concepts>
@@ -189,8 +190,30 @@ public:
     template <CharType U, AllocatorType OtherAllocator>
     String& operator+=(const String<U, OtherAllocator>& string);
 
+    /// \brief Appends a null terminated character sequence to the string.
+    template <CharType U>
+    String& operator+=(const U* str);
+
+    /// \brief Appends the range of the string to the end of the string.
+    ///
+    /// \param[in] begin The beginning of the character range.
+    /// \param[in] end The end of the character range.
+    template <CharType U>
+    void Append(const U* begin,
+                const U* end);
+
+    /// \brief Appends a single character to the end of the string.
+    ///
+    /// \param[in] character The character to append.
+    template <CharType U>
+    void Append(const U& character);
+
     /// \brief Gets the number of elements in the string (null terminated character is not included).
     AXIS_NODISCARD constexpr static Size GetStringLength(const T* str) noexcept;
+
+    /// \brief Parses the numerics value to the string.
+    template <ArithmeticType U>
+    AXIS_NODISCARD static String<T, Allocator> ToString(const U& value);
 
 private:
     template <Bool Move = true>

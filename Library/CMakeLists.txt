@@ -64,3 +64,9 @@ endif()
 # Adds stb_image to the project
 add_subdirectory(stb_image)
 axis_set_directory_root_folder("stb_image" "Axis/Library/stb_image")
+
+set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
+
+# Adds freetype to the project
+add_subdirectory(freetype EXCLUDE_FROM_ALL)
+axis_set_directory_root_folder("freetype" "Axis/Library/freetype" )
