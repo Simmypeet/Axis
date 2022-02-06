@@ -10,6 +10,3 @@
 [submodule "Library/SPIRV-Cross"]
 	path = Library/SPIRV-Cross
 	url = https://github.com/SimmyPeet/SPIRV-Cross.git
-[submodule "Library/freetype"]
-	path = Library/freetype
-	url = https://github.com/SimmyPeet/freetype.git
