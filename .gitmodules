@@ -13,3 +13,4 @@
 [submodule "Library/freetype"]
 	path = Library/freetype
 	url = https://github.com/SimmyPeet/freetype.git
+	branch = master
