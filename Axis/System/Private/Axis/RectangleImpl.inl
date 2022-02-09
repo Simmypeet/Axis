@@ -11,6 +11,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <ArithmeticType T>
 template <ArithmeticType A, ArithmeticType B, ArithmeticType C, ArithmeticType D>
 inline constexpr Rectangle<T>::Rectangle(A x,
@@ -40,6 +43,17 @@ inline constexpr Bool Rectangle<T>::operator!=(const Rectangle& other) const noe
         Width != other.Width ||
         Height != other.Height;
 }
+
+template <ArithmeticType T>
+inline constexpr Bool Rectangle<T>::Collides(const Rectangle& other) const noexcept
+{
+    return X < other.X + other.Width &&
+        X + Width > other.X &&
+        Y < other.Y + other.Height &&
+        Y + Height > other.Y;
+}
+
+} // namespace System
 
 } // namespace Axis
 

@@ -16,6 +16,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanCommandBuffer::VulkanCommandBuffer(VkCommandPool         commandPool,
                                          VkCommandBufferLevel  commandBufferLevel,
                                          VulkanGraphicsDevice& vulkanGraphicsDevice)
@@ -33,7 +36,7 @@ VulkanCommandBuffer::VulkanCommandBuffer(VkCommandPool         commandPool,
             .commandBufferCount = 1};
 
         if (vkAllocateCommandBuffers(vulkanGraphicsDevice.GetVkDeviceHandle(), &commandBufferAllocateInfo, &vkCommandBuffer) != VK_SUCCESS)
-            throw ExternalException("Failed to allocate VkCommandBuffer!");
+            throw System::ExternalException("Failed to allocate VkCommandBuffer!");
         else
             return vkCommandBuffer;
     };
@@ -53,7 +56,7 @@ VulkanCommandBuffer::VulkanCommandBuffer(VkCommandPool         commandPool,
             .flags = VK_FENCE_CREATE_SIGNALED_BIT};
 
         if (vkCreateFence(vulkanGraphicsDevice.GetVkDeviceHandle(), &fenceCreateInfo, nullptr, &vkFence) != VK_SUCCESS)
-            throw ExternalException("Failed to create VkFence!");
+            throw System::ExternalException("Failed to create VkFence!");
         else
             return vkFence;
     };
@@ -73,7 +76,7 @@ VulkanCommandBuffer::VulkanCommandBuffer(VkCommandPool         commandPool,
             .flags = 0};
 
         if (vkCreateSemaphore(vulkanGraphicsDevice.GetVkDeviceHandle(), &semaphoreCreateInfo, nullptr, &vkSemaphore) != VK_SUCCESS)
-            throw ExternalException("Failed to create VkSemaphore!");
+            throw System::ExternalException("Failed to create VkSemaphore!");
         else
             return vkSemaphore;
     };
@@ -136,7 +139,7 @@ void VulkanCommandBuffer::ResetCommandBuffer() noexcept
     vkResetCommandBuffer(_commandBuffer, 0);
 }
 
-void VulkanCommandBuffer::AddResourceStrongReference(const SharedPointer<void>& reference)
+void VulkanCommandBuffer::AddResourceStrongReference(const System::SharedPointer<void>& reference)
 {
     _resourceReference.Insert(reference);
 }
@@ -148,9 +151,9 @@ Bool VulkanCommandBuffer::IsCommandBufferAvailable() const noexcept
     return !_isRecording && result == VK_SUCCESS;
 }
 
-void VulkanCommandBuffer::BeginRenderPass(const SharedPointer<IRenderPass>&  renderPass,
-                                          const SharedPointer<IFramebuffer>& framebuffer,
-                                          VkRenderPassBeginInfo*             beginInfo) noexcept
+void VulkanCommandBuffer::BeginRenderPass(const System::SharedPointer<IRenderPass>&  renderPass,
+                                          const System::SharedPointer<IFramebuffer>& framebuffer,
+                                          VkRenderPassBeginInfo*                     beginInfo) noexcept
 {
 
     AXIS_ASSERT(!IsRenderPassActivating(), "The render pass instance is already begun!");
@@ -190,5 +193,7 @@ void VulkanCommandBuffer::EndRenderPass() noexcept
 
     vkCmdEndRenderPass(_commandBuffer);
 }
+
+} // namespace Graphics
 
 } // namespace Axis

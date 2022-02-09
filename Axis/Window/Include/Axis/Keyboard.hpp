@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Keyboard.hpp
-/// 
-/// \brief Contains the functions and classes for retrieving keyboard inputs.
-
 #ifndef AXIS_WINDOW_KEYBOARD_HPP
 #define AXIS_WINDOW_KEYBOARD_HPP
 #pragma once
@@ -15,6 +11,9 @@
 #include "WindowExport.hpp"
 
 namespace Axis
+{
+
+namespace Window
 {
 
 /// \brief Enumerations of all keys on the keyboard.
@@ -325,7 +324,7 @@ enum class Key : Uint8
 };
 
 /// \brief Holds key strokes information.
-/// 
+///
 /// \warning To be implemented.
 class AXIS_WINDOW_API KeyboardState final
 {
@@ -341,10 +340,10 @@ public:
     AXIS_NODISCARD Bool IsKeyUp(Key key) const;
 
     /// \brief Gets all the keys that are pressed.
-    AXIS_NODISCARD List<Key> GetPressedKeys() const noexcept;
+    AXIS_NODISCARD System::List<Key> GetPressedKeys() const noexcept;
 
     /// \brief Gets all the keys that are released.
-    AXIS_NODISCARD List<Key> GetReleasedKeys() const noexcept;
+    AXIS_NODISCARD System::List<Key> GetReleasedKeys() const noexcept;
 
     /// \brief Gets the number of keys that are pressed.
     AXIS_NODISCARD Uint32 GetPressedKeyCount() const noexcept;
@@ -368,11 +367,13 @@ namespace Keyboard
 {
 
 /// \brief Retrieves keystrokes information.
-/// 
-/// \returns \a `Axis::KeyboardState` object containing keystrokes.
+///
+/// \returns \a `KeyboardState` object containing keystrokes.
 AXIS_NODISCARD KeyboardState AXIS_WINDOW_API GetKeyboardState();
 
 } // namespace Keyboard
+
+} // namespace Window
 
 } // namespace Axis
 

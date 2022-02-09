@@ -1,7 +1,6 @@
 /// \copyright Simmypeet - Copyright (C)
 ///            This file is subject to the terms and conditions defined in
 ///            file `LICENSE`, which is part of this source code package.
-///
 
 #include <Axis/RendererPch.hpp>
 
@@ -13,11 +12,13 @@
 #include <Axis/GraphicsDevice.hpp>
 #include <Axis/Math.hpp>
 #include <Axis/Memory.hpp>
+#include <Axis/PackSprite.hpp>
 #include <Axis/SmartPointer.hpp>
 #include <Axis/SpriteFont.hpp>
 #include <Axis/Texture.hpp>
 #include <Axis/Utility.hpp>
 #include <algorithm>
+
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -27,12 +28,15 @@
 namespace Axis
 {
 
-/// Freetype library global configuration
-Bool       s_FreetypeInitialized = false;
-std::mutex s_FreetypeMutex       = {};
-FT_Library s_FreetypeLibrary     = {};
+namespace Renderer
+{
 
-SpriteFont::SpriteFont(FileStream&                   fileStream,
+/// Freetype library global configuration
+static Bool       s_FreetypeInitialized = false;
+static std::mutex s_FreetypeMutex       = {};
+static FT_Library s_FreetypeLibrary     = {};
+
+SpriteFont::SpriteFont(System::FileStream&           fileStream,
                        Uint32                        fontSize,
                        const FontAtlasConfiguration& atlasConfiguration) :
     _fontSize(fontSize),
@@ -41,19 +45,19 @@ SpriteFont::SpriteFont(FileStream&                   fileStream,
     // Checks the arguments
     {
         if (!fileStream.IsOpen())
-            throw IOException("FileStream was not open!");
+            throw System::IOException("FileStream was not open!");
 
-        if (!(Bool)(fileStream.GetFileModes() & FileMode::Read))
-            throw InvalidArgumentException("FileStream was not opened for writing!");
+        if (!(Bool)(fileStream.GetFileModes() & System::FileMode::Read))
+            throw System::InvalidArgumentException("FileStream was not opened for writing!");
 
-        if (!(Bool)(fileStream.GetFileModes() & FileMode::Binary))
-            throw InvalidArgumentException("FileStream was not opened in binary mode!");
+        if (!(Bool)(fileStream.GetFileModes() & System::FileMode::Binary))
+            throw System::InvalidArgumentException("FileStream was not opened in binary mode!");
     }
 
     // Copies file data
     {
         // Copies all the data from the file stream to the buffer
-        _fontByte = UniquePointer<Byte[]>(Axis::NewArray<Byte>(fileStream.GetLength()));
+        _fontByte = System::UniquePointer<Byte[]>(Axis::System::NewArray<Byte>(fileStream.GetLength()));
 
         // Stores the font byte size
         _fontByteSize = fileStream.GetLength();
@@ -73,36 +77,61 @@ SpriteFont::SpriteFont(CPVoid                        fontData,
     _fontSize(fontSize)
 {
     if (!fontData)
-        throw InvalidArgumentException("fontData was nullptr!");
+        throw System::InvalidArgumentException("fontData was nullptr!");
 
     if (!fontSize)
-        throw InvalidArgumentException("fontDataSize was zero!");
+        throw System::InvalidArgumentException("fontDataSize was zero!");
 
     // Copies file data
     {
         // Creates a buffer to store the font data
-        _fontByte = UniquePointer<Byte[]>(Axis::NewArray<Byte>(fontDataSize));
+        _fontByte = System::UniquePointer<Byte[]>(Axis::System::NewArray<Byte>(fontDataSize));
 
         // Copies the font data
         std::memcpy(_fontByte.GetPointer(), fontData, fontDataSize);
     }
+
+    Initialize();
 }
 
-SpriteFont::~SpriteFont() noexcept
+SpriteFont::FontFaceRAII::~FontFaceRAII() noexcept
 {
     if (_fontFace)
-        FT_Done_Face((FT_Face)_fontFace);
+        FT_Done_Face(_fontFace);
 }
 
-Vector2F SpriteFont::MeasureString(const StringView<WChar>& string) const noexcept
+
+SpriteFont::FontFaceRAII::FontFaceRAII(FontFaceRAII&& other) noexcept :
+    _fontFace(other._fontFace)
+{
+    other._fontFace = nullptr;
+}
+
+SpriteFont::FontFaceRAII& SpriteFont::FontFaceRAII::operator=(FontFaceRAII&& other) noexcept
+{
+    if (this != &other)
+    {
+        if (_fontFace)
+            FT_Done_Face(_fontFace);
+
+        _fontFace       = other._fontFace;
+        other._fontFace = nullptr;
+    }
+
+    return *this;
+}
+
+System::Vector2UI SpriteFont::MeasureString(const System::StringView<WChar>& string) const noexcept
 {
     if (string.GetLength() == 0)
         return {0.0f, 0.0f};
 
-    Float32  width            = 0.0f;
-    Float32  finalLineHeight  = (Float32)GetLineHeight();
-    Vector2F offset           = {0.0f, 0.0f};
-    Bool     firstGlyphOfLine = true;
+    Bool firstGlyphOfLine = true;
+
+    Uint32 furthestY = 0;
+    Uint32 furthestX = 0;
+
+    System::Vector2UI penPosition = {0, 0};
 
     auto glyphEnd = _charGlyphs.end();
     auto rectEnd  = _charRects.end();
@@ -114,37 +143,36 @@ Vector2F SpriteFont::MeasureString(const StringView<WChar>& string) const noexce
 
         if (character == L'\n')
         {
-            finalLineHeight = (Float32)GetLineHeight();
+            penPosition.X = 0;
+            penPosition.Y += (Uint32)GetLineHeight();
 
-            offset.X = 0;
-            offset.Y += (Float32)GetLineHeight();
             firstGlyphOfLine = true;
+
             continue;
         }
 
-        auto glyph     = _charGlyphs.Find(character);
-        auto rectangle = _charRects.Find(character);
+        auto glyphIt = _charGlyphs.Find(character);
+        auto rectIt  = _charRects.Find(character);
 
-        if (glyph == glyphEnd || rectangle == rectEnd)
+        if (glyphIt == glyphEnd)
             continue;
 
-        if (firstGlyphOfLine)
-        {
-            offset.X         = (Float32)Math::Max(glyph->Second.Bearing.X, 0.0f);
-            firstGlyphOfLine = false;
-        }
-        else
-        {
-            offset.X += glyph->Second.Bearing.X;
-        }
+        auto drawingPos = penPosition;
 
-        offset.X += glyph->Second.Advance.X;
+        if (!firstGlyphOfLine && glyphIt->Second.Bearing.X > 0)
+            drawingPos.X += glyphIt->Second.Bearing.X;
 
-        auto calculatedWidth = offset.X + rectangle->Second.Width;
-        width                = Math::Max(width, calculatedWidth);
+        drawingPos.Y += (Uint32)GetLineHeight() - glyphIt->Second.Bearing.Y;
+
+        penPosition.X += glyphIt->Second.Advance.X;
+
+        furthestX = System::Math::Max(drawingPos.X + glyphIt->Second.Advance.X, furthestX);
+        furthestY = System::Math::Max(drawingPos.Y + (rectIt == rectEnd ? 0 : rectIt->Second.Height), furthestY);
+
+        firstGlyphOfLine = true;
     }
 
-    return {width, offset.Y + finalLineHeight};
+    return {furthestX, furthestY};
 }
 
 void SpriteFont::Initialize()
@@ -157,7 +185,7 @@ void SpriteFont::Initialize()
         if (!s_FreetypeInitialized)
         {
             if (FT_Init_FreeType(&s_FreetypeLibrary))
-                throw ExternalException("Freetype library initialization failed");
+                throw System::ExternalException("Freetype library initialization failed");
 
             s_FreetypeInitialized = true;
         }
@@ -166,36 +194,42 @@ void SpriteFont::Initialize()
     // Checks the argument
     {
         if (_fontSize == 0)
-            throw InvalidArgumentException("Size was zero!");
+            throw System::InvalidArgumentException("Size was zero!");
 
         if (!_atlasConfig.GraphicsDevice)
-            throw InvalidArgumentException("GraphicsDevice was null!");
+            throw System::InvalidArgumentException("GraphicsDevice was null!");
 
         if (!_atlasConfig.ImmediateDeviceContext)
-            throw InvalidArgumentException("ImmediateDeviceContext was null!");
+            throw System::InvalidArgumentException("ImmediateDeviceContext was null!");
 
-        if (!Math::ReadBitPosition(_atlasConfig.DeviceQueueFamilyMask, _atlasConfig.ImmediateDeviceContext->DeviceQueueFamilyIndex))
-            throw InvalidArgumentException("DeviceQueueFamilyMask did not support the ImmediateDeviceContext's DeviceQueueFamilyIndex!");
+        if (!System::Math::ReadBitPosition(_atlasConfig.DeviceQueueFamilyMask, _atlasConfig.ImmediateDeviceContext->DeviceQueueFamilyIndex))
+            throw System::InvalidArgumentException("DeviceQueueFamilyMask did not support the ImmediateDeviceContext's DeviceQueueFamilyIndex!");
 
         if (_atlasConfig.UseCharacterRange && _atlasConfig.StartCharacterRange > _atlasConfig.EndCharacterRange)
-            throw InvalidArgumentException("StartCharacterRange was greater than EndCharacterRange!");
+            throw System::InvalidArgumentException("StartCharacterRange was greater than EndCharacterRange!");
     }
 
     // Sets font size
     {
+        FT_Face ftFace = nullptr;
+
         // Creates the font face
-        if (FT_New_Memory_Face(s_FreetypeLibrary, _fontByte.GetPointer(), _fontByteSize, 0, (FT_Face*)&_fontFace))
-            throw ExternalException("Freetype library failed to create a new font face");
+        if (FT_New_Memory_Face(s_FreetypeLibrary, _fontByte.GetPointer(), FT_Long(_fontByteSize), FT_Long{0}, &ftFace))
+            throw System::ExternalException("Freetype library failed to create a new font face");
+
+        _fontFace = FontFaceRAII(ftFace);
 
         // Sets the font size
-        if (FT_Set_Pixel_Sizes((FT_Face)_fontFace, 0, _fontSize))
-            throw ExternalException("Freetype library failed to set the font size");
+        if (FT_Set_Pixel_Sizes(_fontFace, 0, _fontSize)) throw System::ExternalException("Freetype library failed to set the font size");
 
         // Sets the font's default line spacing
-        _lineHeight = ((FT_Face)_fontFace)->size->metrics.height / 64.f;
+        _lineHeight = (Size)(_fontFace->size->metrics.height / 64);
     }
 
-    Size bufferSize = {};
+    constexpr Size OffsetChar = 1;
+
+    Size                                                 bufferSize   = {};
+    System::List<System::Pair<WChar, System::Vector2UI>> charSizeList = {};
 
     /// Calculates the glyph information of each character
     ///
@@ -204,23 +238,31 @@ void SpriteFont::Initialize()
     ///
     /// accumulates the size of the font's texture atlas
     {
+
         auto AppendCharacter = [&](WChar character) {
             // Gets the glyph
-            if (FT_Load_Char((FT_Face)_fontFace, character, FT_LOAD_DEFAULT))
+            if (FT_Load_Char(_fontFace, character, FT_LOAD_RENDER))
                 return;
 
-            auto& bbox = ((FT_Face)_fontFace)->bbox;
+            auto& bbox = (_fontFace)->bbox;
 
-            auto width  = bbox.xMax - bbox.xMin;
-            auto height = bbox.yMax - bbox.yMin;
-            auto xOff   = (((FT_Face)_fontFace)->glyph->advance.x - width) / 2;
-            auto yOff   = bbox.yMax - ((FT_Face)_fontFace)->glyph->metrics.horiBearingY / 64.f;
+            auto width  = _fontFace->glyph->bitmap.width;
+            auto height = _fontFace->glyph->bitmap.rows;
+            auto xOff   = _fontFace->glyph->bitmap_left;
+            auto yOff   = _fontFace->glyph->bitmap_top;
 
             // Gets the glyph's metrics
             Glyph glyph = {
-                .Bearing         = {xOff, yOff},
-                .Advance         = {((FT_Face)_fontFace)->glyph->advance.x / 64.f, ((FT_Face)_fontFace)->glyph->advance.y / 64.f},
-                .SourceRectangle = {0.0f, 0.0f, width, height}};
+                .Bearing         = {(Int32)xOff, (Int32)yOff},
+                .Advance         = {(Int32)(_fontFace->glyph->advance.x / 64.f), 0},
+                .SourceRectangle = {0, 0, width, height}};
+
+            _charGlyphs.Insert({character, glyph});
+
+            if (width > 0 && height > 0)
+                charSizeList.Append({character, {width + (OffsetChar * 2), height + (OffsetChar * 2)}});
+
+            bufferSize += (Size)(width) * (Size)(height)*4;
         };
 
         // Checks if the user wants to use all of available glyphs or not
@@ -246,14 +288,113 @@ void SpriteFont::Initialize()
         else
         {
             // Gets the number of characters in the font
-            const Uint32 numberOfCharacters = ((FT_Face)_fontFace)->num_glyphs;
+            const Uint32 numberOfCharacters = (_fontFace)->num_glyphs;
 
             // Allocates the character information
             _charGlyphs.Reserve(numberOfCharacters);
 
+            FT_UInt glyphIndex = {};
+
             // Gets the first glyph index
+            FT_ULong character = FT_Get_First_Char(_fontFace, &glyphIndex);
+
+            while (glyphIndex)
+            {
+                // Appends the character
+                AppendCharacter((WChar)character);
+
+                character = FT_Get_Next_Char(_fontFace, character, &glyphIndex);
+            }
+        }
+    }
+
+    Graphics::BufferDescription stagingBufferDescription = {
+        .BufferSize            = bufferSize,
+        .BufferBinding         = Graphics::BufferBinding::TransferSource,
+        .Usage                 = Graphics::ResourceUsage::StagingSource,
+        .DeviceQueueFamilyMask = Axis::System::Math::AssignBitToPosition(Size{0}, _atlasConfig.ImmediateDeviceContext->DeviceQueueFamilyIndex, true)};
+
+    // Creates the staging buffer
+    auto stagingBuffer = _atlasConfig.GraphicsDevice->CreateBuffer(stagingBufferDescription, nullptr);
+
+    auto result = Axis::Renderer::PackSprite(charSizeList);
+
+    Graphics::TextureDescription textureDescription = {
+        .Dimension             = Graphics::TextureDimension::Texture2D,
+        .Size                  = {result.PackedTextureSize.X, result.PackedTextureSize.Y, 1},
+        .TextureBinding        = _atlasConfig.Binding | Graphics::TextureBinding::TransferDestination,
+        .Format                = Graphics::TextureFormat::UnormR8G8B8A8,
+        .MipLevels             = _atlasConfig.GenerateMip ? (Uint32)(std::floor(std::log2(std::max(result.PackedTextureSize.X, result.PackedTextureSize.Y)))) + (Uint32)1 : 1,
+        .Sample                = 1,
+        .ArraySize             = 1,
+        .Usage                 = _atlasConfig.Usage,
+        .DeviceQueueFamilyMask = _atlasConfig.DeviceQueueFamilyMask};
+
+    // Creates the texture
+    _fontAtlas     = _atlasConfig.GraphicsDevice->CreateTexture(textureDescription);
+    _fontAtlasView = _fontAtlas->CreateDefaultTextureView();
+
+    System::HashMap<WChar, Size> charOffsetMap = {};
+    charOffsetMap.Reserve(result.SpriteLocations.GetSize());
+
+    // Maps the staging buffer
+    {
+        Size currentBufferOffset = 0;
+
+        Uint8* mappedMemory = (Uint8*)_atlasConfig.ImmediateDeviceContext->MapBuffer(stagingBuffer,
+                                                                                     Graphics::MapAccess::Write,
+                                                                                     Graphics::MapType::Overwrite);
+
+        for (auto& characterSpriteInfo : result.SpriteLocations)
+        {
+            // Loads character glyph
+            FT_Load_Char(_fontFace, characterSpriteInfo.First, FT_LOAD_RENDER);
+
+            auto bitmapPixels = (characterSpriteInfo.Second.Width - (OffsetChar * 2)) * (characterSpriteInfo.Second.Height - (OffsetChar * 2));
+            auto bitmapSize   = bitmapPixels * 4;
+
+            // Copies the character glyph to the staging buffer
+            for (Size i = 0; i < bitmapPixels; ++i)
+            {
+                mappedMemory[currentBufferOffset + (i * 4) + 0] = std::numeric_limits<Uint8>::max();
+                mappedMemory[currentBufferOffset + (i * 4) + 1] = std::numeric_limits<Uint8>::max();
+                mappedMemory[currentBufferOffset + (i * 4) + 2] = std::numeric_limits<Uint8>::max();
+                mappedMemory[currentBufferOffset + (i * 4) + 3] = _fontFace->glyph->bitmap.buffer[i];
+
+                static_assert(std::is_same_v<Uint8, unsigned char>);
+            }
+
+            // Stores the character offset
+            charOffsetMap.Insert({characterSpriteInfo.First, currentBufferOffset});
+
+            // Calculates the character offset
+            currentBufferOffset += bitmapSize;
+        }
+
+        // Unmaps the staging buffer
+        _atlasConfig.ImmediateDeviceContext->UnmapBuffer(stagingBuffer);
+    }
+
+    // Copies the staging buffer to the texture
+    {
+        for (auto& characterSpriteInfo : result.SpriteLocations)
+        {
+            auto offset = charOffsetMap.Find(characterSpriteInfo.First)->Second;
+
+            _atlasConfig.ImmediateDeviceContext->CopyBufferToTexture(stagingBuffer,
+                                                                     offset,
+                                                                     _fontAtlas,
+                                                                     0,
+                                                                     1,
+                                                                     0,
+                                                                     {characterSpriteInfo.Second.X + OffsetChar, characterSpriteInfo.Second.Y + OffsetChar, 0},
+                                                                     {characterSpriteInfo.Second.Width - (OffsetChar * 2), characterSpriteInfo.Second.Height - (OffsetChar * 2), 1});
+
+            _charRects.Insert({characterSpriteInfo.First, {characterSpriteInfo.Second.X + OffsetChar, characterSpriteInfo.Second.Y + OffsetChar, characterSpriteInfo.Second.Width - (OffsetChar * 2), characterSpriteInfo.Second.Height - (OffsetChar * 2)}});
         }
     }
 }
+
+} // namespace Renderer
 
 } // namespace Axis

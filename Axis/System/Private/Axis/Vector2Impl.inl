@@ -11,6 +11,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <ArithmeticType T>
 template <ArithmeticType U, ArithmeticType W>
 inline constexpr Vector2<T>::Vector2(U x,
@@ -159,6 +162,8 @@ inline constexpr Bool Vector2<T>::operator!=(const Vector2<T>& other) const noex
 {
     return X != other.X || Y != other.Y;
 }
+
+} // namespace System
 
 } // namespace Axis
 

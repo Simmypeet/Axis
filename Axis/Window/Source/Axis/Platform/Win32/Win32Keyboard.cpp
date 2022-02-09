@@ -12,6 +12,9 @@
 namespace Axis
 {
 
+namespace Window
+{
+
 namespace Keyboard
 {
 
@@ -132,19 +135,21 @@ KeyboardState GetKeyboardState()
     Uint64 keyStates2 = 0;
 
     // Loops through all the keys and sets the state of the key
-    for (int i = 0; i < Enum::GetUnderlyingValue(Key::Slash); i++)
+    for (int i = 0; i < System::Enum::GetUnderlyingValue(Key::Slash); i++)
     {
         // For the first 64 keys store the state in the first 64 bits
         if (i < 64)
-            keyStates1 = Math::AssignBitToPosition(keyStates1, i, (GetAsyncKeyState(AxisKeyToWindowsAPIKey(static_cast<Key>(i))) & 0x8000) != 0);
+            keyStates1 = System::Math::AssignBitToPosition(keyStates1, i, (GetAsyncKeyState(AxisKeyToWindowsAPIKey(static_cast<Key>(i))) & 0x8000) != 0);
         // For the second 64 keys store the state in the second 64 bits
         else
-            keyStates2 = Math::AssignBitToPosition(keyStates2, i - 64, (GetAsyncKeyState(AxisKeyToWindowsAPIKey(static_cast<Key>(i))) & 0x8000) != 0);
+            keyStates2 = System::Math::AssignBitToPosition(keyStates2, i - 64, (GetAsyncKeyState(AxisKeyToWindowsAPIKey(static_cast<Key>(i))) & 0x8000) != 0);
     }
 
     return KeyboardState(keyStates1, keyStates2);
 }
 
 } // namespace Keyboard
+
+} // namespace Window
 
 } // namespace Axis

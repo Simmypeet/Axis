@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Mouse.hpp
-/// 
-/// \brief Contains the functions and classes for retrieving mouse inputs.
-
 #ifndef AXIS_WINDOW_MOUSE_HPP
 #define AXIS_WINDOW_MOUSE_HPP
 #pragma once
@@ -16,6 +12,9 @@
 #include "WindowExport.hpp"
 
 namespace Axis
+{
+
+namespace Window
 {
 
 /// \brief Available different mouse buttons.
@@ -55,23 +54,23 @@ enum class MouseWheel : Uint8
 struct AXIS_WINDOW_API MouseState final
 {
 public:
-    /// \brief Gets \a `Axis::Window::ButtonState` of \a
+    /// \brief Gets \a `ButtonState` of \a
     ///        `Axis::Window::MouseButton::Left`.
     AXIS_NODISCARD ButtonState GetLeftButtonState() const noexcept;
 
-    /// \brief Gets \a `Axis::Window::ButtonState` of \a
+    /// \brief Gets \a `ButtonState` of \a
     ///        `Axis::Window::MouseButton::Right`.
     AXIS_NODISCARD ButtonState GetRightButtonState() const noexcept;
 
-    /// \brief Gets \a `Axis::Window::ButtonState` of \a
+    /// \brief Gets \a `ButtonState` of \a
     ///        `Axis::Window::MouseButton::Middle`.
     AXIS_NODISCARD ButtonState GetMiddleButtonState() const noexcept;
 
-    /// \brief Gets \a `Axis::Window::ButtonState` of \a
+    /// \brief Gets \a `ButtonState` of \a
     ///        `Axis::Window::MouseButton::ExtraButton1`.
     AXIS_NODISCARD ButtonState GetExtraButton1State() const noexcept;
 
-    /// \brief Gets \a `Axis::Window::ButtonState` of \a
+    /// \brief Gets \a `ButtonState` of \a
     ///        `Axis::Window::MouseButton::ExtraButton2`.
     AXIS_NODISCARD ButtonState GetExtraButton2State() const noexcept;
 
@@ -83,7 +82,7 @@ public:
 
     /// \brief Gets mouse's position relative to the specified \a
     /// `Axis::Window::DisplayWindow`.
-    AXIS_NODISCARD inline Vector2I GetPosition() const noexcept { return _mousePosition; }
+    AXIS_NODISCARD inline System::Vector2I GetPosition() const noexcept { return _mousePosition; }
 
     /// \brief Equal operator
     AXIS_NODISCARD Bool operator==(const MouseState& other) const noexcept;
@@ -93,20 +92,22 @@ public:
 
 private:
     /// Private constructor
-    MouseState(Uint8    buttons,
-               Vector2I mousePosition,
-               Float32  verticalScrollWheelValue,
-               Float32  horizontalScrollWheelValue) noexcept;
+    MouseState(Uint8            buttons,
+               System::Vector2I mousePosition,
+               Float32          verticalScrollWheelValue,
+               Float32          horizontalScrollWheelValue) noexcept;
 
     /// Private members
-    Uint8    _buttons                    = 0;
-    Vector2I _mousePosition              = {};
-    Float32  _verticalScrollWheelValue   = {};
-    Float32  _horizontalScrollWheelValue = {};
+    Uint8            _buttons                    = 0;
+    System::Vector2I _mousePosition              = {};
+    Float32          _verticalScrollWheelValue   = {};
+    Float32          _horizontalScrollWheelValue = {};
 
     /// Friend declarations
     friend class Mouse;
 };
+
+} // namespace Window
 
 } // namespace Axis
 

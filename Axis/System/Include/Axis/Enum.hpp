@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Enum.hpp
-///
-/// \brief Contains enum static reflection functionalities.
-
 #ifndef AXIS_SYSTEM_ENUM_HPP
 #define AXIS_SYSTEM_ENUM_HPP
 #pragma once
@@ -14,6 +10,9 @@
 #include "Trait.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 namespace Enum
@@ -56,10 +55,11 @@ constexpr T operator~(T val) noexcept;
 
 } // namespace Enum
 
-/// \brief Enables enum bitwise operators.
-using namespace Enum::Operator;
+} // namespace System
 
 } // namespace Axis
+
+using namespace Axis::System::Enum::Operator;
 
 #include "../../Private/Axis/EnumImpl.inl"
 

@@ -16,16 +16,18 @@
 namespace Axis
 {
 
+namespace Graphics
+{
 
 Size VulkanFramebufferCacheKey::GetHash() const noexcept
 {
     std::hash<ITextureView*> hasher     = {};
     std::hash<Size>          sizeHasher = {};
     Size                     hash       = hasher(DepthStencilView.GetPointer());
-    hash                                = Math::HashCombine(hash, sizeHasher(RenderTargetViews.GetLength()));
+    hash                                = System::Math::HashCombine(hash, sizeHasher(RenderTargetViews.GetLength()));
 
     for (const auto& renderTargetView : RenderTargetViews)
-        hash = Math::HashCombine(hash, hasher(renderTargetView.GetPointer()));
+        hash = System::Math::HashCombine(hash, hasher(renderTargetView.GetPointer()));
 
     return hash;
 }
@@ -62,19 +64,19 @@ VulkanFramebufferCache::VulkanFramebufferCache(VulkanGraphicsDevice& vulkanGraph
 // Default destructor
 VulkanFramebufferCache::~VulkanFramebufferCache() noexcept {}
 
-SharedPointer<IFramebuffer> VulkanFramebufferCache::GetFramebuffer(const VulkanFramebufferCacheKey& framebufferCacheKey)
+System::SharedPointer<IFramebuffer> VulkanFramebufferCache::GetFramebuffer(const VulkanFramebufferCacheKey& framebufferCacheKey)
 {
     AXIS_ASSERT(framebufferCacheKey.RenderTargetViews, "framebufferCacheKey.RenderTargetViews wasn't nullptr!");
 
-    auto                        iterator = _hashCache.Find(framebufferCacheKey);
-    SharedPointer<IFramebuffer> result;
+    auto                                iterator = _hashCache.Find(framebufferCacheKey);
+    System::SharedPointer<IFramebuffer> result;
 
     constexpr auto CreateFramebuffer = [](const VulkanFramebufferCacheKey& cacheKey,
                                           VulkanRenderPassCache&           renderPassCache,
-                                          VulkanGraphicsDevice*            vulkanGraphicsDevice) -> SharedPointer<IFramebuffer> {
+                                          VulkanGraphicsDevice*            vulkanGraphicsDevice) -> System::SharedPointer<IFramebuffer> {
         FramebufferDescription framebufferDesc = {};
 
-        framebufferDesc.Attachments = List<SharedPointer<ITextureView>>(cacheKey.DepthStencilView == nullptr ? cacheKey.RenderTargetViews.GetLength() : cacheKey.RenderTargetViews.GetLength() + 1);
+        framebufferDesc.Attachments = System::List<System::SharedPointer<ITextureView>>(cacheKey.DepthStencilView == nullptr ? cacheKey.RenderTargetViews.GetLength() : cacheKey.RenderTargetViews.GetLength() + 1);
 
         if (cacheKey.DepthStencilView != nullptr)
             framebufferDesc.Attachments[0] = cacheKey.DepthStencilView.Generate();
@@ -96,7 +98,7 @@ SharedPointer<IFramebuffer> VulkanFramebufferCache::GetFramebuffer(const VulkanF
         VulkanRenderPassCacheKey renderPassCacheKey = {};
 
         renderPassCacheKey.DepthStencilViewFormat  = cacheKey.DepthStencilView == nullptr ? TextureFormat::Unknown : cacheKey.DepthStencilView.GetPointer()->Description.ViewFormat;
-        renderPassCacheKey.RenderTargetViewFormats = List<TextureFormat>(cacheKey.RenderTargetViews.GetLength());
+        renderPassCacheKey.RenderTargetViewFormats = System::List<TextureFormat>(cacheKey.RenderTargetViews.GetLength());
 
         for (Size i = 0; i < cacheKey.RenderTargetViews.GetLength(); i++)
             renderPassCacheKey.RenderTargetViewFormats[i] = cacheKey.RenderTargetViews[i].GetPointer()->Description.ViewFormat;
@@ -161,5 +163,7 @@ void VulkanFramebufferCache::CleanUp()
             it++;
     }
 }
+
+} // namespace Graphics
 
 } // namespace Axis

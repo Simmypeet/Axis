@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file ResourceHeap.hpp
-///
-/// \brief Contains `Axis::IResourceHeapLayout` interface class.
-
 #ifndef AXIS_GRAPHICS_RESOURCEHEAPLAYOUT_HPP
 #define AXIS_GRAPHICS_RESOURCEHEAPLAYOUT_HPP
 #pragma once
@@ -16,6 +12,9 @@
 #include "GraphicsExport.hpp"
 
 namespace Axis
+{
+
+namespace Graphics
 {
 
 /// \brief Specifies the type of resource binding.
@@ -51,7 +50,7 @@ struct ResourceLayoutBinding
 struct ResourceHeapLayoutDescription final
 {
     /// \brief List of all resource bindings.
-    List<ResourceLayoutBinding> ResourceBindings = {};
+    System::List<ResourceLayoutBinding> ResourceBindings = {};
 };
 
 /// \brief Describes the resources that will be used over the course of pipeline.
@@ -65,6 +64,8 @@ protected:
     /// \brief Constructor
     IResourceHeapLayout(const ResourceHeapLayoutDescription& Description);
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

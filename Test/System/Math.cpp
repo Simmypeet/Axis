@@ -1,12 +1,13 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 {
     DOCTEST_SUBCASE("IsFloatEqual")
     {
-        using namespace Axis;
-
         constexpr Float32 a = 1.0f / 3.0f;
         constexpr Float32 b = 10.0f / 30.0f;
         constexpr Float32 c = 0.333333333333333f;
@@ -18,8 +19,6 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 
     DOCTEST_SUBCASE("AssignBitToPosition")
     {
-        using namespace Axis;
-
         DOCTEST_CHECK(Math::AssignBitToPosition(0x0, 0, 1) == 0x1);
         DOCTEST_CHECK(Math::AssignBitToPosition(0x0, 1, 1) == 0x2);
         DOCTEST_CHECK(Math::AssignBitToPosition(0x0, 2, 1) == 0x4);
@@ -41,8 +40,6 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 
     DOCTEST_SUBCASE("ReadBitPosition")
     {
-        using namespace Axis;
-
         DOCTEST_CHECK(Math::ReadBitPosition(0x1, 0) == true);
         DOCTEST_CHECK(Math::ReadBitPosition(0x2, 1) == true);
         DOCTEST_CHECK(Math::ReadBitPosition(0x4, 2) == true);
@@ -64,8 +61,6 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 
     DOCTEST_SUBCASE("GetLeastSignificantBit")
     {
-        using namespace Axis;
-
         constexpr Size case1 = 0x2 | 0x4;
         constexpr Size case2 = 0x8 | 0x10;
 
@@ -75,7 +70,6 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 
     DOCTEST_SUBCASE("Clamp")
     {
-        using namespace Axis;
 
         DOCTEST_CHECK(Math::Clamp(0.0f, 0.25f, 0.75f) == 0.25f);
         DOCTEST_CHECK(Math::Clamp(0.5f, 0.25f, 0.75f) == 0.5f);
@@ -84,8 +78,6 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 
     DOCTEST_SUBCASE("IsInRange")
     {
-        using namespace Axis;
-
         DOCTEST_CHECK(!Math::IsInRange(0.0f, 0.25f, 0.75f));
         DOCTEST_CHECK(Math::IsInRange(0.5f, 0.25f, 0.75f));
         DOCTEST_CHECK(!Math::IsInRange(1.0f, 0.25f, 0.75f));
@@ -93,8 +85,6 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 
     DOCTEST_SUBCASE("Max")
     {
-        using namespace Axis;
-
         DOCTEST_CHECK(Math::Max(0.0f, 0.25f) == 0.25f);
         DOCTEST_CHECK(Math::Max(0.5f, 0.25f) == 0.5f);
         DOCTEST_CHECK(Math::Max(1.0f, 0.25f) == 1.0f);
@@ -102,8 +92,6 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 
     DOCTEST_SUBCASE("Min")
     {
-        using namespace Axis;
-
         DOCTEST_CHECK(Math::Min(0.0f, 0.25f) == 0.0f);
         DOCTEST_CHECK(Math::Min(0.5f, 0.25f) == 0.25f);
         DOCTEST_CHECK(Math::Min(1.0f, 0.25f) == 0.25f);
@@ -111,8 +99,6 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 
     DOCTEST_SUBCASE("Abs")
     {
-        using namespace Axis;
-
         DOCTEST_CHECK(Math::Abs(0.0f) == 0.0f);
         DOCTEST_CHECK(Math::Abs(0.25f) == 0.25f);
         DOCTEST_CHECK(Math::Abs(-0.25f) == 0.25f);
@@ -124,8 +110,6 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 
     DOCTEST_SUBCASE("RoundUp")
     {
-        using namespace Axis;
-
         DOCTEST_CHECK(Math::RoundUp(23, 10) == 30);
         DOCTEST_CHECK(Math::RoundUp(26, 10) == 30);
         DOCTEST_CHECK(Math::RoundUp(30, 10) == 30);
@@ -136,8 +120,6 @@ DOCTEST_TEST_CASE("Math functions : [Axis::System]")
 
     DOCTEST_SUBCASE("RoundToNextPowerOfTwo")
     {
-        using namespace Axis;
-
         DOCTEST_CHECK(Math::RoundToNextPowerOfTwo(Size(0)) == 1);
         DOCTEST_CHECK(Math::RoundToNextPowerOfTwo(Size(1)) == 1);
         DOCTEST_CHECK(Math::RoundToNextPowerOfTwo(Size(2)) == 2);

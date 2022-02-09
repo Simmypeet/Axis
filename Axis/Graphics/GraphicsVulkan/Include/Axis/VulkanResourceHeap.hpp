@@ -15,7 +15,10 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class VulkanGraphicsDevice;
 class VulkanDeviceContext;
 class VulkanFence;
@@ -25,33 +28,33 @@ class VulkanBuffer;
 class VulkanSampler;
 class VulkanTextureView;
 
-/// \brief Implementation of IResourceHeap interface class in Vulkan platform.
+// Implementation of IResourceHeap interface class in Vulkan platform.
 class VulkanResourceHeap final : public IResourceHeap
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanResourceHeap(const ResourceHeapDescription& description,
                        VulkanGraphicsDevice&          vulkanGraphicsDevice);
 
-    /// \brief Implementation of IResourceHeap::BindBuffers class in Vulkan platform.
-    void BindBuffers(Uint32                              bindingIndex,
-                     const Span<SharedPointer<IBuffer>>& buffers,
-                     const Span<Size>&                   offsets,
-                     const Span<Size>&                   sizes,
-                     Uint32                              startingArrayIndex) override final;
+    // Implementation of IResourceHeap::BindBuffers class in Vulkan platform.
+    void BindBuffers(Uint32                                              bindingIndex,
+                     const System::Span<System::SharedPointer<IBuffer>>& buffers,
+                     const System::Span<Size>&                           offsets,
+                     const System::Span<Size>&                           sizes,
+                     Uint32                                              startingArrayIndex) override final;
 
-    /// \brief Implementation of IResourceHeap::BindSamplers class in Vulkan platform.
-    void BindSamplers(Uint32                                   bindingIndex,
-                      const Span<SharedPointer<ISampler>>&     samplers,
-                      const Span<SharedPointer<ITextureView>>& textureViews,
-                      Uint32                                   startingArrayIndex) final;
+    // Implementation of IResourceHeap::BindSamplers class in Vulkan platform.
+    void BindSamplers(Uint32                                                   bindingIndex,
+                      const System::Span<System::SharedPointer<ISampler>>&     samplers,
+                      const System::Span<System::SharedPointer<ITextureView>>& textureViews,
+                      Uint32                                                   startingArrayIndex) final;
 
-    /// \brief Inserts the barrier for the resources. Prepare for binding.
+    // Inserts the barrier for the resources. Prepare for binding.
     void PrepareResourceHeapBinding(VulkanDeviceContext& deviceContext,
                                     StateTransition      stateTransition);
 
-    /// \brief Gets current using VulkanDescriptorSetGroup.
-    inline const UniquePointer<VulkanDescriptorSetGroup>& GetCurrentDescriptorSetGroup() const noexcept { return _currentDescriptorSetGroup; }
+    // Gets current using VulkanDescriptorSetGroup.
+    inline const System::UniquePointer<VulkanDescriptorSetGroup>& GetCurrentDescriptorSetGroup() const noexcept { return _currentDescriptorSetGroup; }
 
 private:
     void InternalBindResources(VulkanDeviceContext&      vulkanDeviceContext,
@@ -67,7 +70,7 @@ private:
         inline constexpr Size GetHash() const noexcept
         {
             Size hash = BindingIndex;
-            hash      = Math::HashCombine(hash, ArrayIndex);
+            hash      = System::Math::HashCombine(hash, ArrayIndex);
             return hash;
         }
 
@@ -83,23 +86,25 @@ private:
     // Buffer binding info
     struct VulkanBufferBinding
     {
-        SharedPointer<VulkanBuffer> VulkanBuffer = {};
-        Size                        Offset       = {};
-        Size                        BufferSize   = {};
+        System::SharedPointer<VulkanBuffer> VulkanBuffer = {};
+        Size                                Offset       = {};
+        Size                                BufferSize   = {};
     };
 
     // Sampler binding info
     struct VulkanSamplerBinding
     {
-        SharedPointer<VulkanTextureView> VulkanTextureView = nullptr;
-        SharedPointer<VulkanSampler>     VulkanSampler     = nullptr;
+        System::SharedPointer<VulkanTextureView> VulkanTextureView = nullptr;
+        System::SharedPointer<VulkanSampler>     VulkanSampler     = nullptr;
     };
 
-    HashMap<ResourceLocation, VulkanBufferBinding, ResourceLocation::Hash>  _vulkanBufferBindings      = {};
-    HashMap<ResourceLocation, VulkanSamplerBinding, ResourceLocation::Hash> _vulkanSamplerBindings     = {};
-    UniquePointer<VulkanDescriptorSetGroup>                                 _currentDescriptorSetGroup = nullptr;
-    VulkanDescriptorPool                                                    _descriptorPool;
+    System::HashMap<ResourceLocation, VulkanBufferBinding, ResourceLocation::Hash>  _vulkanBufferBindings      = {};
+    System::HashMap<ResourceLocation, VulkanSamplerBinding, ResourceLocation::Hash> _vulkanSamplerBindings     = {};
+    System::UniquePointer<VulkanDescriptorSetGroup>                                 _currentDescriptorSetGroup = nullptr;
+    VulkanDescriptorPool                                                            _descriptorPool;
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

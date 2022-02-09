@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file `LICENSE`, which is part of this source code package.
 
-/// \file ComponentCollection.hpp
-///
-/// \brief Contains the definition of the \a `Axis::ComponentCollection` class.
-
 #ifndef AXIS_CORE_COMPONENTCOLLECTION_HPP
 #define AXIS_CORE_COMPONENTCOLLECTION_HPP
 #pragma once
@@ -16,6 +12,9 @@
 #include "ApplicationComponent.hpp"
 
 namespace Axis
+{
+
+namespace Core
 {
 
 /// \brief A collection of `Axis::ApplicationComponent` objects,
@@ -30,7 +29,7 @@ public:
     /// \brief Adds a new component to the collection.
     ///
     /// \param[in] component The component to add.
-    void Append(SharedPointer<ApplicationComponent>&& component);
+    void Append(System::SharedPointer<ApplicationComponent>&& component);
 
     /// \brief Adds a component to the collection and adjusts its update and render order
     ///        to the next highest value.
@@ -39,7 +38,7 @@ public:
     ///
     /// \note If the exception is thrown, the component's update and render order will
     ///       be set to the previous value.
-    void AppendHighest(SharedPointer<ApplicationComponent>&& component);
+    void AppendHighest(System::SharedPointer<ApplicationComponent>&& component);
 
     /// \brief Removes a component from the collection.
     ///
@@ -51,23 +50,23 @@ public:
     /// \brief Updates all the components in the collection.
     ///
     /// \param[in] timeStep The time since the last update.
-    void UpdateAll(const TimePeriod& timeStep);
+    void UpdateAll(const System::TimePeriod& timeStep);
 
     /// \brief Renders all the components in the collection.
     ///
     /// \param[in] timeStep The time since the last update.
-    void RenderAll(const TimePeriod& timeStep);
+    void RenderAll(const System::TimePeriod& timeStep);
 
     /// \brief Gets the list of components in the collection.
     ///
     /// \return The list of components.
-    inline const List<SharedPointer<ApplicationComponent>>& GetComponents() const noexcept { return _components; }
+    inline const System::List<System::SharedPointer<ApplicationComponent>>& GetComponents() const noexcept { return _components; }
 
     /// \brief The event raised when a component is added to the collection.
-    inline Event<void(ApplicationComponent&)>::Register& GetComponentAddedEventHandler() noexcept { return _componentAddedEvent.EventRegister; }
+    inline System::Event<void(ApplicationComponent&)>::Register& GetComponentAddedEventHandler() noexcept { return _componentAddedEvent.EventRegister; }
 
     /// \brief The event raised when a component is removed from the collection.
-    inline Event<void(ApplicationComponent&)>::Register& GetComponentRemovedEventHandler() noexcept { return _componentRemovedEvent.EventRegister; }
+    inline System::Event<void(ApplicationComponent&)>::Register& GetComponentRemovedEventHandler() noexcept { return _componentRemovedEvent.EventRegister; }
 
     ComponentCollection(const ComponentCollection&) = delete;            ///< Deleted copy constructor
     ComponentCollection(ComponentCollection&&)      = delete;            ///< Deleted move constructor
@@ -79,16 +78,18 @@ private:
     explicit ComponentCollection(Application& application) noexcept;
 
     /// Private members
-    List<SharedPointer<ApplicationComponent>> _components;            ///< The collection of components.
-    List<ApplicationComponent*>               _componentsDrawOrder;   ///< The collection of components in draw order.
-    List<ApplicationComponent*>               _componentsUpdateOrder; ///< The collection of components in update order.
-    Application&                              _application;           ///< The application.
-    Event<void(ApplicationComponent&)>        _componentAddedEvent;   ///< The event raised when a component is added to the collection.
-    Event<void(ApplicationComponent&)>        _componentRemovedEvent; ///< The event raised when a component is removed from the collection.
+    System::List<System::SharedPointer<ApplicationComponent>> _components;            ///< The collection of components.
+    System::List<System::SharedPointer<ApplicationComponent>> _componentsDrawOrder;   ///< The collection of components in draw order.
+    System::List<System::SharedPointer<ApplicationComponent>> _componentsUpdateOrder; ///< The collection of components in update order.
+    Application&                                              _application;           ///< The application.
+    System::Event<void(ApplicationComponent&)>                _componentAddedEvent;   ///< The event raised when a component is added to the collection.
+    System::Event<void(ApplicationComponent&)>                _componentRemovedEvent; ///< The event raised when a component is removed from the collection.
 
     /// Friend declaration
     friend class Application;
 };
+
+} // namespace Core
 
 } // namespace Axis
 

@@ -7,11 +7,17 @@
 #include <Axis/Renderer>
 #include <Axis/System>
 #include <Axis/Window>
+#include <iostream>
+
+using namespace Axis;
+using namespace Axis::System;
+using namespace Axis::Window;
+using namespace Axis::Graphics;
+using namespace Axis::Core;
+using namespace Axis::Renderer;
 
 int main(int argc, char** argv)
 {
-    // using namespace Axis
-    using namespace Axis;
     // Represents a single sprite on the screen
     struct Sprite final
     {
@@ -109,7 +115,7 @@ int main(int argc, char** argv)
             loadConfiguration.ImmediateDeviceContext   = GetImmediateGraphicsContext();
             loadConfiguration.IsSRGB                   = false;
             loadConfiguration.GenerateMip              = true;
-            loadConfiguration.Usage                    = ResourceUsage::Immutable; 
+            loadConfiguration.Usage                    = ResourceUsage::Immutable;
 
             TextureLoader loader = TextureLoader(FileStream(texturePath, FileMode::Binary | FileMode::Read),
                                                  loadConfiguration);
@@ -123,7 +129,27 @@ int main(int argc, char** argv)
             _spriteBatch.EmplaceConstruct(GetGraphicsDevice(),
                                           GetImmediateGraphicsContext(),
                                           GetSwapChain(),
-                                          SpriteBatch::MaximumMaxSpritesPerBatch); 
+                                          SpriteBatch::MaximumMaxSpritesPerBatch);
+
+            WString fontPaths[]  = {executableDirectoryPath.GetCString(), L"Asset\\CascadiaCodePL-SemiBold.ttf"};
+            WString fontFilePath = Path::CombinePath(fontPaths);
+
+            FontAtlasConfiguration fontAtlasConfiguration = {
+                .GraphicsDevice         = GetGraphicsDevice(),
+                .ImmediateDeviceContext = GetImmediateGraphicsContext(),
+                .GenerateMip            = true,
+                .Usage                  = ResourceUsage::Immutable,
+                .Binding                = TextureBinding::Sampled,
+                .DeviceQueueFamilyMask  = Math::AssignBitToPosition(Size{0}, GetImmediateGraphicsContext()->DeviceQueueFamilyIndex, true),
+                .StartCharacterRange    = WChar(32),
+                .EndCharacterRange      = WChar(126),
+                .UseCharacterRange      = true};
+
+            FileStream fontFile = FileStream(fontFilePath, FileMode::Binary | FileMode::Read);
+
+            _spriteFont = Axis::System::MakeShared<SpriteFont>(fontFile,
+                                                               24,
+                                                               fontAtlasConfiguration);
 
             // Creates mouse object
             _mouse.EmplaceConstruct(GetWindow());
@@ -193,6 +219,14 @@ int main(int argc, char** argv)
 
             for (auto& sprite : _sprites)
                 sprite.Draw(*_spriteBatch);
+
+            constexpr auto stringLine1 = L"the quick brown fox jumps over the lazy dog";
+            constexpr auto stringLine2 = L"THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG";
+            constexpr auto stringLine3 = L"1234567890";
+
+            _spriteBatch->DrawString(_spriteFont, stringLine1, Vector2F(10.0f, 10.0f), {1.0f, 0.5f, 0.5f, 1.0f});
+            _spriteBatch->DrawString(_spriteFont, stringLine2, Vector2F(10.0f, 10.0f + _spriteFont->GetLineHeight()), {0.5f, 1.0f, 0.5f, 1.0f});
+            _spriteBatch->DrawString(_spriteFont, stringLine3, Vector2F(10.0f, 10.0f + _spriteFont->GetLineHeight() * 2), {1.0f, 1.0f, 1.0f, 1.0f}); 
 
             _spriteBatch->End();
         }

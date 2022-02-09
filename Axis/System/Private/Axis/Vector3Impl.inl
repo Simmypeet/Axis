@@ -11,6 +11,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <ArithmeticType T>
 template <ArithmeticType U, ArithmeticType V, ArithmeticType W>
 inline constexpr Vector3<T>::Vector3(U x,
@@ -180,6 +183,8 @@ inline constexpr bool Vector3<T>::operator!=(const Vector3& other) const noexcep
 {
     return (X != other.X) || (Y != other.Y) || (Z != other.Z);
 }
+
+} // namespace System
 
 } // namespace Axis
 

@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Matrix.hpp
-///
-/// \brief Contains mathematical \a `Axis::Matrix` template data structure.
-
 #ifndef AXIS_SYSTEM_MATRIX_HPP
 #define AXIS_SYSTEM_MATRIX_HPP
 #pragma once
@@ -15,6 +11,9 @@
 #include <type_traits>
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Flag determines the default template parameter for  matrices.
@@ -123,6 +122,8 @@ using Matrix4x4 = Matrix<T, 4, 4, DefaultIsColumnMajor>;
 
 /// \brief 4 by 4, floating-point, column-major matrix.
 typedef Matrix<Float32, 4, 4, DefaultIsColumnMajor> FloatMatrix4x4;
+
+} // namespace System
 
 } // namespace Axis
 

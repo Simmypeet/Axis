@@ -41,11 +41,11 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL AxisDebugCallback(VkDebugUtilsMessageSever
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-            std::cout << "ValidationLayer: " << pCallbackData->pMessage;
+            std::cerr << "ValidationLayer: " << pCallbackData->pMessage;
             break;
 
         default:
-            std::cout << "ValidationLayer: " << pCallbackData->pMessage;
+            std::cerr << "ValidationLayer: " << pCallbackData->pMessage;
     }
 
     return VK_FALSE;
@@ -54,11 +54,11 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL AxisDebugCallback(VkDebugUtilsMessageSever
 
 extern "C"
 {
-    Axis::IGraphicsSystem* AxisCreateVulkanGraphicsSystem()
+    Axis::Graphics::IGraphicsSystem* AxisCreateVulkanGraphicsSystem()
     {
         try
         {
-            return Axis::New<Axis::VulkanGraphicsSystem>();
+            return Axis::System::New<Axis::Graphics::VulkanGraphicsSystem>();
         }
         catch (...)
         {
@@ -71,7 +71,10 @@ extern "C"
 namespace Axis
 {
 
-const List<const char*> VulkanGraphicsSystem::InstancecExtensions = {
+namespace Graphics
+{
+
+const System::List<const char*> VulkanGraphicsSystem::InstancecExtensions = {
 #ifdef AXIS_DEBUG
     VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
 #endif
@@ -81,7 +84,7 @@ const List<const char*> VulkanGraphicsSystem::InstancecExtensions = {
 #endif
 };
 
-const List<const char*> VulkanGraphicsSystem::InstanceLayers = {
+const System::List<const char*> VulkanGraphicsSystem::InstanceLayers = {
 #ifdef AXIS_DEBUG
     "VK_LAYER_KHRONOS_validation"
 #endif
@@ -105,7 +108,7 @@ VulkanGraphicsSystem::VulkanGraphicsSystem()
 
         // The hardware doesn't have the engine's required instance extensions.
         if (!found)
-            throw ExternalException("The hardware didn't support this graphics system!");
+            throw System::ExternalException("The hardware didn't support this graphics system!");
     }
 
     // Checks if required instance layers are supported!
@@ -124,7 +127,7 @@ VulkanGraphicsSystem::VulkanGraphicsSystem()
 
         // The hardware doesn't have the engine's required instance layers.
         if (!found)
-            throw ExternalException("The hardware didn't support this graphics system!");
+            throw System::ExternalException("The hardware didn't support this graphics system!");
     }
 
     auto CreateVkInstance = []() -> VkInstance {
@@ -134,9 +137,9 @@ VulkanGraphicsSystem::VulkanGraphicsSystem()
         // App info
         VkApplicationInfo appInfo  = {};
         appInfo.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName   = Axis::VulkanGraphicsSystem::VulkanApplicationName;
+        appInfo.pApplicationName   = Axis::Graphics::VulkanGraphicsSystem::VulkanApplicationName;
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName        = Axis::VulkanGraphicsSystem::VulkanEngineName;
+        appInfo.pEngineName        = Axis::Graphics::VulkanGraphicsSystem::VulkanEngineName;
         appInfo.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion         = VK_API_VERSION_1_2;
 
@@ -144,10 +147,10 @@ VulkanGraphicsSystem::VulkanGraphicsSystem()
         VkInstanceCreateInfo instanceCreateInfo    = {};
         instanceCreateInfo.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instanceCreateInfo.pApplicationInfo        = &appInfo;
-        instanceCreateInfo.enabledLayerCount       = (Axis::Uint32)Axis::VulkanGraphicsSystem::InstanceLayers.GetLength();
-        instanceCreateInfo.ppEnabledLayerNames     = Axis::VulkanGraphicsSystem::InstanceLayers.GetData();
-        instanceCreateInfo.enabledExtensionCount   = (Axis::Uint32)Axis::VulkanGraphicsSystem::InstancecExtensions.GetLength();
-        instanceCreateInfo.ppEnabledExtensionNames = Axis::VulkanGraphicsSystem::InstancecExtensions.GetData();
+        instanceCreateInfo.enabledLayerCount       = (Axis::Uint32)Axis::Graphics::VulkanGraphicsSystem::InstanceLayers.GetLength();
+        instanceCreateInfo.ppEnabledLayerNames     = Axis::Graphics::VulkanGraphicsSystem::InstanceLayers.GetData();
+        instanceCreateInfo.enabledExtensionCount   = (Axis::Uint32)Axis::Graphics::VulkanGraphicsSystem::InstancecExtensions.GetLength();
+        instanceCreateInfo.ppEnabledExtensionNames = Axis::Graphics::VulkanGraphicsSystem::InstancecExtensions.GetData();
 
         auto result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
 
@@ -207,10 +210,10 @@ VulkanGraphicsSystem::VulkanGraphicsSystem()
 
     // Doesn't have any physical devices which support Vulkan
     if (physicalDeviceCount == 0)
-        throw ExternalException("The hardware didn't support this graphics system!");
+        throw System::ExternalException("The hardware didn't support this graphics system!");
 
     // Retrieves VkPhysicalDevice handles.
-    List<VkPhysicalDevice> vkPhyiscalDevices;
+    System::List<VkPhysicalDevice> vkPhyiscalDevices;
     vkPhyiscalDevices.Resize(physicalDeviceCount);
 
     vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, vkPhyiscalDevices.GetData());
@@ -222,16 +225,16 @@ VulkanGraphicsSystem::VulkanGraphicsSystem()
         _vulkanPhysicalDevices.EmplaceBack(vkPhyiscalDevice);
 }
 
-const List<VkLayerProperties>& VulkanGraphicsSystem::GetInstanceLayerProperties()
+const System::List<VkLayerProperties>& VulkanGraphicsSystem::GetInstanceLayerProperties()
 {
-    static List<VkLayerProperties> s_InstanceLayers = nullptr;
+    static System::List<VkLayerProperties> s_InstanceLayers = nullptr;
 
     if (!s_InstanceLayers)
     {
         Uint32 layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-        s_InstanceLayers = List<VkLayerProperties>(layerCount);
+        s_InstanceLayers = System::List<VkLayerProperties>(layerCount);
 
         vkEnumerateInstanceLayerProperties(&layerCount, s_InstanceLayers.GetData());
     }
@@ -239,9 +242,9 @@ const List<VkLayerProperties>& VulkanGraphicsSystem::GetInstanceLayerProperties(
     return s_InstanceLayers;
 }
 
-const List<VkExtensionProperties>& VulkanGraphicsSystem::GetInstanceExtensionProperties()
+const System::List<VkExtensionProperties>& VulkanGraphicsSystem::GetInstanceExtensionProperties()
 {
-    static List<VkExtensionProperties> s_InstanceExtensions = nullptr;
+    static System::List<VkExtensionProperties> s_InstanceExtensions = nullptr;
 
     if (!s_InstanceExtensions)
     {
@@ -249,7 +252,7 @@ const List<VkExtensionProperties>& VulkanGraphicsSystem::GetInstanceExtensionPro
 
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
-        s_InstanceExtensions = List<VkExtensionProperties>(extensionCount);
+        s_InstanceExtensions = System::List<VkExtensionProperties>(extensionCount);
 
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, s_InstanceExtensions.GetData());
     }
@@ -263,9 +266,9 @@ GraphicsSystemDescription VulkanGraphicsSystem::GetGraphicsSystemDescription() c
         .EngineGraphicsAPI = GraphicsAPI::Vulkan};
 }
 
-List<GraphicsAdapter> VulkanGraphicsSystem::GetGraphicsAdapters() const
+System::List<GraphicsAdapter> VulkanGraphicsSystem::GetGraphicsAdapters() const
 {
-    List<GraphicsAdapter> graphicsAdapters = {};
+    System::List<GraphicsAdapter> graphicsAdapters = {};
 
     for (const auto& physicalDevice : _vulkanPhysicalDevices)
         graphicsAdapters.Append(physicalDevice.GetGraphicsAdapterRepresentation());
@@ -273,8 +276,8 @@ List<GraphicsAdapter> VulkanGraphicsSystem::GetGraphicsAdapters() const
     return graphicsAdapters;
 }
 
-Pair<SharedPointer<IGraphicsDevice>, List<SharedPointer<IDeviceContext>>> VulkanGraphicsSystem::CreateGraphicsDeviceAndContexts(Uint32                                  adapterIndex,
-                                                                                                                                const Span<ImmediateContextCreateInfo>& pImmediateContextCreateInfos)
+System::Pair<System::SharedPointer<IGraphicsDevice>, System::List<System::SharedPointer<IDeviceContext>>> VulkanGraphicsSystem::CreateGraphicsDeviceAndContexts(Uint32                                          adapterIndex,
+                                                                                                                                                                const System::Span<ImmediateContextCreateInfo>& pImmediateContextCreateInfos)
 {
     IGraphicsSystem::ValidateCreateGraphicsDeviceAndContexts(adapterIndex,
                                                              pImmediateContextCreateInfos);
@@ -282,26 +285,26 @@ Pair<SharedPointer<IGraphicsDevice>, List<SharedPointer<IDeviceContext>>> Vulkan
     auto vulkanGraphicsSystem = ISharedFromThis::CreateSharedPointerFromThis(*this);
 
     if (!vulkanGraphicsSystem)
-        throw InvalidOperationException("This graphics system hasn't been assigned to any reference counted system!");
+        throw System::InvalidOperationException("This graphics system hasn't been assigned to any reference counted system!");
 
-    auto graphicsDevice = Axis::MakeShared<VulkanGraphicsDevice>(vulkanGraphicsSystem,
-                                                                 adapterIndex,
-                                                                 pImmediateContextCreateInfos);
+    auto graphicsDevice = Axis::System::MakeShared<VulkanGraphicsDevice>(vulkanGraphicsSystem,
+                                                                         adapterIndex,
+                                                                         pImmediateContextCreateInfos);
 
     return {graphicsDevice, graphicsDevice->GetDeviceContexts()};
 }
 
-SwapChainSpecification VulkanGraphicsSystem::GetSwapChainSpecification(Uint32                              adapterIndex,
-                                                                       const SharedPointer<DisplayWindow>& targetWindow) const
+SwapChainSpecification VulkanGraphicsSystem::GetSwapChainSpecification(Uint32                                              adapterIndex,
+                                                                       const System::SharedPointer<Window::DisplayWindow>& targetWindow) const
 {
     if (adapterIndex >= _vulkanPhysicalDevices.GetLength())
-        throw ArgumentOutOfRangeException("`adapterIndex` was out of range!");
+        throw System::ArgumentOutOfRangeException("`adapterIndex` was out of range!");
 
     return _vulkanPhysicalDevices[adapterIndex].GetSwapChainSpecification(GetVkSurfaceKHR(targetWindow));
 }
 
 
-VkSurfaceKHR VulkanGraphicsSystem::GetVkSurfaceKHR(const SharedPointer<DisplayWindow>& window) const
+VkSurfaceKHR VulkanGraphicsSystem::GetVkSurfaceKHR(const System::SharedPointer<Window::DisplayWindow>& window) const
 {
     auto windowSurfacePair = _windowSurfacePairs.Find(window.GetPointer());
 
@@ -323,7 +326,7 @@ VkSurfaceKHR VulkanGraphicsSystem::GetVkSurfaceKHR(const SharedPointer<DisplayWi
 
 
                 if (vkCreateWin32SurfaceKHR(_instance, &win32SurfaceCreateInfo, nullptr, &surfaceKhr) != VK_SUCCESS)
-                    throw ExternalException("Failed to create VkSurfaceKHR!");
+                    throw System::ExternalException("Failed to create VkSurfaceKHR!");
                 else
                     return surfaceKhr;
             };
@@ -343,5 +346,7 @@ VkSurfaceKHR VulkanGraphicsSystem::GetVkSurfaceKHR(const SharedPointer<DisplayWi
 
     return windowSurfacePair->Second;
 }
+
+} // namespace Graphics
 
 } // namespace Axis

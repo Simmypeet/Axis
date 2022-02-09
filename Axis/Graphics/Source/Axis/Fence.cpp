@@ -9,7 +9,12 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 // Default constructor
 IFence::IFence() noexcept = default;
+
+} // namespace Graphics
 
 } // namespace Axis

@@ -12,6 +12,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 namespace Detail
 {
 
@@ -109,8 +112,8 @@ inline T* AllocatedNewArray(Size elementCount) noexcept(std::is_nothrow_default_
         catch (...)
         {
             // Destructs the already constructed elements
-            for (Size i = 0; i < constructedElementCount; ++i)
-                objectArray[i].~T();
+            for (Size i = constructedElementCount; i > 0; --i)
+                objectArray[i - 1].~T();
 
             // Frees the memory
             AllocatorType::Deallocate(originalMemory);
@@ -149,12 +152,14 @@ void AllocatedDeleteArray(T* array) noexcept
     Size elementCount = header->ElementCount;
 
     // Destructs the elements
-    for (Size i = 0; i < elementCount; ++i)
-        array[i].~T();
+    for (Size i = elementCount; i > 0; --i)
+        array[i - 1].~T();
 
     // Frees the memory
     AllocatorType::Deallocate(originalMemory);
 }
+
+} // namespace System
 
 } // namespace Axis
 

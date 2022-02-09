@@ -9,8 +9,13 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 // Default constructor
 IFramebuffer::IFramebuffer(const FramebufferDescription& description) :
     Description(description) {}
+
+} // namespace Graphics
 
 } // namespace Axis

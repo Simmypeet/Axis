@@ -16,25 +16,32 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace System
+{
 struct TimePeriod;
+
+} // namespace System
+
+namespace Core
+{
+
 class Application;
 
 /// \brief Defines the interface for an application component.
-class ApplicationComponent : public ISharedFromThis
+class ApplicationComponent : public System::ISharedFromThis
 {
 public:
     /// \brief Event that is triggered when the component's priority is changed.
     ///
-    /// - Argument \a `Axis::ApplicationComponent&` specifies which component has changed its priority.
-    /// - Argument \a `Axis::Int32` specifies the new priority.
-    using PriorityChangedEvent = Event<void(ApplicationComponent&, Int32)>;
+    /// - Argument \a `ApplicationComponent&` specifies which component has changed its priority.
+    /// - Argument \a `Int32` specifies the new priority.
+    using PriorityChangedEvent = System::Event<void(ApplicationComponent&, Int32)>;
 
     /// \brief Event that is triggered when the component activation state is changed.
     ///
-    /// - Argument \a `Axis::ApplicationComponent&` specifies which component has changed its activation state.
-    /// - Argument \a `Axis::Bool` specifies the new activation state.
-    using ActivationChangedEvent = Event<void(ApplicationComponent&, Bool)>;
+    /// - Argument \a `ApplicationComponent&` specifies which component has changed its activation state.
+    /// - Argument \a `Bool` specifies the new activation state.
+    using ActivationChangedEvent = System::Event<void(ApplicationComponent&, Bool)>;
 
     /// \brief Default constructor
     ApplicationComponent() noexcept = default;
@@ -97,12 +104,12 @@ public:
     /// \brief Component's update method. The method is called by the application when it is time to update the component.
     ///
     /// \param [in] timePeriod Time period since the last update.
-    virtual void Update(const TimePeriod& timePeriod) = 0;
+    virtual void Update(const System::TimePeriod& timePeriod) = 0;
 
     /// \brief Component's render method. The method is called by the application when it is time to render the component.
     ///
     /// \param [in] timePeriod Time period since the last update.
-    virtual void Render(const TimePeriod& timePeriod) = 0;
+    virtual void Render(const System::TimePeriod& timePeriod) = 0;
 
     /// \brief The function is called by the application when the component is added to the application.
     ///
@@ -136,6 +143,8 @@ private:
     ActivationChangedEvent _activeChangedEvent;      ///< Event that is triggered when the component's activation state is changed.
     ActivationChangedEvent _visibleChangedEvent;     ///< Event that is triggered when the component's visibility state is changed.
 };
+
+} // namespace Core
 
 } // namespace Axis
 

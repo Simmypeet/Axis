@@ -12,6 +12,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 namespace Private
 {
 
@@ -275,6 +278,8 @@ void Function<ReturnType(Args...), Allocator>::Destroy() noexcept
             Allocator::Deallocate(DynamicBuffer);
     }
 }
+
+} // namespace System
 
 } // namespace Axis
 

@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file `LICENSE`, which is part of this source code package.
 
-/// \file Win32Timer.hpp
-///
-/// \brief Contains definition of `Axis::System::Timer` class in Win32 platform.
-
 #ifndef AXIS_SYSTEM_WIN32TIMER_HPP
 #define AXIS_SYSTEM_WIN32TIMER_HPP
 #pragma once
@@ -14,6 +10,9 @@
 #include "../../TimePeriod.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Represents the high resolution timer.
@@ -35,6 +34,8 @@ public:
 private:
     TimePeriod _lastestTime = {};
 };
+
+} // namespace System
 
 } // namespace Axis
 

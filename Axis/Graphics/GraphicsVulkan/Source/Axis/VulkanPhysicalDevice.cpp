@@ -10,6 +10,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 // Default constructor
 VulkanPhysicalDevice::VulkanPhysicalDevice() noexcept {}
 
@@ -35,11 +38,11 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice physicalDevice) noex
     Uint32 queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queueFamilyCount, nullptr);
 
-    List<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    System::List<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 
     vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queueFamilyCount, queueFamilies.GetData());
 
-    List<DeviceQueueFamily> deviceQueueFamilies(queueFamilyCount);
+    System::List<DeviceQueueFamily> deviceQueueFamilies(queueFamilyCount);
 
     Size index = 0;
     for (const auto& queueFamily : queueFamilies)
@@ -72,11 +75,11 @@ SwapChainSpecification VulkanPhysicalDevice::GetSwapChainSpecification(VkSurface
     Uint32 formatCount = 0;
     vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, surface, &formatCount, nullptr);
 
-    List<VkSurfaceFormatKHR> surfaceFormats(formatCount);
+    System::List<VkSurfaceFormatKHR> surfaceFormats(formatCount);
 
     if (formatCount != 0)
     {
-        swapChainSpecification.SupportedFormats = List<TextureFormat>(formatCount);
+        swapChainSpecification.SupportedFormats = System::List<TextureFormat>(formatCount);
         vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, surface, &formatCount, surfaceFormats.GetData());
 
         Size index = 0;
@@ -89,5 +92,7 @@ SwapChainSpecification VulkanPhysicalDevice::GetSwapChainSpecification(VkSurface
 
     return swapChainSpecification;
 }
+
+} // namespace Graphics
 
 } // namespace Axis

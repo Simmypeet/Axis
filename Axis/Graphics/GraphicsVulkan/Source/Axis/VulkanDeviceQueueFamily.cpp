@@ -13,6 +13,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanDeviceQueue::VulkanDeviceQueue(VulkanDeviceQueueFamily& deviceQueueFamily,
                                      VulkanGraphicsDevice&    vulkanGraphicsDevice,
                                      Uint32                   deviceQueueIndex) :
@@ -24,7 +27,7 @@ VulkanDeviceQueue::VulkanDeviceQueue(VulkanDeviceQueueFamily& deviceQueueFamily,
                      &_deviceQueue);
 
     if (_deviceQueue == VK_NULL_HANDLE)
-        throw ExternalException("Failed to get VkQueue!");
+        throw System::ExternalException("Failed to get VkQueue!");
 }
 
 void VulkanDeviceQueue::WaitQueueIdle() const noexcept
@@ -83,7 +86,7 @@ void VulkanDeviceQueue::QueueSubmit(VulkanCommandBuffer& commandBuffer,
     _signalValues.Clear();
 
     if (result != VK_SUCCESS)
-        throw ExternalException("Failed to submit VkQueue!");
+        throw System::ExternalException("Failed to submit VkQueue!");
 }
 
 void VulkanDeviceQueue::AppendWaitSemaphore(VkSemaphore          semaphore,
@@ -158,5 +161,7 @@ VulkanDeviceQueue& VulkanDeviceQueueFamily::GetDeviceQueue(Uint32 deviceQueueInd
 
     return _deviceQueues[deviceQueueIndex];
 }
+
+} // namespace Graphics
 
 } // namespace Axis

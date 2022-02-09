@@ -15,6 +15,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 FileStream::FileStream(const StringView<WChar>& filePath,
                        FileModeFlags            fileModes) :
     _filePath(filePath),
@@ -287,5 +290,7 @@ Size FileStream::Seek(Int64      offset,
 
     return GetPosition();
 }
+
+} // namespace System
 
 } // namespace Axis

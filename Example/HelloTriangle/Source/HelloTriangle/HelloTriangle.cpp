@@ -9,6 +9,10 @@
 #include <iostream>
 
 using namespace Axis;
+using namespace Axis::System;
+using namespace Axis::Window;
+using namespace Axis::Graphics;
+using namespace Axis::Core;
 
 // GLSL vertex shader code
 constexpr const char* VertexShaderCode = R"""(

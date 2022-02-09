@@ -7,8 +7,10 @@
 #pragma once
 
 #include "../../Include/Axis/LinkedList.hpp"
-
 namespace Axis
+{
+
+namespace System
 {
 
 // Default constructor
@@ -518,6 +520,8 @@ inline void LinkedList<T, Allocator>::Clear(Node* nodeHead) noexcept
         nodeHead = next;
     }
 }
+
+} // namespace System
 
 } // namespace Axis
 

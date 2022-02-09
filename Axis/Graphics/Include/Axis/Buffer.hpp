@@ -1,12 +1,6 @@
 /// \copyright Simmypeet - Copyright (C)
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
-///
-
-/// \file Buffer.hpp
-///
-/// \brief Contains `Axis::IBuffer` interface class.
-///
 
 #ifndef AXIS_GRAPHICS_BUFFER_HPP
 #define AXIS_GRAPHICS_BUFFER_HPP
@@ -17,6 +11,9 @@
 #include "StatedGraphicsResource.hpp"
 
 namespace Axis
+{
+
+namespace Graphics
 {
 
 /// \brief Specifies the binding that buffer can be bound as.
@@ -63,12 +60,11 @@ struct BufferDescription final
     /// \note Only specifies the device queue family which will use this resource.
     ///       Do not set any device queue family index which won't use this resource unnecessary, this will cause extra overhead.
     ///
-    /// \see Axis::Math::AssignBitToPosition
+    /// \see Axis::System::Math::AssignBitToPosition
     Uint64 DeviceQueueFamilyMask = {};
 };
 
 /// \brief Represents the contagious block of memory which can be used in GPU.
-///
 class AXIS_GRAPHICS_API IBuffer : public StatedGraphicsResource
 {
 public:
@@ -77,9 +73,10 @@ public:
 
 protected:
     /// \brief Constructor
-    ///
     IBuffer(const BufferDescription& textureDescription);
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

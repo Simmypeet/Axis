@@ -12,23 +12,28 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class VulkanGraphicsDevice;
 
-/// \brief An implementation of IRenderPass interface in Vulkan backend.
+// \brief An implementation of IRenderPass interface in Vulkan backend.
 class VulkanRenderPass final : public IRenderPass
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanRenderPass(const RenderPassDescription& description,
                      VulkanGraphicsDevice&        vulkanGraphicsDevice);
 
-    /// \brief Gets the internal VkRenderPass handle.
+    // Gets the internal VkRenderPass handle.
     inline VkRenderPass GetVkRenderPassHandle() const noexcept { return _vulkanRenderPass; }
 
 private:
     VkPtr<VkRenderPass> _vulkanRenderPass = {};
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

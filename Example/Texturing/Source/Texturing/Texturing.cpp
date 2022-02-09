@@ -8,6 +8,12 @@
 #include <Axis/Window>
 #include <optional>
 
+using namespace Axis;
+using namespace Axis::System;
+using namespace Axis::Window;
+using namespace Axis::Graphics;
+using namespace Axis::Core;
+
 // GLSL vertex shader code
 constexpr const char* VertexShaderCode = R"""(
     #version 450
@@ -50,9 +56,6 @@ constexpr const char* FragmentShaderCode = R"""(
 
 int main(int argc, char** argv)
 {
-    // using namespace Axis
-    using namespace Axis;
-
     // Derived application
     class Texturing : public Application
     {

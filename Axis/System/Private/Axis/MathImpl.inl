@@ -14,6 +14,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 namespace Math
 {
 
@@ -204,6 +207,8 @@ inline constexpr T NextPrime(T num) noexcept
 }
 
 } // namespace Math
+
+} // namespace System
 
 } // namespace Axis
 

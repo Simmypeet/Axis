@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file TextureLoader.hpp
-///
-/// \brief Contains `Axis::TextureLoader` class.
-
 #ifndef AXIS_GRAPHICS_TEXTURELOADER_HPP
 #define AXIS_GRAPHICS_TEXTURELOADER_HPP
 #pragma once
@@ -14,13 +10,16 @@
 #include "Texture.hpp"
 
 
-/// Forward declarations
+// Forward declarations
 typedef unsigned char stbi_uc;
 
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class IGraphicsDevice;
 class IDeviceContext;
 class IBuffer;
@@ -29,10 +28,10 @@ class IBuffer;
 struct TextureLoadConfiguration
 {
     /// \brief Graphics device used in texture creations.
-    SharedPointer<IGraphicsDevice> GraphicsDevice = {};
+    System::SharedPointer<IGraphicsDevice> GraphicsDevice = {};
 
     /// \brief Immediate device context used in data transferation.
-    SharedPointer<IDeviceContext> ImmediateDeviceContext = {};
+    System::SharedPointer<IDeviceContext> ImmediateDeviceContext = {};
 
     /// \brief Specifies whether to create the textures with sRGB format.
     Bool IsSRGB = {};
@@ -65,29 +64,31 @@ public:
     /// \param[in] fileStream The file stream to use for loading the image files.
     ///                       The file stream must be opened in binary mode and should be able to read.
     /// \param[in] loadDescription Specifies the image loading configurations.
-    TextureLoader(FileStream&&                    fileStream,
+    TextureLoader(System::FileStream&&            fileStream,
                   const TextureLoadConfiguration& loadDescription);
 
     /// \brief Destructor
     ~TextureLoader() noexcept;
 
     /// \brief Creates the texture out of loaded image.
-    SharedPointer<ITexture> CreateTexture();
+    System::SharedPointer<ITexture> CreateTexture();
 
-    /// \brief Gets \a `Axis::TextureDescription` that used in texture
+    /// \brief Gets \a `TextureDescription` that used in texture
     ///        creation.
     TextureDescription GetTextureDescription() const;
 
 private:
     /// Private members
-    TextureLoadConfiguration _loadConfiguration = {};
-    SharedPointer<IBuffer>   _stagingBuffer     = {}; // Staging buffer for immutable textures.
-    FileStream               _fileStream;
-    stbi_uc*                 _pixels      = nullptr;
-    Int32                    _texWidth    = 0;
-    Int32                    _texHeight   = 0;
-    Int32                    _texChannels = 0;
+    TextureLoadConfiguration       _loadConfiguration = {};
+    System::SharedPointer<IBuffer> _stagingBuffer     = {}; // Staging buffer for immutable textures.
+    System::FileStream             _fileStream;
+    stbi_uc*                       _pixels      = nullptr;
+    Int32                          _texWidth    = 0;
+    Int32                          _texHeight   = 0;
+    Int32                          _texChannels = 0;
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

@@ -12,6 +12,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanResourceHeapLayout::VulkanResourceHeapLayout(const ResourceHeapLayoutDescription& description,
                                                    VulkanGraphicsDevice&                vulkanGraphicsDevice) :
     IResourceHeapLayout(description)
@@ -21,7 +24,7 @@ VulkanResourceHeapLayout::VulkanResourceHeapLayout(const ResourceHeapLayoutDescr
     auto CreateVkDescriptorSetLayout = [&]() -> VkDescriptorSetLayout {
         VkDescriptorSetLayout vkDescriptorSetLayout = VK_NULL_HANDLE;
 
-        List<VkDescriptorSetLayoutBinding> setLayoutBindings;
+        System::List<VkDescriptorSetLayoutBinding> setLayoutBindings;
         setLayoutBindings.ReserveFor(description.ResourceBindings.GetLength());
 
         for (const auto& resourceBinding : description.ResourceBindings)
@@ -44,7 +47,7 @@ VulkanResourceHeapLayout::VulkanResourceHeapLayout(const ResourceHeapLayoutDescr
         auto vkResult = vkCreateDescriptorSetLayout(vulkanGraphicsDevice.GetVkDeviceHandle(), &descriptorSetLayoutCreateInfo, nullptr, &vkDescriptorSetLayout);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to create VkDescriptorSetLayout!");
+            throw System::ExternalException("Failed to create VkDescriptorSetLayout!");
 
         return vkDescriptorSetLayout;
     };
@@ -55,5 +58,7 @@ VulkanResourceHeapLayout::VulkanResourceHeapLayout(const ResourceHeapLayoutDescr
 
     _vulkanDescriptorSetLayout = VkPtr<VkDescriptorSetLayout>(CreateVkDescriptorSetLayout, std::move(DestroyVkDescriptorSetLayout));
 }
+
+} // namespace Graphics
 
 } // namespace Axis

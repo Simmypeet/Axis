@@ -9,7 +9,12 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 IRenderPass::IRenderPass(const RenderPassDescription& description) :
     Description(description) {}
+
+} // namespace Graphics
 
 } // namespace Axis

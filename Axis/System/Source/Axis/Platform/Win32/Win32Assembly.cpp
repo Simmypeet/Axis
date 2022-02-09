@@ -6,10 +6,12 @@
 
 #include <Axis/Exception.hpp>
 #include <Axis/Platform/Win32/Win32Assembly.hpp>
-#include <Axis/Utility.hpp>
 #include <Windows.h>
 
 namespace Axis
+{
+
+namespace System
 {
 
 Assembly::Assembly(const StringView<WChar>& filePath)
@@ -55,5 +57,7 @@ PVoid Assembly::LoadSymbol(const StringView<Char>& symbol)
 
     return (PVoid)procAddress;
 }
+
+} // namespace System
 
 } // namespace Axis

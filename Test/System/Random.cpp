@@ -1,15 +1,15 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Random data structure : [Axis-System]")
 {
     DOCTEST_SUBCASE("`Axis::Random` constructors")
     {
-        using namespace Axis;
-
         // Constructs a random number generator with same seed
         // should yield the same results
-
         Random random1(1);
         Random random2(1);
 

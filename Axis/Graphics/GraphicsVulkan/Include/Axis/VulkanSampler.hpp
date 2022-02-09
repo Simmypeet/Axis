@@ -12,23 +12,28 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class VulkanGraphicsDevice;
 
-/// \brief An implementation of ISampler interface in Vulkan backend.
+// An implementation of ISampler interface in Vulkan backend.
 class VulkanSampler final : public ISampler
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanSampler(const SamplerDescription& description,
                   VulkanGraphicsDevice&     vulkanGraphicsDevice);
 
-    /// \brief Gets the internal VkSampler handle.
+    // Gets the internal VkSampler handle.
     inline VkSampler GetVkSamplerHandle() const noexcept { return _vulkanSampler; }
 
 private:
     VkPtr<VkSampler> _vulkanSampler = {};
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

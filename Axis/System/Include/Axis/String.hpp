@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file String.hpp
-///
-/// \brief Contains the definition of the string template class.
-
 #ifndef AXIS_SYSTEM_STRING_HPP
 #define AXIS_SYSTEM_STRING_HPP
 #pragma once
@@ -16,6 +12,9 @@
 #include <concepts>
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Type of character with different size.
@@ -248,6 +247,8 @@ using StringU8 = String<char8_t, DefaultAllocator>;
 
 /// \brief Data structure which contains null terminated `char16_t` sequence.
 using StringU16 = String<char16_t, DefaultAllocator>;
+
+} // namespace System
 
 } // namespace Axis
 

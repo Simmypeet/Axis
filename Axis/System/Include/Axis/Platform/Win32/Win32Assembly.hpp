@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file `LICENSE`, which is part of this source code package.
 
-/// \file Win32Assembly.hpp
-///
-/// \brief Contains definition of `Axis::Assembly` class in Win32 platform.
-
 #ifndef AXIS_SYSTEM_WIN32ASSEMBLY_HPP
 #define AXIS_SYSTEM_WIN32ASSEMBLY_HPP
 #pragma once
@@ -15,6 +11,9 @@
 #include "../../SystemExport.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Represents the dynamically loaded shared library.
@@ -42,6 +41,8 @@ public:
 private:
     PVoid _libraryHandle = nullptr;
 };
+
+} // namespace System
 
 } // namespace Axis
 

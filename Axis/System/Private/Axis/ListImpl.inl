@@ -13,6 +13,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <RawType T, AllocatorType Allocator>
 template <Bool FreeMemory>
 inline void List<T, Allocator>::ClearInternal(T*   buffer,
@@ -20,8 +23,11 @@ inline void List<T, Allocator>::ClearInternal(T*   buffer,
 {
     if (buffer)
     {
-        for (Size i = 0; i < length; i++)
-            buffer[i].~T();
+        if constexpr (!PodType<T>)
+        {
+            for (Size i = 0; i < length; i++)
+                buffer[i].~T();
+        }
 
         if constexpr (FreeMemory)
             Allocator::Deallocate(buffer);
@@ -109,8 +115,15 @@ inline List<T, Allocator>& List<T, Allocator>::operator=(const List<T, Allocator
 
         _length = other._length;
 
-        for (Size i = 0; i < _length; ++i)
-            new (&_buffer[i]) T(other._buffer[i]);
+        if constexpr (PodType<T>)
+        {
+            std::memcpy(_buffer, other._buffer, _length * sizeof(T));
+        }
+        else
+        {
+            for (Size i = 0; i < _length; ++i)
+                new (&_buffer[i]) T(other._buffer[i]);
+        }
     }
     else
     {
@@ -178,20 +191,26 @@ inline void List<T, Allocator>::Clear() noexcept
 }
 
 template <RawType T, AllocatorType Allocator>
-inline void List<T, Allocator>::Reset() noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_default_constructible_v<T>)
+template <class... Args>
+inline void List<T, Allocator>::Reset(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>)
 {
     if constexpr (std::is_nothrow_default_constructible_v<T>)
     {
         ClearInternal<false>(_buffer, _length);
 
-        // Invokes default constructor using placement new.
-        for (Size i = 0; i < _length; i++)
-            new (_buffer + i) T();
+        constexpr Bool DefaultConstructed = sizeof...(Args) == 0;
+
+        if constexpr (!PodType<T> || !DefaultConstructed)
+        {
+            // Invokes default constructor using placement new.
+            for (Size i = 0; i < _length; i++)
+                new (_buffer + i) T();
+        }
     }
     else
     {
         // Allocates new memory to ensure strong exception safety.
-        auto newMemory = ConstructsNewList<false, false, false>(_length, Math::RoundToNextPowerOfTwo(_length), nullptr);
+        auto newMemory = ConstructsNewList<false, false, false>(_length, Math::RoundToNextPowerOfTwo(_length), nullptr, std::forward<Args>(args)...);
 
         // Destructs the old array.
         ClearInternal<true>(_buffer, _length);
@@ -248,17 +267,25 @@ inline T* List<T, Allocator>::Emplace(Size index, Args&&... args) requires(std::
 
     if (_length < _allocatedLength && (std::is_nothrow_move_constructible_v<T> || std::is_nothrow_copy_constructible_v<T>)&&std::is_nothrow_constructible_v<T, Args...>)
     {
-        // Moves the elements to the right of the index.
-        for (Size i = _length; i > index; i--)
+        if constexpr (PodType<T>)
         {
-            // Uses any constructor with noexcept.
-            if constexpr (std::is_nothrow_move_constructible_v<T>)
-                new (_buffer + i) T(std::move(_buffer[i - 1]));
-            else
-                new (_buffer + i) T(_buffer[i - 1]);
+            // Simply uses memmove to move the elements to create space for the new element.
+            std::memmove(_buffer + index + 1, _buffer + index, (_length - index) * sizeof(T));
+        }
+        else
+        {
+            // Moves the elements to the right of the index.
+            for (Size i = _length; i > index; i--)
+            {
+                // Uses any constructor with noexcept.
+                if constexpr (std::is_nothrow_move_constructible_v<T>)
+                    new (_buffer + i) T(std::move(_buffer[i - 1]));
+                else
+                    new (_buffer + i) T(_buffer[i - 1]);
 
-            // Destructs the old element.
-            _buffer[i - 1].~T();
+                // Destructs the old element.
+                _buffer[i - 1].~T();
+            }
         }
 
         // Invokes placement new at the index.
@@ -273,64 +300,78 @@ inline T* List<T, Allocator>::Emplace(Size index, Args&&... args) requires(std::
         // Allocates new memory.
         auto newMemory = (T*)Allocator::Allocate(newAllocatedLength * sizeof(T), alignof(T));
 
-        // Copies the elements to the new memory and creates a space for the new element.
-        for (Size i = 0; i < index; i++)
+        if constexpr (PodType<T>)
         {
-            // try to use move constructor if it is nothrow.
-            if constexpr (std::is_nothrow_move_constructible_v<T>)
-                new (newMemory + i) T(std::move(_buffer[i]));
-            else
-            {
-                // if copy constructor isn't noexcept, wraps it with try-catch.
+            // Uses memcpy for the first lefthand side.
+            std::memcpy(newMemory, _buffer, index * sizeof(T));
 
-                if constexpr (std::is_nothrow_copy_constructible_v<T>)
-                    new (newMemory + i) T(_buffer[i]);
+            // Placement new
+            new (newMemory + index) T(std::forward<Args>(args)...);
+
+            // Uses memcpy for the second righthand side.
+            std::memcpy(newMemory + index + 1, _buffer + index, (_length - index) * sizeof(T));
+        }
+        else
+        {
+            // Copies the elements to the new memory and creates a space for the new element.
+            for (Size i = 0; i < index; i++)
+            {
+                // try to use move constructor if it is nothrow.
+                if constexpr (std::is_nothrow_move_constructible_v<T>)
+                    new (newMemory + i) T(std::move(_buffer[i]));
                 else
                 {
-                    try
-                    {
-                        new (newMemory + i) T(_buffer[i]);
-                    }
-                    catch (...)
-                    {
-                        // Destructs the new memory.
-                        ClearInternal<true>(newMemory, i + 1);
+                    // if copy constructor isn't noexcept, wraps it with try-catch.
 
-                        // Re-throws the exception.
-                        throw;
+                    if constexpr (std::is_nothrow_copy_constructible_v<T>)
+                        new (newMemory + i) T(_buffer[i]);
+                    else
+                    {
+                        try
+                        {
+                            new (newMemory + i) T(_buffer[i]);
+                        }
+                        catch (...)
+                        {
+                            // Destructs the new memory.
+                            ClearInternal<true>(newMemory, i + 1);
+
+                            // Re-throws the exception.
+                            throw;
+                        }
                     }
                 }
             }
-        }
 
-        // Invokes new placement constructor at the index.
-        new (newMemory + index) T(std::forward<Args>(args)...);
+            // Invokes new placement constructor at the index.
+            new (newMemory + index) T(std::forward<Args>(args)...);
 
-        // Continue copying the elements to the new memory.
-        for (Size i = index; i < _length; i++)
-        {
-            // try to use move constructor if it is nothrow.
-            if constexpr (std::is_nothrow_move_constructible_v<T>)
-                new (newMemory + i + 1) T(std::move(_buffer[i]));
-            else
+            // Continue copying the elements to the new memory.
+            for (Size i = index; i < _length; i++)
             {
-                // if copy constructor isn't noexcept, wraps it with try-catch.
-
-                if constexpr (std::is_nothrow_copy_constructible_v<T>)
-                    new (newMemory + i + 1) T(_buffer[i]);
+                // try to use move constructor if it is nothrow.
+                if constexpr (std::is_nothrow_move_constructible_v<T>)
+                    new (newMemory + i + 1) T(std::move(_buffer[i]));
                 else
                 {
-                    try
-                    {
-                        new (newMemory + i + 1) T(_buffer[i]);
-                    }
-                    catch (...)
-                    {
-                        // Destructs the new memory.
-                        ClearInternal<true>(newMemory, i + 2);
+                    // if copy constructor isn't noexcept, wraps it with try-catch.
 
-                        // Re-throws the exception.
-                        throw;
+                    if constexpr (std::is_nothrow_copy_constructible_v<T>)
+                        new (newMemory + i + 1) T(_buffer[i]);
+                    else
+                    {
+                        try
+                        {
+                            new (newMemory + i + 1) T(_buffer[i]);
+                        }
+                        catch (...)
+                        {
+                            // Destructs the new memory.
+                            ClearInternal<true>(newMemory, i + 2);
+
+                            // Re-throws the exception.
+                            throw;
+                        }
                     }
                 }
             }
@@ -357,8 +398,11 @@ inline void List<T, Allocator>::PopBack() noexcept
     if (_length == 0)
         return;
 
-    // Destructs the last element.
-    _buffer[_length - 1].~T();
+    if constexpr (!PodType<T>)
+    {
+        // Destructs the last element.
+        _buffer[_length - 1].~T();
+    }
 
     // Decreases the length.
     _length--;
@@ -371,8 +415,13 @@ inline void List<T, Allocator>::RemoveAt(Size index) requires(std::is_move_const
     if (index >= _length)
         throw ArgumentOutOfRangeException("`index` was out of range!");
 
+    if constexpr (PodType<T>)
+    {
+        // Simply uses memmove to move the elements.
+        std::memmove(_buffer + index, _buffer + index + 1, (_length - index - 1) * sizeof(T));
+    }
     // No need to allocate new memory if
-    if constexpr (std::is_nothrow_move_constructible_v<T> || std::is_nothrow_copy_constructible_v<T>)
+    else if constexpr (std::is_nothrow_move_constructible_v<T> || std::is_nothrow_copy_constructible_v<T>)
     {
         // Destruct the element at the index.
         _buffer[index].~T();
@@ -450,8 +499,11 @@ inline void List<T, Allocator>::Resize(Size length) requires(std::is_default_con
 {
     if (length <= _allocatedLength && std::is_nothrow_default_constructible_v<T>)
     {
-        for (Size i = 0; i < _length; i++)
-            _buffer[i].~T();
+        if constexpr (!PodType<T>)
+        {
+            for (Size i = 0; i < _length; i++)
+                _buffer[i].~T();
+        }
 
         _length = length;
 
@@ -525,7 +577,21 @@ inline Tuple<T*, Size> List<T, Allocator>::ConstructsNewList(Size elementCount,
     // Otherwise, we need to check for exceptions.
     constexpr Bool NoException = ListInitialize ? (CopyConstructor ? std::is_nothrow_copy_constructible_v<T> : std::is_nothrow_move_constructible_v<T>) : std::is_nothrow_constructible_v<T, Args...>;
 
-    if constexpr (NoException)
+    constexpr Bool DefaultConstructed = sizeof...(Args) == 0 && !ListInitialize;
+
+    // If T is POD and is default constructed, then we don't need to do anything simply return.
+    if constexpr (PodType<T> && DefaultConstructed)
+    {
+        return {{array}, {{Size(allocationSize)}}};
+    }
+
+    // Uses memcpy if T is POD.
+    if constexpr (PodType<T> && ListInitialize)
+    {
+        // Simply use memcpy to initialize the array.
+        std::memcpy(array, begin, sizeof(T) * elementCount);
+    }
+    else if constexpr (NoException)
     {
         for (Size i = 0; i < elementCount; i++)
         {
@@ -580,6 +646,8 @@ inline List<T, Allocator>::operator Bool() const noexcept
 {
     return _length > 0;
 }
+
+} // namespace System
 
 } // namespace Axis
 

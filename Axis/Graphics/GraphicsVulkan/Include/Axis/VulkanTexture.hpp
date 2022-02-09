@@ -14,10 +14,13 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class VulkanGraphicsDevice;
 
-/// \brief An implementation of ITexture interface in Vulkan backend.
+// An implementation of ITexture interface in Vulkan backend.
 class VulkanTexture final : public ITexture
 {
 private:
@@ -31,15 +34,15 @@ private:
     };
 
 public:
-    /// Forward declarations
+    // Forward declarations
     struct Internal;
 
-    /// \brief Constructs a new VulkanTexture with no memory backed to it. The VkImage won't be destroy in the destructor.
+    // Constructs a new VulkanTexture with no memory backed to it. The VkImage won't be destroy in the destructor.
     VulkanTexture(const TextureDescription& description,
                   VkImage                   vulkanImage,
                   VulkanGraphicsDevice&     vulkanGraphicsDevice);
 
-    /// \brief Construct VulkanTexture with memory backed to it.
+    // Construct VulkanTexture with memory backed to it.
     VulkanTexture(const TextureDescription& description,
                   VulkanGraphicsDevice&     vulkanGraphicsDevice);
 
@@ -51,20 +54,22 @@ private:
     VkPtr<VulkanImageAllocation> _vulkanImage       = {};
 };
 
-/// \brief An implementation of ITextureView interface in Vulkan backend.
+// An implementation of ITextureView interface in Vulkan backend.
 class VulkanTextureView final : public ITextureView
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanTextureView(const TextureViewDescription& description,
                       VulkanGraphicsDevice&         vulkanGraphicsDevice);
 
-    /// \brief Gets the internal VulkanTextureView object.
+    // Gets the internal VulkanTextureView object.
     inline const VkImageView GetVkImageViewHandle() const noexcept { return _vulkanImageView; }
 
 private:
     VkPtr<VkImageView> _vulkanImageView = {};
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

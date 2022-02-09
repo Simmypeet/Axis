@@ -17,31 +17,34 @@
 namespace Axis
 {
 
+namespace Core
+{
+
 // Default constructor
 Application::Application() noexcept :
     Components(*this) {}
 
 // Default Application::CreateWindow
-SharedPointer<DisplayWindow> Application::CreateWindow() const
+System::SharedPointer<Window::DisplayWindow> Application::CreateWindow() const
 {
     // Creates default window
-    WindowDescription windowDescription = {};
-    windowDescription.WindowPosition    = {WindowDescription::UndefinedPosition, WindowDescription::UndefinedPosition};
-    windowDescription.WindowSize        = {800, 480};
-    windowDescription.WindowStyle       = WindowStyle::TitleBar | WindowStyle::Resizeable | WindowStyle::CloseButton;
-    windowDescription.Title             = L"Axis";
+    Window::WindowDescription windowDescription = {};
+    windowDescription.WindowPosition            = {Window::WindowDescription::UndefinedPosition, Window::WindowDescription::UndefinedPosition};
+    windowDescription.WindowSize                = {800, 480};
+    windowDescription.WindowStyle               = Window::WindowStyle::TitleBar | Window::WindowStyle::Resizeable | Window::WindowStyle::CloseButton;
+    windowDescription.Title                     = L"Axis";
 
-    return Axis::MakeShared<DisplayWindow>(windowDescription);
+    return Axis::System::MakeShared<Window::DisplayWindow>(windowDescription);
 }
 
-static Pair<SharedPointer<IGraphicsSystem>, SharedPointer<Assembly>> LoadGraphicsSystem(GraphicsAPI graphicsApi)
+static System::Pair<System::SharedPointer<Graphics::IGraphicsSystem>, System::SharedPointer<System::Assembly>> LoadGraphicsSystem(Graphics::GraphicsAPI graphicsApi)
 {
 #ifdef AXIS_PLATFORM_WINDOWS
     const wchar_t* libName = nullptr;
 
     switch (graphicsApi)
     {
-        case GraphicsAPI::Vulkan:
+        case Graphics::GraphicsAPI::Vulkan:
             libName = L"Axis-GraphicsVulkan.dll";
             break;
         default:
@@ -49,13 +52,13 @@ static Pair<SharedPointer<IGraphicsSystem>, SharedPointer<Assembly>> LoadGraphic
     }
 #endif
 
-    SharedPointer<Assembly> loadedDyLib = Axis::MakeShared<Assembly>(libName);
+    System::SharedPointer<System::Assembly> loadedDyLib = Axis::System::MakeShared<System::Assembly>(libName);
 
     const Char* symbolName = nullptr;
 
     switch (graphicsApi)
     {
-        case GraphicsAPI::Vulkan:
+        case Graphics::GraphicsAPI::Vulkan:
             symbolName = "AxisCreateVulkanGraphicsSystem";
             break;
 
@@ -63,19 +66,19 @@ static Pair<SharedPointer<IGraphicsSystem>, SharedPointer<Assembly>> LoadGraphic
             AXIS_ASSERT(false, "Unsupported graphics API");
     }
 
-    auto createGraphicsSystemPFN = (Axis::IGraphicsSystem * (*)(void)) loadedDyLib->LoadSymbol(symbolName);
+    auto createGraphicsSystemPFN = (Axis::Graphics::IGraphicsSystem * (*)(void)) loadedDyLib->LoadSymbol(symbolName);
 
-    SharedPointer<IGraphicsSystem> graphicsSystem = SharedPointer<IGraphicsSystem>(createGraphicsSystemPFN());
+    System::SharedPointer<Graphics::IGraphicsSystem> graphicsSystem = System::SharedPointer<Graphics::IGraphicsSystem>(createGraphicsSystemPFN());
 
     return {std::move(graphicsSystem), std::move(loadedDyLib)};
 }
 
 // Default Application::CreateGraphicsSystem
-Pair<SharedPointer<IGraphicsSystem>, SharedPointer<Assembly>> Application::CreateGraphicsSystem() const
+System::Pair<System::SharedPointer<Graphics::IGraphicsSystem>, System::SharedPointer<System::Assembly>> Application::CreateGraphicsSystem() const
 {
     // Axis framework loads the graphics system dynamically via dynamic library
 #ifdef AXIS_PLATFORM_WINDOWS
-    StaticArray<GraphicsAPI, 1> preferredGraphicsApis = {GraphicsAPI::Vulkan};
+    System::StaticArray<Graphics::GraphicsAPI, 1> preferredGraphicsApis = {Graphics::GraphicsAPI::Vulkan};
 #endif
 
     for (auto graphicsApi : preferredGraphicsApis)
@@ -88,36 +91,36 @@ Pair<SharedPointer<IGraphicsSystem>, SharedPointer<Assembly>> Application::Creat
         }
     }
 
-    throw Exception("Failed to load graphics system");
+    throw System::Exception("Failed to load graphics system");
 }
 
 // Default Application::CreateGraphicsDeviceAndContexts
-Pair<SharedPointer<IGraphicsDevice>, List<SharedPointer<IDeviceContext>>> Application::CreateGraphicsDeviceAndContexts(const SharedPointer<IGraphicsSystem>& graphicsSystem) const
+System::Pair<System::SharedPointer<Graphics::IGraphicsDevice>, System::List<System::SharedPointer<Graphics::IDeviceContext>>> Application::CreateGraphicsDeviceAndContexts(const System::SharedPointer<Graphics::IGraphicsSystem>& graphicsSystem) const
 {
     auto graphicsAdapters = graphicsSystem->GetGraphicsAdapters();
 
-    auto GetBestGraphicsAdapterIndex = [&](const SharedPointer<IGraphicsSystem>& graphicsSystem) {
-        List<Uint32> adapterIndexRatingPair;
+    auto GetBestGraphicsAdapterIndex = [&](const System::SharedPointer<Graphics::IGraphicsSystem>& graphicsSystem) {
+        System::List<Uint32> adapterIndexRatingPair;
         adapterIndexRatingPair.ReserveFor(graphicsAdapters.GetLength());
 
         for (const auto& adapter : graphicsAdapters)
         {
             // Rates the graphics adapter by its properties and capabilities.
-            constexpr const auto RateGraphicsAdapter = [](const GraphicsAdapter& adapter) {
+            constexpr const auto RateGraphicsAdapter = [](const Graphics::GraphicsAdapter& adapter) {
                 Uint32 rating = 0;
 
                 switch (adapter.AdapterType)
                 {
-                    case GraphicsAdapterType::Dedicated:
+                    case Graphics::GraphicsAdapterType::Dedicated:
                         rating += 1000;
                         break;
 
-                    case GraphicsAdapterType::Integrated:
+                    case Graphics::GraphicsAdapterType::Integrated:
                         rating += 500;
                         break;
 
-                    case GraphicsAdapterType::Virtual:
-                    case GraphicsAdapterType::CPU:
+                    case Graphics::GraphicsAdapterType::Virtual:
+                    case Graphics::GraphicsAdapterType::CPU:
                         rating += 250;
                         break;
 
@@ -137,23 +140,23 @@ Pair<SharedPointer<IGraphicsDevice>, List<SharedPointer<IDeviceContext>>> Applic
                 {
                     Uint32 multiplier = 0;
 
-                    auto queueOperationFlag = Enum::GetUnderlyingValue(deviceQueueFamily.QueueType);
+                    auto queueOperationFlag = System::Enum::GetUnderlyingValue(deviceQueueFamily.QueueType);
 
                     while (queueOperationFlag)
                     {
-                        QueueOperation currentFlag = (QueueOperation)Math::GetLeastSignificantBit(queueOperationFlag);
+                        Graphics::QueueOperation currentFlag = (Graphics::QueueOperation)System::Math::GetLeastSignificantBit(queueOperationFlag);
 
                         switch (currentFlag)
                         {
-                            case QueueOperation::Compute:
+                            case Graphics::QueueOperation::Compute:
                                 multiplier += 1;
                                 break;
 
-                            case QueueOperation::Transfer:
+                            case Graphics::QueueOperation::Transfer:
                                 multiplier += 2;
                                 break;
 
-                            case QueueOperation::Graphics:
+                            case Graphics::QueueOperation::Graphics:
                                 multiplier += 3;
                                 foundGraphics = true;
                                 break;
@@ -162,7 +165,7 @@ Pair<SharedPointer<IGraphicsDevice>, List<SharedPointer<IDeviceContext>>> Applic
                                 AXIS_ASSERT(false, "QueueOperationFlag is Unkown?");
                         }
 
-                        queueOperationFlag &= ~Enum::GetUnderlyingValue(currentFlag);
+                        queueOperationFlag &= ~System::Enum::GetUnderlyingValue(currentFlag);
                     }
 
                     rating += multiplier * 5 * deviceQueueFamily.QueueCount;
@@ -197,16 +200,16 @@ Pair<SharedPointer<IGraphicsDevice>, List<SharedPointer<IDeviceContext>>> Applic
         return currentChoosingIndex;
     };
 
-    Uint32                     currentChoosingIndex                  = GetBestGraphicsAdapterIndex(graphicsSystem);
-    ImmediateContextCreateInfo graphicsImmediateContextCreateInfo[1] = {};
+    Uint32                               currentChoosingIndex                  = GetBestGraphicsAdapterIndex(graphicsSystem);
+    Graphics::ImmediateContextCreateInfo graphicsImmediateContextCreateInfo[1] = {};
 
-    const GraphicsAdapter& choosenGraphicsAdapter = graphicsAdapters[currentChoosingIndex];
+    const Graphics::GraphicsAdapter& choosenGraphicsAdapter = graphicsAdapters[currentChoosingIndex];
 
     Size index = 0;
 
     for (const auto& deviceQueueFamily : choosenGraphicsAdapter.DeviceQueueFamilies)
     {
-        if (Enum::GetUnderlyingValue(deviceQueueFamily.QueueType & QueueOperation::Graphics))
+        if (System::Enum::GetUnderlyingValue(deviceQueueFamily.QueueType & Graphics::QueueOperation::Graphics))
         {
             graphicsImmediateContextCreateInfo[0].DeviceQueueFamilyIndex = (Uint32)index;
             break;
@@ -214,7 +217,7 @@ Pair<SharedPointer<IGraphicsDevice>, List<SharedPointer<IDeviceContext>>> Applic
         index++;
     }
 
-    Span<ImmediateContextCreateInfo> graphicsImmediateContextCreateInfoSpan = graphicsImmediateContextCreateInfo;
+    System::Span<Graphics::ImmediateContextCreateInfo> graphicsImmediateContextCreateInfoSpan = graphicsImmediateContextCreateInfo;
 
     // Creates graphics device and immediate graphics context.
     auto result = graphicsSystem->CreateGraphicsDeviceAndContexts(currentChoosingIndex,
@@ -224,46 +227,46 @@ Pair<SharedPointer<IGraphicsDevice>, List<SharedPointer<IDeviceContext>>> Applic
 }
 
 // Default Application::CreateSwapChain
-SharedPointer<ISwapChain> Application::CreateSwapChain(const SharedPointer<IGraphicsDevice>&      graphicsDevice,
-                                                       const List<SharedPointer<IDeviceContext>>& availableDeviceContexts,
-                                                       const SharedPointer<DisplayWindow>&        targetWindow) const
+System::SharedPointer<Graphics::ISwapChain> Application::CreateSwapChain(const System::SharedPointer<Graphics::IGraphicsDevice>&              graphicsDevice,
+                                                                         const System::List<System::SharedPointer<Graphics::IDeviceContext>>& availableDeviceContexts,
+                                                                         const System::SharedPointer<Window::DisplayWindow>&                  targetWindow) const
 {
-    SharedPointer<IDeviceContext> graphicsDeviceContext;
+    System::SharedPointer<Graphics::IDeviceContext> graphicsDeviceContext;
     for (const auto& deviceContext : availableDeviceContexts)
     {
-        if ((Bool)(deviceContext->SupportedQueueOperations & QueueOperation::Graphics))
+        if ((Bool)(deviceContext->SupportedQueueOperations & Graphics::QueueOperation::Graphics))
         {
             graphicsDeviceContext = deviceContext;
             break;
         }
     }
 
-    auto                    expectedSpecification = GetGraphicsSystem()->GetSwapChainSpecification(graphicsDevice->GraphicsAdapterIndex, targetWindow);
-    SwapChainSpecification& specification         = expectedSpecification;
+    auto                              expectedSpecification = GetGraphicsSystem()->GetSwapChainSpecification(graphicsDevice->GraphicsAdapterIndex, targetWindow);
+    Graphics::SwapChainSpecification& specification         = expectedSpecification;
 
-    TextureFormat renderTargetFormat = TextureFormat::Unknown;
+    Graphics::TextureFormat renderTargetFormat = Graphics::TextureFormat::Unknown;
 
     for (const auto& format : specification.SupportedFormats)
     {
         // BGRA8 is the best format....
-        if (format == TextureFormat::UnormB8G8R8A8)
+        if (format == Graphics::TextureFormat::UnormB8G8R8A8)
         {
             renderTargetFormat = format;
             break;
         }
     }
 
-    if (renderTargetFormat == TextureFormat::Unknown)
+    if (renderTargetFormat == Graphics::TextureFormat::Unknown)
         // Takes the first supported format
         renderTargetFormat = specification.SupportedFormats[0];
 
 
-    SwapChainDescription swapChainDescription     = {};
-    swapChainDescription.TargetWindow             = targetWindow;
-    swapChainDescription.ImmediateGraphicsContext = graphicsDeviceContext;
-    swapChainDescription.BackBufferCount          = Math::Clamp(specification.MinBackBufferCount + 1, specification.MinBackBufferCount, specification.MaxBackBufferCount);
-    swapChainDescription.RenderTargetFormat       = renderTargetFormat;
-    swapChainDescription.DepthStencilFormat       = TextureFormat::UnormDepth24Stencil8;
+    Graphics::SwapChainDescription swapChainDescription = {};
+    swapChainDescription.TargetWindow                   = targetWindow;
+    swapChainDescription.ImmediateGraphicsContext       = graphicsDeviceContext;
+    swapChainDescription.BackBufferCount                = System::Math::Clamp(specification.MinBackBufferCount + 1, specification.MinBackBufferCount, specification.MaxBackBufferCount);
+    swapChainDescription.RenderTargetFormat             = renderTargetFormat;
+    swapChainDescription.DepthStencilFormat             = Graphics::TextureFormat::UnormDepth24Stencil8;
 
     return graphicsDevice->CreateSwapChain(swapChainDescription);
 }
@@ -277,7 +280,7 @@ void Application::Run()
 {
     // Checks if the application started or not
     if (_started)
-        throw InvalidOperationException("The application has been started already!");
+        throw System::InvalidOperationException("The application has been started already!");
 
     // Marks as true
     _started = true;
@@ -286,13 +289,13 @@ void Application::Run()
     _window = CreateWindow();
 
     if (!_window)
-        throw InvalidOperationException("Failed to create window!");
+        throw System::InvalidOperationException("Failed to create window!");
 
     // Creates graphics system
     auto loadedGraphicsSystem = CreateGraphicsSystem();
 
     if (!loadedGraphicsSystem.First || !loadedGraphicsSystem.Second)
-        throw InvalidOperationException("Failed to create graphics system!");
+        throw System::InvalidOperationException("Failed to create graphics system!");
 
     _graphicsSystem      = std::move(loadedGraphicsSystem.First);
     _graphicsSystemDyLib = std::move(loadedGraphicsSystem.Second);
@@ -303,12 +306,12 @@ void Application::Run()
     auto& deviceContexts            = graphicsDeviceAndContexts.Second;
 
     if (!graphicsDevice || !deviceContexts)
-        throw InvalidOperationException("Failed to create graphics device and contexts!");
+        throw System::InvalidOperationException("Failed to create graphics device and contexts!");
 
     Bool foundGraphicsDeviceContext = false;
     for (const auto& deviceContext : deviceContexts)
     {
-        if ((Bool)(deviceContext->SupportedQueueOperations & QueueOperation::Graphics))
+        if ((Bool)(deviceContext->SupportedQueueOperations & Graphics::QueueOperation::Graphics))
         {
             foundGraphicsDeviceContext = true;
             break;
@@ -317,7 +320,7 @@ void Application::Run()
 
     // Needs at least 1 device context which supported graphics operation
     if (!foundGraphicsDeviceContext)
-        throw InvalidOperationException("No graphics device context found!");
+        throw System::InvalidOperationException("No graphics device context found!");
 
     _graphicsDevice          = std::move(graphicsDevice);
     _immediateDeviceContexts = std::move(deviceContexts);
@@ -328,24 +331,24 @@ void Application::Run()
                                  _window);
 
     if (!_swapChain)
-        throw InvalidOperationException("Failed to create swap chain!");
+        throw System::InvalidOperationException("Failed to create swap chain!");
 
     LoadContent();
 
     Bool windowShouldClose = false;
 
     // Assigns window close event.
-    _window->GetUserClosedWindowEvent().Add([&](DisplayWindow&) {
+    _window->GetUserClosedWindowEvent().Add([&](Window::DisplayWindow&) {
         windowShouldClose = true;
     });
 
     _window->ShowWindow();
 
     // Timer for delta time
-    Timer timer;
+    System::Timer timer;
 
     auto Tick = [&]() {
-        const TimePeriod deltaTime = timer.Reset();
+        const System::TimePeriod deltaTime = timer.Reset();
 
         Components.UpdateAll(deltaTime);
         Update(deltaTime);
@@ -363,11 +366,11 @@ void Application::Run()
         _swapChain->Present(_vSync ? 1 : 0);
     };
 
-    _window->GetClientSizeChangedEvent().Add([&](DisplayWindow&, Vector2UI) -> void {
+    _window->GetClientSizeChangedEvent().Add([&](Window::DisplayWindow&, System::Vector2UI) -> void {
         Tick();
     });
 
-    _window->GetClientSizeChangedEvent().Add([&](DisplayWindow&, Vector2I) -> void {
+    _window->GetClientSizeChangedEvent().Add([&](Window::DisplayWindow&, System::Vector2I) -> void {
         Tick();
     });
 
@@ -380,7 +383,7 @@ void Application::Run()
 
         if (_fixedTimeStep && !_vSync)
         {
-            TimePeriod timePassed = timer.GetElapsedTimePeriod();
+            System::TimePeriod timePassed = timer.GetElapsedTimePeriod();
             if (timePassed < _timeStep)
                 System::Sleep(_timeStep - timePassed);
         }
@@ -388,5 +391,7 @@ void Application::Run()
         Tick();
     }
 }
+
+} // namespace Core
 
 } // namespace Axis

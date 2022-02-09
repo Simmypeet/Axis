@@ -1,14 +1,15 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
 {
     DOCTEST_SUBCASE("`Axis::String` constructors")
     {
         DOCTEST_SUBCASE("Constructor")
         {
-            using namespace Axis;
-
             // Default string (empty)
             String8 str;
 
@@ -75,8 +76,6 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
 
         DOCTEST_SUBCASE("Move constructor")
         {
-            using namespace Axis;
-
             // Constructs a string
             String8 longString = "This is a long string which probably uses dynamic memory";
 
@@ -101,8 +100,6 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
 
         DOCTEST_SUBCASE("Copy constructor")
         {
-            using namespace Axis;
-
             // Constructs a string
             String8 helloWorld = "Hello World";
 
@@ -145,8 +142,6 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
     {
         DOCTEST_SUBCASE("Copy assignment operator")
         {
-            using namespace Axis;
-
             // Constructs a string
             String8 helloWorld = "Hello World";
 
@@ -177,8 +172,6 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
 
         DOCTEST_SUBCASE("Move assignment operator")
         {
-            using namespace Axis;
-
             // Constructs a string
             String8 helloWorld = "Hello World";
 
@@ -210,8 +203,6 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
 
     DOCTEST_SUBCASE("`Axis::String` comparison operators")
     {
-        using namespace Axis;
-
         // Compares two strings
         DOCTEST_CHECK(String8("Hello World") == String8("Hello World"));
 
@@ -236,8 +227,6 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
 
     DOCTEST_SUBCASE("`Axis::String` subscript operator")
     {
-        using namespace Axis;
-
         // Constructs a string
         String8 helloWorld = "Hello World";
 
@@ -259,7 +248,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
         {
             helloWorld[11] = '!';
         }
-        catch (::Axis::Exception&)
+        catch (::Axis::System::Exception&)
         {
             DOCTEST_CHECK(true);
         }

@@ -1,10 +1,11 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Axis event : [Axis::System]")
 {
-    using namespace Axis;
-
     // Counts the number of times the event is invoked.
     Int32 counter = 0;
 
@@ -69,6 +70,5 @@ DOCTEST_TEST_CASE("Axis event : [Axis::System]")
         // Checks if the token is still valid.
         CHECK(!event.EventRegister.TokenExists(token1));
         CHECK(event.EventRegister.TokenExists(token2));
-
     }
 }

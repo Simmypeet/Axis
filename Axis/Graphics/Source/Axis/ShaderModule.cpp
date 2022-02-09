@@ -9,8 +9,13 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 // Default constructor
 IShaderModule::IShaderModule(const ShaderModuleDescription& description) :
     Description(description) {}
+
+} // namespace Graphics
 
 } // namespace Axis

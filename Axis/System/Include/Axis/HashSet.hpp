@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file HashSet.hpp
-///
-/// \brief Contains \a `Axis::HashSet` class template.
-
 #ifndef AXIS_SYSTEM_HASHSET_HPP
 #define AXIS_SYSTEM_HASHSET_HPP
 #pragma once
@@ -14,8 +10,10 @@
 #include "Trait.hpp"
 #include "Utility.hpp"
 
-
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Functor object for calculating hash.
@@ -25,7 +23,7 @@ namespace Axis
 /// The library provides hash calculation for basic integer types and pointers.
 ///
 /// To provide custom hash object, the class should provides `operator(const T&)` function
-/// which returns \a `Axis::Size` as result (hash).
+/// which returns \a `Size` as result (hash).
 template <RawType T>
 struct Hash final
 {
@@ -264,6 +262,8 @@ private:
     Hasher   _hasher        = {};
     Comparer _comparer      = {};
 };
+
+} // namespace System
 
 } // namespace Axis
 

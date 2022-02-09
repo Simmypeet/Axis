@@ -13,6 +13,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanCommandPool::VulkanCommandPool(VulkanDeviceQueueFamily& deviceQueueFamily,
                                      VulkanGraphicsDevice&    vulkanGraphicsDevice,
                                      VkCommandPoolCreateFlags commandPoolCreateFlag)
@@ -29,7 +32,7 @@ VulkanCommandPool::VulkanCommandPool(VulkanDeviceQueueFamily& deviceQueueFamily,
         commandPoolCreateInfo.queueFamilyIndex        = deviceQueueFamily.GetDeviceQueueFamilyIndex();
 
         if (vkCreateCommandPool(vulkanGraphicsDevice.GetVkDeviceHandle(), &commandPoolCreateInfo, nullptr, &vkCommandPool) != VK_SUCCESS)
-            throw ExternalException("Failed to create VkCommandPool!");
+            throw System::ExternalException("Failed to create VkCommandPool!");
         else
             return vkCommandPool;
     };
@@ -41,7 +44,7 @@ VulkanCommandPool::VulkanCommandPool(VulkanDeviceQueueFamily& deviceQueueFamily,
     _commandPool = VkPtr<VkCommandPool>(CreateVkCommandPool, std::move(DestroyVkCommandPool));
 }
 
-UniquePointer<VulkanCommandBuffer> VulkanCommandPool::GetCommandBuffer()
+System::UniquePointer<VulkanCommandBuffer> VulkanCommandPool::GetCommandBuffer()
 {
     if (_commandPool == VK_NULL_HANDLE)
         return {};
@@ -49,7 +52,7 @@ UniquePointer<VulkanCommandBuffer> VulkanCommandPool::GetCommandBuffer()
     // Uses the recycled command buffer.
     if (_returnedCommandBuffer.GetLength())
     {
-        UniquePointer<VulkanCommandBuffer> commandBufferToReturn = nullptr;
+        System::UniquePointer<VulkanCommandBuffer> commandBufferToReturn = nullptr;
 
         {
             std::scoped_lock<std::mutex> lockGuard(_mutex);
@@ -74,12 +77,12 @@ UniquePointer<VulkanCommandBuffer> VulkanCommandPool::GetCommandBuffer()
     }
 
     // If there aren't any command buffer available. Creates a new one.
-    return UniquePointer<VulkanCommandBuffer>(Axis::New<VulkanCommandBuffer>(_commandPool,
-                                                                             VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-                                                                             (VulkanGraphicsDevice&)(*GetCreatorDevice())));
+    return System::UniquePointer<VulkanCommandBuffer>(Axis::System::New<VulkanCommandBuffer>(_commandPool,
+                                                                                             VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+                                                                                             (VulkanGraphicsDevice&)(*GetCreatorDevice())));
 }
 
-void VulkanCommandPool::ReturnCommandBuffer(UniquePointer<VulkanCommandBuffer>&& commandBuffer)
+void VulkanCommandPool::ReturnCommandBuffer(System::UniquePointer<VulkanCommandBuffer>&& commandBuffer)
 {
     // Checks if the CommandBuffer is recording?.
     AXIS_ASSERT(!commandBuffer->IsRecording(), "Can't return this CommandBuffer because it is recording!");
@@ -89,5 +92,7 @@ void VulkanCommandPool::ReturnCommandBuffer(UniquePointer<VulkanCommandBuffer>&&
     // Pushes CommandBuffer to the back of the queue.
     _returnedCommandBuffer.Append(std::move(commandBuffer));
 }
+
+} // namespace Graphics
 
 } // namespace Axis

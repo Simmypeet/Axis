@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file ResourceHeap.hpp
-///
-/// \brief Contains `Axis::IResourceHeap` interface class.
-
 #ifndef AXIS_GRAPHICS_RESOURCEHEAP_HPP
 #define AXIS_GRAPHICS_RESOURCEHEAP_HPP
 #pragma once
@@ -17,7 +13,10 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class IResourceHeapLayout;
 class IBuffer;
 class ISampler;
@@ -27,7 +26,7 @@ class ITextureView;
 struct ResourceHeapDescription final
 {
     /// \brief Describes the resource binding layout in the pipeline.
-    SharedPointer<IResourceHeapLayout> ResourceHeapLayout = {};
+    System::SharedPointer<IResourceHeapLayout> ResourceHeapLayout = {};
 };
 
 /// \brief Represents the resource binding in the shader.
@@ -44,11 +43,11 @@ public:
     /// \param[in] offsets The offset of the buffer in each of \a `buffers` span to bind. (Leaves `nullptr` to set all the offsets as 0.)
     /// \param[in] sizes The size of the buffer in each of \a `buffers` span to bind. (Leaves `nullptr` to set all the sizes as the size of each buffer.)
     /// \param[in] startingArrayIndex The index at resource heap's array to start binding the resources.
-    virtual void BindBuffers(Uint32                              bindingIndex,
-                             const Span<SharedPointer<IBuffer>>& buffers,
-                             const Span<Size>&                   offsets            = nullptr,
-                             const Span<Size>&                   sizes              = nullptr,
-                             Uint32                              startingArrayIndex = 0) = 0;
+    virtual void BindBuffers(Uint32                                              bindingIndex,
+                             const System::Span<System::SharedPointer<IBuffer>>& buffers,
+                             const System::Span<Size>&                           offsets            = nullptr,
+                             const System::Span<Size>&                           sizes              = nullptr,
+                             Uint32                                              startingArrayIndex = 0) = 0;
 
     /// \brief Binds the sampler to the resource heap at specified index.
     ///
@@ -56,14 +55,16 @@ public:
     /// \param[in] samplers The span of sampler objects to bind to the resource heap.
     /// \param[in] textureViews The span of texture views to bind to the resource heap.
     /// \param[in] startingArrayIndex The index at resource heap's array to start binding the resources.
-    virtual void BindSamplers(Uint32                                   bindingIndex,
-                              const Span<SharedPointer<ISampler>>&     samplers,
-                              const Span<SharedPointer<ITextureView>>& textureViews,
-                              Uint32                                   startingArrayIndex = 0) = 0;
+    virtual void BindSamplers(Uint32                                                   bindingIndex,
+                              const System::Span<System::SharedPointer<ISampler>>&     samplers,
+                              const System::Span<System::SharedPointer<ITextureView>>& textureViews,
+                              Uint32                                                   startingArrayIndex = 0) = 0;
 
 protected:
     IResourceHeap(const ResourceHeapDescription& description);
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

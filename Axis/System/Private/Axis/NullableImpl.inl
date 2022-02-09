@@ -12,6 +12,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <RawType T>
 inline constexpr Nullable<T>::Nullable(NullptrType) noexcept {}
 
@@ -276,6 +279,8 @@ inline constexpr void Nullable<T>::EmplaceConstruct(Args&&... args) noexcept(std
         _isValid = true;
     }
 }
+
+} // namespace System
 
 } // namespace Axis
 

@@ -12,24 +12,28 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class VulkanGraphicsDevice;
 
-/// \brief An implementation of IRenderPass interface in Vulkan backend.
+// An implementation of IRenderPass interface in Vulkan backend.
 class VulkanResourceHeapLayout final : public IResourceHeapLayout
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanResourceHeapLayout(const ResourceHeapLayoutDescription& description,
                              VulkanGraphicsDevice&                vulkanGraphicsDevice);
 
-    /// \brief Gets the internal VkDescriptorSetLayout handle.
+    // Gets the internal VkDescriptorSetLayout handle.
     inline VkDescriptorSetLayout GetVkDescriptorSetLayoutHandle() const noexcept { return _vulkanDescriptorSetLayout; }
 
 private:
-    /// Private members
     VkPtr<VkDescriptorSetLayout> _vulkanDescriptorSetLayout = {};
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

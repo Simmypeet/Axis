@@ -2,9 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file StaticArray.hpp
-///
-/// \brief Contains `Axis::StaticArray` template container class.
 
 #ifndef AXIS_SYSTEM_STATICARRAY_HPP
 #define AXIS_SYSTEM_STATICARRAY_HPP
@@ -14,6 +11,9 @@
 #include "Trait.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief The wrapper over the compile-time known size array.
@@ -55,6 +55,8 @@ public:
     /// \brief The internal stack allocated array.
     T _Elements[N] = {}; // Initializes array with default constructor
 };
+
+} // namespace System
 
 } // namespace Axis
 

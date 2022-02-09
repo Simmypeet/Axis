@@ -14,11 +14,14 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class VulkanGraphicsDevice;
 struct BufferInitialData;
 
-/// \brief Implementation of IBuffer interface class in Vulkan platform.
+// Implementation of IBuffer interface class in Vulkan platform.
 class VulkanBuffer final : public IBuffer
 {
 public:
@@ -49,7 +52,7 @@ public:
     MapType MappedType = {};
 
     // Staging buffer used for various purposes.
-    SharedPointer<VulkanBuffer> StagingBuffer = nullptr;
+    System::SharedPointer<VulkanBuffer> StagingBuffer = nullptr;
 
 private:
     struct VulkanBufferAllocation
@@ -64,6 +67,8 @@ private:
     VkPtr<VulkanBufferAllocation> _vulkanBuffer   = {};
     VmaAllocationInfo             _allocationInfo = {};
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

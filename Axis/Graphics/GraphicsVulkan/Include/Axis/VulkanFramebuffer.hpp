@@ -12,24 +12,28 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class VulkanGraphicsDevice;
 
-/// \brief An implementation of IFramebuffer interface in Vulkan backend.
+// An implementation of IFramebuffer interface in Vulkan backend.
 class VulkanFramebuffer final : public IFramebuffer
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanFramebuffer(FramebufferDescription description,
                       VulkanGraphicsDevice&  vulkanGraphicsDevice);
 
-    /// \brief Gets the internal timeline VkSeamphore handle.
+    // Gets the internal timeline VkSeamphore handle.
     inline VkFramebuffer GetVkFramebufferHandle() const noexcept { return _vulkanFramebuffer; }
 
 private:
-    /// Private members
     VkPtr<VkFramebuffer> _vulkanFramebuffer = {}; // VkFramebuffer handle.
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

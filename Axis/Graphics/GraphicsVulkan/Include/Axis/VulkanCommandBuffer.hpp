@@ -13,79 +13,84 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class IRenderPass;
 class IFramebuffer;
 class VulkanGraphicsDevice;
 
-/// \brief Encapsulation of VkCommandBuffer.
+// Encapsulation of VkCommandBuffer.
 struct VulkanCommandBuffer final : public DeviceChild
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanCommandBuffer(VkCommandPool         commandPool,
                         VkCommandBufferLevel  commandBufferLevel,
                         VulkanGraphicsDevice& vulkanGraphicsDevice);
 
-    /// Destructor
+    // Destructor
     ~VulkanCommandBuffer() noexcept;
 
-    /// \brief Begins recording command buffer.
+    // Begins recording command buffer.
     void BeginRecording() noexcept;
 
-    /// \brief Ends recording command buffer.
+    // Ends recording command buffer.
     void EndRecording() noexcept;
 
-    /// \brief Resets command buffer and also release all the resource references bound to this command buffer.
+    // Resets command buffer and also release all the resource references bound to this command buffer.
     void ResetCommandBuffer() noexcept;
 
-    /// \brief Binds the resource to this command buffer.
-    void AddResourceStrongReference(const SharedPointer<void>& reference);
+    // Binds the resource to this command buffer.
+    void AddResourceStrongReference(const System::SharedPointer<void>& reference);
 
-    /// \brief Checks if command buffer is ready for submission.
+    // Checks if command buffer is ready for submission.
     Bool IsCommandBufferAvailable() const noexcept;
 
-    /// \brief Checks if command buffer is recording.
+    // Checks if command buffer is recording.
     inline Bool IsRecording() const noexcept { return _isRecording; }
 
-    /// \brief Begins the render pass an stores the state.
-    void BeginRenderPass(const SharedPointer<IRenderPass>&  renderPass,
-                         const SharedPointer<IFramebuffer>& framebuffer,
-                         VkRenderPassBeginInfo*             beginInfo) noexcept;
+    // Begins the render pass an stores the state.
+    void BeginRenderPass(const System::SharedPointer<IRenderPass>&  renderPass,
+                         const System::SharedPointer<IFramebuffer>& framebuffer,
+                         VkRenderPassBeginInfo*                     beginInfo) noexcept;
 
-    /// \brief Ends the current render pass and stores the state.
+    // Ends the current render pass and stores the state.
     void EndRenderPass() noexcept;
 
-    /// \brief Checks whether if the render has begun or not.
+    // Checks whether if the render has begun or not.
     inline Bool IsRenderPassActivating() const noexcept { return _activatingRenderPass; }
 
-    /// \brief Gets the internal VkCommandBuffer handle.
+    // Gets the internal VkCommandBuffer handle.
     inline VkCommandBuffer GetVkCommandBufferHandle() const noexcept { return _commandBuffer; }
 
-    /// \brief Gets semaphore which will be signaled everytime it gets submitted.
+    // Gets semaphore which will be signaled everytime it gets submitted.
     inline VkSemaphore GetSignalVkSemaphore() const noexcept { return _signalSemaphore; }
 
 private:
-    /// \brief Void reference pointer hasher
+    // Void reference pointer hasher
     struct ReferencePointerHasher
     {
-        /// \brief Gets the hash for the void reference pointer
-        Size operator()(const SharedPointer<void>& referencePointer) const noexcept
+        // Gets the hash for the void reference pointer
+        Size operator()(const System::SharedPointer<void>& referencePointer) const noexcept
         {
             return (Size)((PVoid)referencePointer);
         }
     };
 
-    VkPtr<VkCommandBuffer>                               _commandBuffer         = {};
-    VkPtr<VkSemaphore>                                   _signalSemaphore       = {};
-    VkPtr<VkFence>                                       _submitFence           = {};
-    Bool                                                 _isRecording           = false;
-    HashSet<SharedPointer<void>, ReferencePointerHasher> _resourceReference     = {}; // Keeps the strong reference
-    SharedPointer<IRenderPass>                           _activatingRenderPass  = {};
-    SharedPointer<IFramebuffer>                          _activatingFramebuffer = {};
+    VkPtr<VkCommandBuffer>                                               _commandBuffer         = {};
+    VkPtr<VkSemaphore>                                                   _signalSemaphore       = {};
+    VkPtr<VkFence>                                                       _submitFence           = {};
+    Bool                                                                 _isRecording           = false;
+    System::HashSet<System::SharedPointer<void>, ReferencePointerHasher> _resourceReference     = {}; // Keeps the strong reference
+    System::SharedPointer<IRenderPass>                                   _activatingRenderPass  = {};
+    System::SharedPointer<IFramebuffer>                                  _activatingFramebuffer = {};
 
     friend struct VulkanDeviceQueue;
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

@@ -9,7 +9,12 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 IBuffer::IBuffer(const BufferDescription& description) :
     Description(description) {}
+
+} // namespace Graphics
 
 } // namespace Axis

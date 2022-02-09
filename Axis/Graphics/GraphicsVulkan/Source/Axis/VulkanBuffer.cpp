@@ -13,24 +13,27 @@
 namespace Axis
 {
 
-inline Tuple<List<Uint32>, VkBufferCreateInfo> GetBufferCreationInfosFromBufferDescription(const BufferDescription& description)
+namespace Graphics
+{
+
+inline System::Tuple<System::List<Uint32>, VkBufferCreateInfo> GetBufferCreationInfosFromBufferDescription(const BufferDescription& description)
 {
     VkBufferUsageFlags bufferUsage = {};
 
     // Appropriately set the usage flag
-    if (Enum::GetUnderlyingValue(description.BufferBinding & BufferBinding::Index))
+    if (System::Enum::GetUnderlyingValue(description.BufferBinding & BufferBinding::Index))
         bufferUsage |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
-    if (Enum::GetUnderlyingValue(description.BufferBinding & BufferBinding::Vertex))
+    if (System::Enum::GetUnderlyingValue(description.BufferBinding & BufferBinding::Vertex))
         bufferUsage |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-    if (Enum::GetUnderlyingValue(description.BufferBinding & BufferBinding::Uniform))
+    if (System::Enum::GetUnderlyingValue(description.BufferBinding & BufferBinding::Uniform))
         bufferUsage |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
-    if (Enum::GetUnderlyingValue(description.BufferBinding & BufferBinding::TransferDestination))
+    if (System::Enum::GetUnderlyingValue(description.BufferBinding & BufferBinding::TransferDestination))
         bufferUsage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
-    if (Enum::GetUnderlyingValue(description.BufferBinding & BufferBinding::TransferSource))
+    if (System::Enum::GetUnderlyingValue(description.BufferBinding & BufferBinding::TransferSource))
         bufferUsage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
     auto indices = VulkanUtility::ExtractDeviceQueueFamilyIndices(description.DeviceQueueFamilyMask);
@@ -71,14 +74,14 @@ VulkanBuffer::VulkanBuffer(const BufferDescription& description,
         auto                   vmaAllocationCreateInfo = VulkanUtility::GetVmaAllocationCreateInfoFromResourceUsage(Description.Usage);
 
         auto vkResult = vmaCreateBuffer(vulkanGraphicsDevice.GetVmaAllocatorHandle(),
-                                        &Axis::GetTuple<1>(vkBufferCreateInfo),
+                                        &Axis::System::GetTuple<1>(vkBufferCreateInfo),
                                         &vmaAllocationCreateInfo,
                                         &vulkanBufferAllocation.VulkanBuffer,
                                         &vulkanBufferAllocation.VulkanMemoryAllocation,
                                         &_allocationInfo);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to create VkBuffer!");
+            throw System::ExternalException("Failed to create VkBuffer!");
 
         return vulkanBufferAllocation;
     };
@@ -91,5 +94,7 @@ VulkanBuffer::VulkanBuffer(const BufferDescription& description,
 
     _vulkanBuffer = VkPtr<VulkanBufferAllocation>(CreateVulkanBufferAllocation, std::move(DestroyVulkanBufferAllocation));
 }
+
+} // namespace Graphics
 
 } // namespace Axis

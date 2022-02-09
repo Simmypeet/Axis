@@ -1,14 +1,15 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
 {
     DOCTEST_SUBCASE("`Axis::List` constructors")
     {
         DOCTEST_SUBCASE("Constructor")
         {
-            using namespace Axis;
-
             // Default list (empty)
             List<Int32> list;
 
@@ -31,8 +32,8 @@ DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
             CHECK(list2[3] == 4);
             CHECK(list2[4] == 5);
 
-            // Creates a list with specified size
-            List<Int32> list3(3);
+            // Creates a list with specified size and default value 
+            List<Int32> list3(3, 0);
 
             // Length should be 3
             CHECK(list3.GetLength() == 3);
@@ -45,7 +46,6 @@ DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
 
         DOCTEST_SUBCASE("Copy constructor")
         {
-            using namespace Axis;
 
             // Creates a list from initializer list
             List<Int32> list = {1, 2, 3, 4, 5};
@@ -76,8 +76,6 @@ DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
 
         DOCTEST_SUBCASE("Move constructor")
         {
-            using namespace Axis;
-
             // Creates a list from initializer list
             List<Int32> list = {1, 2, 3, 4, 5};
 
@@ -103,8 +101,6 @@ DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
     {
         DOCTEST_SUBCASE("Copy assignment")
         {
-            using namespace Axis;
-
             // Creates a list from initializer list
             List<Int32> list = {1, 2, 3, 4, 5};
 
@@ -149,10 +145,7 @@ DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
 
         DOCTEST_SUBCASE("Move assignment")
         {
-            using namespace Axis;
-
             // Creates a list from initializer list
-
             List<Int32> list = {1, 2, 3, 4, 5};
 
             // Creates an another list from initializer list
@@ -194,8 +187,6 @@ DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
     {
         DOCTEST_SUBCASE("EmplaceBack")
         {
-            using namespace Axis;
-
             struct Number
             {
                 Number(Int32 value)
@@ -275,8 +266,6 @@ DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
 
         DOCTEST_SUBCASE("Emplace")
         {
-            using namespace Axis;
-
             struct Number
             {
                 Number(Int32 value)
@@ -362,8 +351,6 @@ DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
 
         DOCTEST_SUBCASE("RemoveAt")
         {
-            using namespace Axis;
-
             // Creates a list from initializer list
             List<Int32> list = {1, 2, 3, 4, 5};
 

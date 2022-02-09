@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Fence.hpp
-///
-/// \brief Contains `Axis::IFramebuffer` interface class.
-
 #ifndef AXIS_GRAPHICS_FRAMEBUFFER_HPP
 #define AXIS_GRAPHICS_FRAMEBUFFER_HPP
 #pragma once
@@ -17,7 +13,10 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class IRenderPass;
 class ITextureView;
 
@@ -25,13 +24,13 @@ class ITextureView;
 struct FramebufferDescription final
 {
     /// \brief The size of the FrameBuffer's attachments. X and Y preserved for FrameBuffer's width and height, Z preserved for layer.
-    Vector3UI FramebufferSize = {};
+    System::Vector3UI FramebufferSize = {};
 
     /// \brief The RenderPass which is compatible with the Framebuffer.
-    SharedPointer<IRenderPass> RenderPass = {};
+    System::SharedPointer<IRenderPass> RenderPass = {};
 
     /// \brief All the attachments associated with the FrameBuffer.
-    List<SharedPointer<ITextureView>> Attachments = {};
+    System::List<System::SharedPointer<ITextureView>> Attachments = {};
 };
 
 /// \brief Represents the collections of TextureViews (attachments) that a RenderPass instances will use.
@@ -45,6 +44,8 @@ protected:
     /// \brief Constructor
     IFramebuffer(const FramebufferDescription& Description);
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

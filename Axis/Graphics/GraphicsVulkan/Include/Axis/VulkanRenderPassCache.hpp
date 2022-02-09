@@ -10,39 +10,41 @@
 #include "../../../../System/Include/Axis/List.hpp"
 #include "../../../Include/Axis/DeviceChild.hpp"
 #include "../../../Include/Axis/GraphicsCommon.hpp"
-#include "VulkanRenderPassCache.hpp"
 #include <mutex>
 
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class IRenderPass;
 class VulkanGraphicsDevice;
 
-/// \brief VulkanRenderPassCache's key
+// VulkanRenderPassCache's key
 struct VulkanRenderPassCacheKey final
 {
 public:
-    /// \brief Sample count
+    // Sample count
     Uint8 SampleCount = 0;
 
-    /// \brief Depth stencil view format
+    // Depth stencil view format
     TextureFormat DepthStencilViewFormat = TextureFormat::Unknown;
 
-    /// \brief Render target view formats
-    List<TextureFormat> RenderTargetViewFormats = nullptr;
+    // Render target view formats
+    System::List<TextureFormat> RenderTargetViewFormats = nullptr;
 
-    /// \brief Gets hash key for this render pass key.
+    // Gets hash key for this render pass key.
     Size GetHash() const noexcept;
 
-    /// \brief Equal operator
+    // Equal operator
     Bool operator==(const VulkanRenderPassCacheKey& RHS) const noexcept;
 
-    /// \brief Not equal operator
+    // Not equal operator
     Bool operator!=(const VulkanRenderPassCacheKey& RHS) const noexcept;
 
-    /// \brief Hash functor object
+    // Hash functor object
     struct Hash
     {
         Size operator()(const VulkanRenderPassCacheKey& key) const noexcept
@@ -52,14 +54,14 @@ public:
     };
 };
 
-/// \brief Helper struct for creating the render pass by using TextureFormats
+// Helper struct for creating the render pass by using TextureFormats
 struct VulkanRenderPassCache final : public DeviceChild
 {
 public:
-    /// \brief Constructor
+    // Constructor
     VulkanRenderPassCache(VulkanGraphicsDevice& vulkanGraphicsDevice);
 
-    /// \brief Destructor
+    // Destructor
     ~VulkanRenderPassCache() noexcept;
 
     VulkanRenderPassCache(const VulkanRenderPassCache&) = delete;
@@ -67,14 +69,15 @@ public:
     VulkanRenderPassCache& operator=(const VulkanRenderPassCache&) = delete;
     VulkanRenderPassCache& operator=(VulkanRenderPassCache&&) = delete;
 
-    /// \brief Gets the render pass based on the cache keys.
-    SharedPointer<IRenderPass> GetRenderPass(const VulkanRenderPassCacheKey& renderPassCacheKey);
+    // Gets the render pass based on the cache keys.
+    System::SharedPointer<IRenderPass> GetRenderPass(const VulkanRenderPassCacheKey& renderPassCacheKey);
 
 private:
-    /// Private members
-    HashMap<VulkanRenderPassCacheKey, SharedPointer<IRenderPass>, VulkanRenderPassCacheKey::Hash> _hashCache = {};
-    std::mutex                                                                                    _mutex     = {};
+    System::HashMap<VulkanRenderPassCacheKey, System::SharedPointer<IRenderPass>, VulkanRenderPassCacheKey::Hash> _hashCache = {};
+    std::mutex                                                                                                    _mutex     = {};
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

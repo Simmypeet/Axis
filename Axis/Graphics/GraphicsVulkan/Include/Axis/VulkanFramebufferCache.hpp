@@ -17,33 +17,36 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class ITextureView;
 class IFramebuffer;
 class IGraphicsDevice;
 
-/// \brief Key for framebuffer cache.
+// Key for framebuffer cache.
 struct VulkanFramebufferCacheKey final
 {
-    /// \brief Render target texture views
-    List<WeakPointer<ITextureView>> RenderTargetViews = nullptr;
+    // Render target texture views
+    System::List<System::WeakPointer<ITextureView>> RenderTargetViews = nullptr;
 
-    /// \brief Depth stencil texture view
-    WeakPointer<ITextureView> DepthStencilView = nullptr;
+    // Depth stencil texture view
+    System::WeakPointer<ITextureView> DepthStencilView = nullptr;
 
-    /// \brief Gets hash for this framebuffer cache key.
+    // Gets hash for this framebuffer cache key.
     Size GetHash() const noexcept;
 
-    /// Equality comparisons
+    // Equality comparisons
     Bool operator==(const VulkanFramebufferCacheKey& RHS) const noexcept;
 
-    /// Inequality comparisons
+    // Inequality comparisons
     Bool operator!=(const VulkanFramebufferCacheKey& RHS) const noexcept;
 
-    /// \brief VulkanFramebufferCacheKey's hasher
+    // VulkanFramebufferCacheKey's hasher
     struct Hash
     {
-        /// \brief Gets the hash via functor
+        // Gets the hash via functor
         Size operator()(const VulkanFramebufferCacheKey& key) const noexcept
         {
             return key.GetHash();
@@ -51,14 +54,14 @@ struct VulkanFramebufferCacheKey final
     };
 };
 
-/// \brief Gets VulkanFramebuffer from the specified framebuffer cache key
+// Gets VulkanFramebuffer from the specified framebuffer cache key
 struct VulkanFramebufferCache final : public DeviceChild
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanFramebufferCache(VulkanGraphicsDevice& vulkanGraphicsDevice);
 
-    /// Destructor
+    // Destructor
     ~VulkanFramebufferCache() noexcept;
 
     VulkanFramebufferCache(const VulkanFramebufferCache&) = delete;
@@ -66,20 +69,19 @@ public:
     VulkanFramebufferCache& operator=(const VulkanFramebufferCache&) = delete;
     VulkanFramebufferCache& operator=(VulkanFramebufferCache&&) = delete;
 
-    /// \brief Gets the framebuffer based on the cache keys.
-    ///
-    /// \return Returns nullptr upon error.
-    SharedPointer<IFramebuffer> GetFramebuffer(const VulkanFramebufferCacheKey& renderPassCacheKey);
+    // Gets the framebuffer based on the cache keys.
+    System::SharedPointer<IFramebuffer> GetFramebuffer(const VulkanFramebufferCacheKey& renderPassCacheKey);
 
-    /// \brief Cleans up framebuffers that should be destroyed.
+    // Cleans up framebuffers that should be destroyed.
     void CleanUp();
 
 private:
-    /// Private members
-    VulkanRenderPassCache                                                                            _vulkanRenderPassCache;
-    HashMap<VulkanFramebufferCacheKey, SharedPointer<IFramebuffer>, VulkanFramebufferCacheKey::Hash> _hashCache = {};
-    std::mutex                                                                                       _mutex     = {};
+    VulkanRenderPassCache                                                                                            _vulkanRenderPassCache;
+    System::HashMap<VulkanFramebufferCacheKey, System::SharedPointer<IFramebuffer>, VulkanFramebufferCacheKey::Hash> _hashCache = {};
+    std::mutex                                                                                                       _mutex     = {};
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

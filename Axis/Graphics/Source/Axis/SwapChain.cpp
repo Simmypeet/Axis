@@ -9,8 +9,13 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 // Default constructor
 ISwapChain::ISwapChain(const SwapChainDescription& description) :
     Description(description) {}
+
+} // namespace Graphics
 
 } // namespace Axis

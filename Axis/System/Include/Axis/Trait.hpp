@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Trait.hpp
-///
-/// \brief Contains Axis's common concept definitions.
-
 #ifndef AXIS_SYSTEM_TRAIT_HPP
 #define AXIS_SYSTEM_TRAIT_HPP
 #pragma once
@@ -13,7 +9,11 @@
 #include "Config.hpp"
 #include <concepts>
 #include <type_traits>
+
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Checks if two types are the same.
@@ -40,6 +40,12 @@ concept Callable = requires(T t, Args&&... args)
         } -> SameAs<ReturnType>;
 }
 &&RawType<T>&& std::is_nothrow_move_constructible_v<T>&& std::is_nothrow_copy_constructible_v<T>;
+
+/// \brief Checks if a type is POD (Plain Old Data).
+template <class T>
+concept PodType = std::is_standard_layout_v<T> && std::is_trivial_v<T>;
+
+} // namespace System
 
 } // namespace Axis
 

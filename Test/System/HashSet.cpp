@@ -1,9 +1,11 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Hash set : [Axis::System]")
 {
-    using namespace Axis;
     DOCTEST_SUBCASE("Insert and Remove")
     {
         HashSet<Int32> set;

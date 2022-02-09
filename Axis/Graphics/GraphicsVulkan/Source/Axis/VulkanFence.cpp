@@ -11,6 +11,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanFence::VulkanFence(Uint64                initialValue,
                          VulkanGraphicsDevice& vulkanGraphicsDevice)
 {
@@ -33,7 +36,7 @@ VulkanFence::VulkanFence(Uint64                initialValue,
         VkResult vkResult = vkCreateSemaphore(vulkanGraphicsDevice.GetVkDeviceHandle(), &semaphoreCreateInfo, nullptr, &vkSemaphore);
 
         if (vkResult)
-            throw ExternalException("Failed to create VkSemaphore!");
+            throw System::ExternalException("Failed to create VkSemaphore!");
         return vkSemaphore;
     };
 
@@ -51,7 +54,7 @@ Uint64 VulkanFence::GetCurrentValue() const
     VkResult result = vkGetSemaphoreCounterValue(((VulkanGraphicsDevice*)GetCreatorDevice())->GetVkDeviceHandle(), _timelineSemaphore, &value);
 
     if (result != VK_SUCCESS)
-        throw ExternalException("Failed to retrieve semaphore counter value!");
+        throw System::ExternalException("Failed to retrieve semaphore counter value!");
 
     return value;
 }
@@ -67,7 +70,7 @@ void VulkanFence::SetValue(Uint64 value)
     auto result = vkSignalSemaphore(((VulkanGraphicsDevice*)GetCreatorDevice())->GetVkDeviceHandle(), &signalInfo);
 
     if (result != VK_SUCCESS)
-        throw ExternalException("Failed to set semaphore value!");
+        throw System::ExternalException("Failed to set semaphore value!");
 }
 
 void VulkanFence::WaitForValue(Uint64 value) const
@@ -76,7 +79,7 @@ void VulkanFence::WaitForValue(Uint64 value) const
 
     VkSemaphoreWaitInfo waitInfo = {};
     waitInfo.sType               = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
-    waitInfo.pNext               = NULL;
+    waitInfo.pNext               = nullptr;
     waitInfo.flags               = 0;
     waitInfo.semaphoreCount      = 1;
     waitInfo.pSemaphores         = &semaphore;
@@ -85,7 +88,9 @@ void VulkanFence::WaitForValue(Uint64 value) const
     auto result = vkWaitSemaphores(((VulkanGraphicsDevice*)GetCreatorDevice())->GetVkDeviceHandle(), &waitInfo, UINT64_MAX);
 
     if (result != VK_SUCCESS)
-        throw ExternalException("Failed to wait semaphore!");
+        throw System::ExternalException("Failed to wait semaphore!");
 }
+
+} // namespace Graphics
 
 } // namespace Axis

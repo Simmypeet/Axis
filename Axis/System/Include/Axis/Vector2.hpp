@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Vector2.hpp
-///
-/// \brief Contains \a `Axis::Vector3` mathematical vector template struct.
-
 #ifndef AXIS_SYSTEM_VECTOR2_HPP
 #define AXIS_SYSTEM_VECTOR2_HPP
 #pragma once
@@ -13,6 +9,9 @@
 #include "Math.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief 2D mathematical vector template definition.
@@ -110,14 +109,16 @@ struct Vector2 final
     T Y = T{};
 };
 
-/// \brief Vector2 using \a `Axis::Float32` as template argument.
+/// \brief Vector2 using \a `Float32` as template argument.
 typedef Vector2<Float32> Vector2F;
 
-/// \brief Vector2 using \a `Axis::Int32` as template argument.
+/// \brief Vector2 using \a `Int32` as template argument.
 typedef Vector2<Int32> Vector2I;
 
-/// \brief Vector2 using \a `Axis::Uint32` as template argument.
+/// \brief Vector2 using \a `Uint32` as template argument.
 typedef Vector2<Uint32> Vector2UI;
+
+} // namespace System
 
 } // namespace Axis
 

@@ -6,6 +6,8 @@
 #include <Axis/Window>
 
 using namespace Axis;
+using namespace Axis::System;
+using namespace Axis::Window;
 
 int main()
 {

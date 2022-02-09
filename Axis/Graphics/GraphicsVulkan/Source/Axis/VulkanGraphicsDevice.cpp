@@ -23,19 +23,22 @@
 namespace Axis
 {
 
-const List<const char*> VulkanGraphicsDevice::DeviceExtensions = {
+namespace Graphics
+{
+
+const System::List<const char*> VulkanGraphicsDevice::DeviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
     VK_KHR_MAINTENANCE2_EXTENSION_NAME,
     VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME,
     VK_KHR_MAINTENANCE1_EXTENSION_NAME};
 
-VulkanGraphicsDevice::VulkanGraphicsDevice(const SharedPointer<VulkanGraphicsSystem>& vulkanGraphicsSystem,
-                                           Uint32                                     adapterIndex,
-                                           const Span<ImmediateContextCreateInfo>&    pImmediateContextCreateInfos) :
+VulkanGraphicsDevice::VulkanGraphicsDevice(const System::SharedPointer<VulkanGraphicsSystem>& vulkanGraphicsSystem,
+                                           Uint32                                             adapterIndex,
+                                           const System::Span<ImmediateContextCreateInfo>&    pImmediateContextCreateInfos) :
     IGraphicsDevice(vulkanGraphicsSystem, adapterIndex)
 {
-    HashMap<Uint32, Uint32> deviceQueueFamilyIndexCountPairs = {};
+    System::HashMap<Uint32, Uint32> deviceQueueFamilyIndexCountPairs = {};
 
     for (Uint64 i = 0; i < pImmediateContextCreateInfos.GetLength(); i++)
     {
@@ -47,13 +50,13 @@ VulkanGraphicsDevice::VulkanGraphicsDevice(const SharedPointer<VulkanGraphicsSys
     }
 
     auto CreateVkDevice = [&]() -> VkDevice {
-        List<VkDeviceQueueCreateInfo> deviceQueueCreateInfos = {};
-        List<List<Float32>>           deviceQueuePriorities  = {};
+        System::List<VkDeviceQueueCreateInfo> deviceQueueCreateInfos = {};
+        System::List<System::List<Float32>>   deviceQueuePriorities  = {};
 
         Size index = 0;
         for (const auto& deviceQueueIndexCount : deviceQueueFamilyIndexCountPairs)
         {
-            deviceQueuePriorities.Append(List<Float32>(deviceQueueIndexCount.Second, 1.0f));
+            deviceQueuePriorities.Append(System::List<Float32>(deviceQueueIndexCount.Second, 1.0f));
 
             VkDeviceQueueCreateInfo deviceQueueCreateInfo = {};
             deviceQueueCreateInfo.sType                   = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -99,7 +102,7 @@ VulkanGraphicsDevice::VulkanGraphicsDevice(const SharedPointer<VulkanGraphicsSys
         auto result = vkCreateDevice(vulkanGraphicsSystem->GetVulkanPhysicalDevices()[adapterIndex].GetVkPhysicalDeviceHandle(), &deviceCreateInfo, nullptr, &logicalDevice);
 
         if (result != VK_SUCCESS)
-            throw ExternalException("Failed to create vkDevice!");
+            throw System::ExternalException("Failed to create vkDevice!");
         else
             return logicalDevice;
     };
@@ -120,7 +123,7 @@ VulkanGraphicsDevice::VulkanGraphicsDevice(const SharedPointer<VulkanGraphicsSys
         allocatorInfo.instance               = vulkanGraphicsSystem->GetVkInstanceHandle();
 
         if (vmaCreateAllocator(&allocatorInfo, &vmaAllocator) != VK_SUCCESS)
-            throw ExternalException("Failed to create vmaAllocator!");
+            throw System::ExternalException("Failed to create vmaAllocator!");
         else
             return vmaAllocator;
     };
@@ -135,62 +138,62 @@ VulkanGraphicsDevice::VulkanGraphicsDevice(const SharedPointer<VulkanGraphicsSys
         _deviceQueueFamilies.Insert({deviceQueueFamilyIndexCount.First, VulkanDeviceQueueFamily(deviceQueueFamilyIndexCount.First, deviceQueueFamilyIndexCount.Second, *this)});
 }
 
-SharedPointer<ISwapChain> VulkanGraphicsDevice::CreateSwapChain(const SwapChainDescription& description)
+System::SharedPointer<ISwapChain> VulkanGraphicsDevice::CreateSwapChain(const SwapChainDescription& description)
 {
     ValidateCreateSwapChain(description);
 
-    return Axis::MakeShared<VulkanSwapChain>(description, *this);
+    return Axis::System::MakeShared<VulkanSwapChain>(description, *this);
 }
 
-SharedPointer<ITextureView> VulkanGraphicsDevice::CreateTextureView(const TextureViewDescription& description)
+System::SharedPointer<ITextureView> VulkanGraphicsDevice::CreateTextureView(const TextureViewDescription& description)
 {
     ValidateCreateTextureView(description);
 
-    return Axis::MakeShared<VulkanTextureView>(description, *this);
+    return Axis::System::MakeShared<VulkanTextureView>(description, *this);
 }
 
-SharedPointer<IRenderPass> VulkanGraphicsDevice::CreateRenderPass(const RenderPassDescription& description)
+System::SharedPointer<IRenderPass> VulkanGraphicsDevice::CreateRenderPass(const RenderPassDescription& description)
 {
     ValidateCreateRenderPass(description);
 
-    return Axis::MakeShared<VulkanRenderPass>(description, *this);
+    return Axis::System::MakeShared<VulkanRenderPass>(description, *this);
 }
 
-SharedPointer<IFramebuffer> VulkanGraphicsDevice::CreateFramebuffer(const FramebufferDescription& description)
+System::SharedPointer<IFramebuffer> VulkanGraphicsDevice::CreateFramebuffer(const FramebufferDescription& description)
 {
     ValidateCreateFramebuffer(description);
 
-    return Axis::MakeShared<VulkanFramebuffer>(description, *this);
+    return Axis::System::MakeShared<VulkanFramebuffer>(description, *this);
 }
 
-SharedPointer<IShaderModule> VulkanGraphicsDevice::CompileShaderModule(const ShaderModuleDescription& description,
-                                                                       const StringView<Char>&        sourceCode)
+System::SharedPointer<IShaderModule> VulkanGraphicsDevice::CompileShaderModule(const ShaderModuleDescription&  description,
+                                                                               const System::StringView<Char>& sourceCode)
 {
     ValidateCompileShaderModule(description, sourceCode);
 
-    return Axis::MakeShared<VulkanShaderModule>(description, sourceCode, *this);
+    return Axis::System::MakeShared<VulkanShaderModule>(description, sourceCode, *this);
 }
 
-SharedPointer<IResourceHeapLayout> VulkanGraphicsDevice::CreateResourceHeapLayout(const ResourceHeapLayoutDescription& description)
+System::SharedPointer<IResourceHeapLayout> VulkanGraphicsDevice::CreateResourceHeapLayout(const ResourceHeapLayoutDescription& description)
 {
     ValidateCreateResourceHeapLayout(description);
 
-    return Axis::MakeShared<VulkanResourceHeapLayout>(description, *this);
+    return Axis::System::MakeShared<VulkanResourceHeapLayout>(description, *this);
 }
 
-SharedPointer<IGraphicsPipeline> VulkanGraphicsDevice::CreateGraphicsPipeline(const GraphicsPipelineDescription& description)
+System::SharedPointer<IGraphicsPipeline> VulkanGraphicsDevice::CreateGraphicsPipeline(const GraphicsPipelineDescription& description)
 {
     ValidateCreateGraphicsPipeline(description);
 
-    return Axis::MakeShared<VulkanGraphicsPipeline>(description, *this);
+    return Axis::System::MakeShared<VulkanGraphicsPipeline>(description, *this);
 }
 
-SharedPointer<IBuffer> VulkanGraphicsDevice::CreateBuffer(const BufferDescription& description,
-                                                          const BufferInitialData* pInitialData)
+System::SharedPointer<IBuffer> VulkanGraphicsDevice::CreateBuffer(const BufferDescription& description,
+                                                                  const BufferInitialData* pInitialData)
 {
     ValidateCreateBuffer(description, pInitialData);
 
-    auto buffer = Axis::MakeShared<VulkanBuffer>(description, pInitialData, *this);
+    auto buffer = Axis::System::MakeShared<VulkanBuffer>(description, pInitialData, *this);
 
     if (pInitialData)
     {
@@ -201,7 +204,7 @@ SharedPointer<IBuffer> VulkanGraphicsDevice::CreateBuffer(const BufferDescriptio
                 .BufferSize            = pInitialData->DataSize,
                 .BufferBinding         = BufferBinding::TransferSource,
                 .Usage                 = ResourceUsage::StagingSource,
-                .DeviceQueueFamilyMask = (Size)Math::AssignBitToPosition(0, pInitialData->ImmediateContext->DeviceQueueFamilyIndex, true)};
+                .DeviceQueueFamilyMask = (Size)System::Math::AssignBitToPosition(0, pInitialData->ImmediateContext->DeviceQueueFamilyIndex, true)};
 
             auto stagingBuffer = CreateBuffer(stagingBufferDescription, nullptr);
 
@@ -244,28 +247,28 @@ SharedPointer<IBuffer> VulkanGraphicsDevice::CreateBuffer(const BufferDescriptio
     return buffer;
 }
 
-SharedPointer<ITexture> VulkanGraphicsDevice::CreateTexture(const TextureDescription& description)
+System::SharedPointer<ITexture> VulkanGraphicsDevice::CreateTexture(const TextureDescription& description)
 {
     ValidateCreateTexture(description);
 
-    return Axis::MakeShared<VulkanTexture>(description, *this);
+    return Axis::System::MakeShared<VulkanTexture>(description, *this);
 }
 
-SharedPointer<IResourceHeap> VulkanGraphicsDevice::CreateResourceHeap(const ResourceHeapDescription& description)
+System::SharedPointer<IResourceHeap> VulkanGraphicsDevice::CreateResourceHeap(const ResourceHeapDescription& description)
 {
     ValidateCreateResourceHeap(description);
 
-    return Axis::MakeShared<VulkanResourceHeap>(description, *this);
+    return Axis::System::MakeShared<VulkanResourceHeap>(description, *this);
 }
 
-SharedPointer<ISampler> VulkanGraphicsDevice::CreateSampler(const SamplerDescription& description)
+System::SharedPointer<ISampler> VulkanGraphicsDevice::CreateSampler(const SamplerDescription& description)
 {
-    return Axis::MakeShared<VulkanSampler>(description, *this);
+    return Axis::System::MakeShared<VulkanSampler>(description, *this);
 }
 
-SharedPointer<IFence> VulkanGraphicsDevice::CreateFence(Uint64 initialValue)
+System::SharedPointer<IFence> VulkanGraphicsDevice::CreateFence(Uint64 initialValue)
 {
-    return Axis::MakeShared<VulkanFence>(initialValue, *this);
+    return Axis::System::MakeShared<VulkanFence>(initialValue, *this);
 }
 
 void VulkanGraphicsDevice::WaitDeviceIdle() const noexcept
@@ -273,20 +276,20 @@ void VulkanGraphicsDevice::WaitDeviceIdle() const noexcept
     vkDeviceWaitIdle(_vulkanLogicalDevice);
 }
 
-List<SharedPointer<IDeviceContext>> VulkanGraphicsDevice::GetDeviceContexts()
+System::List<System::SharedPointer<IDeviceContext>> VulkanGraphicsDevice::GetDeviceContexts()
 {
     auto graphicsAdapters = GraphicsSystem->GetGraphicsAdapters();
 
-    List<SharedPointer<IDeviceContext>> deviceContexts = {};
+    System::List<System::SharedPointer<IDeviceContext>> deviceContexts = {};
 
     for (const auto& vulkanDeviceQueueFamily : _deviceQueueFamilies)
     {
         for (Size i = 0; i < vulkanDeviceQueueFamily.Second.GetDeviceQueueCount(); i++)
         {
-            auto deviceContext = Axis::MakeShared<VulkanDeviceContext>(vulkanDeviceQueueFamily.First,
-                                                                       (Uint32)i,
-                                                                       graphicsAdapters[GraphicsAdapterIndex].DeviceQueueFamilies[vulkanDeviceQueueFamily.First].QueueType,
-                                                                       *this);
+            auto deviceContext = Axis::System::MakeShared<VulkanDeviceContext>(vulkanDeviceQueueFamily.First,
+                                                                               (Uint32)i,
+                                                                               graphicsAdapters[GraphicsAdapterIndex].DeviceQueueFamilies[vulkanDeviceQueueFamily.First].QueueType,
+                                                                               *this);
 
             deviceContexts.Append(deviceContext);
 
@@ -296,5 +299,7 @@ List<SharedPointer<IDeviceContext>> VulkanGraphicsDevice::GetDeviceContexts()
 
     return deviceContexts;
 }
+
+} // namespace Graphics
 
 } // namespace Axis

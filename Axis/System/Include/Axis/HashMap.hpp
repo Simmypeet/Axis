@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file HashMap.hpp
-///
-/// \brief Contains \a `Axis::HashMap` class template.
-
 #ifndef AXIS_SYSTEM_HASHMAP_HPP
 #define AXIS_SYSTEM_HASHMAP_HPP
 #pragma once
@@ -13,6 +9,9 @@
 #include "HashSet.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 namespace Detail
@@ -79,7 +78,7 @@ public:
     /// \brief Move constructor
     HashMap(HashMap&& other) = default;
 
-    /// \brief Copy assingment operator
+    /// \brief Copy assignment operator
     HashMap& operator=(const HashMap&) = default;
 
     /// \brief Move assignment operator
@@ -123,6 +122,8 @@ public:
     using HashSetBase::Insert;               ///< Inherits base class insert function.
     using HashSetBase::Reserve;              ///< Inherits base class reserve function.
 };
+
+} // namespace System
 
 } // namespace Axis
 

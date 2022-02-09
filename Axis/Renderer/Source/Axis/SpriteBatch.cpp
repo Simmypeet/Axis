@@ -22,6 +22,8 @@
 #include <Axis/SwapChain.hpp>
 #include <Axis/Texture.hpp>
 
+
+
 // GLSL vertex shader code
 constexpr const char* SpriteBatchVertexShaderCode = R"""(
 #version 450
@@ -65,51 +67,54 @@ void main()
 namespace Axis
 {
 
-SpriteBatch::SpriteBatch(const SharedPointer<IGraphicsDevice>& graphicsDevice,
-                         const SharedPointer<IDeviceContext>&  immediateGraphicsContext,
-                         const SharedPointer<ISwapChain>&      swapChain,
-                         Uint32                                maxSpriteCountsPerBatch) :
+namespace Renderer
+{
+
+SpriteBatch::SpriteBatch(const System::SharedPointer<Graphics::IGraphicsDevice>& graphicsDevice,
+                         const System::SharedPointer<Graphics::IDeviceContext>&  immediateGraphicsContext,
+                         const System::SharedPointer<Graphics::ISwapChain>&      swapChain,
+                         Uint32                                                  maxSpriteCountsPerBatch) :
     _graphicsDevice(graphicsDevice),
     _immediateGraphicsDeviceContext(immediateGraphicsContext),
     _swapChain(swapChain),
-    _maxSpriteCountsPerBatch(Math::Min(maxSpriteCountsPerBatch, MaximumMaxSpritesPerBatch))
+    _maxSpriteCountsPerBatch(System::Math::Min(maxSpriteCountsPerBatch, MaximumMaxSpritesPerBatch))
 {
-    auto resizeEvent = [this](DisplayWindow&, Vector2UI) {
+    auto resizeEvent = [this](Window::DisplayWindow&, System::Vector2UI) {
         UpdateTranslationMatrix();
     };
 
-    _eventToken = EventToken<void(DisplayWindow&, Vector2UI)>(swapChain->Description.TargetWindow->GetClientSizeChangedEvent(), resizeEvent);
+    _eventToken = System::EventToken<void(Window::DisplayWindow&, System::Vector2UI)>(swapChain->Description.TargetWindow->GetClientSizeChangedEvent(), resizeEvent);
 
     // Creates vertex shader
-    ShaderModuleDescription vertexShaderDescription = {};
-    vertexShaderDescription.EntryPoint              = "main";
-    vertexShaderDescription.Language                = ShaderLanguage::GLSL;
-    vertexShaderDescription.Stage                   = ShaderStage::Vertex;
-    _vertexShaderModule                             = _graphicsDevice->CompileShaderModule(vertexShaderDescription, ::SpriteBatchVertexShaderCode);
+    Graphics::ShaderModuleDescription vertexShaderDescription = {};
+    vertexShaderDescription.EntryPoint                        = "main";
+    vertexShaderDescription.Language                          = Graphics::ShaderLanguage::GLSL;
+    vertexShaderDescription.Stage                             = Graphics::ShaderStage::Vertex;
+    _vertexShaderModule                                       = _graphicsDevice->CompileShaderModule(vertexShaderDescription, ::SpriteBatchVertexShaderCode);
 
     // Creates fragment shader
-    ShaderModuleDescription fragmentShaderDescription = {};
-    fragmentShaderDescription.EntryPoint              = "main";
-    fragmentShaderDescription.Language                = ShaderLanguage::GLSL;
-    fragmentShaderDescription.Stage                   = ShaderStage::Fragment;
-    _fragmentShaderModule                             = _graphicsDevice->CompileShaderModule(fragmentShaderDescription, ::SpriteBatchFragmentShaderCode);
+    Graphics::ShaderModuleDescription fragmentShaderDescription = {};
+    fragmentShaderDescription.EntryPoint                        = "main";
+    fragmentShaderDescription.Language                          = Graphics::ShaderLanguage::GLSL;
+    fragmentShaderDescription.Stage                             = Graphics::ShaderStage::Fragment;
+    _fragmentShaderModule                                       = _graphicsDevice->CompileShaderModule(fragmentShaderDescription, ::SpriteBatchFragmentShaderCode);
 
-    ResourceHeapLayoutDescription resourceHeapLayoutDescription = {};
-    resourceHeapLayoutDescription.ResourceBindings              = List<ResourceLayoutBinding>(2);
+    Graphics::ResourceHeapLayoutDescription resourceHeapLayoutDescription = {};
+    resourceHeapLayoutDescription.ResourceBindings                        = System::List<Graphics::ResourceLayoutBinding>(2);
 
     // For translation matrix in vertex shader
     auto& vertexTranslationMatrixLayout        = resourceHeapLayoutDescription.ResourceBindings[0];
     vertexTranslationMatrixLayout.ArraySize    = 1;
-    vertexTranslationMatrixLayout.Binding      = ResourceBinding::UniformBuffer;
+    vertexTranslationMatrixLayout.Binding      = Graphics::ResourceBinding::UniformBuffer;
     vertexTranslationMatrixLayout.BindingIndex = 0;
-    vertexTranslationMatrixLayout.StageFlags   = ShaderStage::Vertex;
+    vertexTranslationMatrixLayout.StageFlags   = Graphics::ShaderStage::Vertex;
 
     // For sampler in fragment shader
     auto& fragmentSamplerLayout        = resourceHeapLayoutDescription.ResourceBindings[1];
     fragmentSamplerLayout.ArraySize    = 1;
-    fragmentSamplerLayout.Binding      = ResourceBinding::Sampler;
+    fragmentSamplerLayout.Binding      = Graphics::ResourceBinding::Sampler;
     fragmentSamplerLayout.BindingIndex = 1;
-    fragmentSamplerLayout.StageFlags   = ShaderStage::Fragment;
+    fragmentSamplerLayout.StageFlags   = Graphics::ShaderStage::Fragment;
 
     // Creates resource heap layout
     _resourceHeapLayout = _graphicsDevice->CreateResourceHeapLayout(resourceHeapLayoutDescription);
@@ -118,68 +123,68 @@ SpriteBatch::SpriteBatch(const SharedPointer<IGraphicsDevice>& graphicsDevice,
     _resourceHeap = _graphicsDevice->CreateResourceHeap({_resourceHeapLayout});
 
     // Creates vertex buffer
-    BufferDescription vertexBufferDescription     = {};
-    vertexBufferDescription.BufferBinding         = BufferBinding::Vertex;
-    vertexBufferDescription.BufferSize            = maxSpriteCountsPerBatch * sizeof(Vertex) * 4;
-    vertexBufferDescription.Usage                 = ResourceUsage::Dynamic;
-    vertexBufferDescription.DeviceQueueFamilyMask = Math::AssignBitToPosition(vertexBufferDescription.DeviceQueueFamilyMask, _swapChain->Description.ImmediateGraphicsContext->DeviceQueueFamilyIndex, true);
-    _vertexBuffer                                 = graphicsDevice->CreateBuffer(vertexBufferDescription, nullptr);
+    Graphics::BufferDescription vertexBufferDescription = {};
+    vertexBufferDescription.BufferBinding               = Graphics::BufferBinding::Vertex;
+    vertexBufferDescription.BufferSize                  = maxSpriteCountsPerBatch * sizeof(Vertex) * 4;
+    vertexBufferDescription.Usage                       = Graphics::ResourceUsage::Dynamic;
+    vertexBufferDescription.DeviceQueueFamilyMask       = System::Math::AssignBitToPosition(vertexBufferDescription.DeviceQueueFamilyMask, _swapChain->Description.ImmediateGraphicsContext->DeviceQueueFamilyIndex, true);
+    _vertexBuffer                                       = graphicsDevice->CreateBuffer(vertexBufferDescription, nullptr);
 
     // Creates index buffer
-    BufferDescription indexBufferDescription     = {};
-    indexBufferDescription.BufferBinding         = BufferBinding::Index;
-    indexBufferDescription.BufferSize            = maxSpriteCountsPerBatch * sizeof(IndexType) * 6;
-    indexBufferDescription.Usage                 = ResourceUsage::Dynamic;
-    indexBufferDescription.DeviceQueueFamilyMask = Math::AssignBitToPosition(indexBufferDescription.DeviceQueueFamilyMask, _swapChain->Description.ImmediateGraphicsContext->DeviceQueueFamilyIndex, true);
-    _indexBuffer                                 = graphicsDevice->CreateBuffer(indexBufferDescription, nullptr);
+    Graphics::BufferDescription indexBufferDescription = {};
+    indexBufferDescription.BufferBinding               = Graphics::BufferBinding::Index;
+    indexBufferDescription.BufferSize                  = maxSpriteCountsPerBatch * sizeof(IndexType) * 6;
+    indexBufferDescription.Usage                       = Graphics::ResourceUsage::Dynamic;
+    indexBufferDescription.DeviceQueueFamilyMask       = System::Math::AssignBitToPosition(indexBufferDescription.DeviceQueueFamilyMask, _swapChain->Description.ImmediateGraphicsContext->DeviceQueueFamilyIndex, true);
+    _indexBuffer                                       = graphicsDevice->CreateBuffer(indexBufferDescription, nullptr);
 
     // Creates uniform buffer
-    BufferDescription uniformBufferDescription     = {};
-    uniformBufferDescription.BufferBinding         = BufferBinding::Uniform | BufferBinding::TransferDestination;
-    uniformBufferDescription.BufferSize            = sizeof(FloatMatrix4x4);
-    uniformBufferDescription.Usage                 = ResourceUsage::Dynamic;
-    uniformBufferDescription.DeviceQueueFamilyMask = Math::AssignBitToPosition(uniformBufferDescription.DeviceQueueFamilyMask, _swapChain->Description.ImmediateGraphicsContext->DeviceQueueFamilyIndex, true);
-    _currentMatrixTranslation                      = _graphicsDevice->CreateBuffer(uniformBufferDescription, nullptr);
+    Graphics::BufferDescription uniformBufferDescription = {};
+    uniformBufferDescription.BufferBinding               = Graphics::BufferBinding::Uniform | Graphics::BufferBinding::TransferDestination;
+    uniformBufferDescription.BufferSize                  = sizeof(System::FloatMatrix4x4);
+    uniformBufferDescription.Usage                       = Graphics::ResourceUsage::Dynamic;
+    uniformBufferDescription.DeviceQueueFamilyMask       = System::Math::AssignBitToPosition(uniformBufferDescription.DeviceQueueFamilyMask, _swapChain->Description.ImmediateGraphicsContext->DeviceQueueFamilyIndex, true);
+    _currentMatrixTranslation                            = _graphicsDevice->CreateBuffer(uniformBufferDescription, nullptr);
 
     UpdateTranslationMatrix();
 
-    SharedPointer<IBuffer> uniformBuffers[] = {_currentMatrixTranslation};
+    System::SharedPointer<Graphics::IBuffer> uniformBuffers[] = {_currentMatrixTranslation};
 
     _resourceHeap->BindBuffers(0, uniformBuffers);
 
-    _currentPipelineStateKey.Depth      = DepthStencilState::GetNone();
-    _currentPipelineStateKey.Rasterizer = RasterizerState::GetCullNone();
-    _currentPipelineStateKey.Blend      = AttachmentBlendState::GetAlphaBlend();
+    _currentPipelineStateKey.Depth      = Graphics::DepthStencilState::GetNone();
+    _currentPipelineStateKey.Rasterizer = Graphics::RasterizerState::GetCullNone();
+    _currentPipelineStateKey.Blend      = Graphics::AttachmentBlendState::GetAlphaBlend();
 
-    _currentSamplerDescription = SamplerDescription::GetPointClamp();
+    _currentSamplerDescription = Graphics::SamplerDescription::GetPointClamp();
 
     // Creates white texture
-    TextureDescription whiteTextureDescription = {
-        .Dimension             = TextureDimension::Texture2D,
+    Graphics::TextureDescription whiteTextureDescription = {
+        .Dimension             = Graphics::TextureDimension::Texture2D,
         .Size                  = {1, 1, 1},
-        .TextureBinding        = TextureBinding::Sampled | TextureBinding::TransferDestination,
-        .Format                = TextureFormat::UnormR8G8B8A8,
+        .TextureBinding        = Graphics::TextureBinding::Sampled | Graphics::TextureBinding::TransferDestination,
+        .Format                = Graphics::TextureFormat::UnormR8G8B8A8,
         .MipLevels             = 1,
         .Sample                = 1,
         .ArraySize             = 1,
-        .Usage                 = ResourceUsage::Immutable,
-        .DeviceQueueFamilyMask = (Uint64)Math::AssignBitToPosition(0, immediateGraphicsContext->DeviceQueueFamilyIndex, true)};
+        .Usage                 = Graphics::ResourceUsage::Immutable,
+        .DeviceQueueFamilyMask = (Uint64)System::Math::AssignBitToPosition(0, immediateGraphicsContext->DeviceQueueFamilyIndex, true)};
 
     auto whiteTexture = graphicsDevice->CreateTexture(whiteTextureDescription);
 
-    BufferDescription stagingWhiteTextureBufferDescription = {
+    Graphics::BufferDescription stagingWhiteTextureBufferDescription = {
         .BufferSize            = 4,
-        .BufferBinding         = BufferBinding::TransferSource,
-        .Usage                 = ResourceUsage::Dynamic,
-        .DeviceQueueFamilyMask = (Uint64)Math::AssignBitToPosition(0, immediateGraphicsContext->DeviceQueueFamilyIndex, true)};
+        .BufferBinding         = Graphics::BufferBinding::TransferSource,
+        .Usage                 = Graphics::ResourceUsage::Dynamic,
+        .DeviceQueueFamilyMask = (Uint64)System::Math::AssignBitToPosition(0, immediateGraphicsContext->DeviceQueueFamilyIndex, true)};
 
     auto stagingWhiteTextureBuffer = graphicsDevice->CreateBuffer(stagingWhiteTextureBufferDescription, nullptr);
 
-    ColorUI8 whiteColor = {255, 255, 255, 255};
+    Graphics::ColorUI8 whiteColor = {255, 255, 255, 255};
 
-    auto mappedMemory = _immediateGraphicsDeviceContext->MapBuffer(stagingWhiteTextureBuffer, MapAccess::Write, MapType::Overwrite);
+    auto mappedMemory = _immediateGraphicsDeviceContext->MapBuffer(stagingWhiteTextureBuffer, Graphics::MapAccess::Write, Graphics::MapType::Overwrite);
 
-    std::memcpy(mappedMemory, &whiteColor, sizeof(ColorUI8));
+    std::memcpy(mappedMemory, &whiteColor, sizeof(Graphics::ColorUI8));
 
     _immediateGraphicsDeviceContext->UnmapBuffer(stagingWhiteTextureBuffer);
 
@@ -200,7 +205,7 @@ SpriteBatch::SpriteBatch(const SharedPointer<IGraphicsDevice>& graphicsDevice,
 void SpriteBatch::Begin()
 {
     if (_isBegun)
-        throw InvalidOperationException("SpriteBatch already begun!");
+        throw System::InvalidOperationException("SpriteBatch already begun!");
 
     if (_samplerStateChanged)
     {
@@ -217,9 +222,9 @@ void SpriteBatch::Begin()
     _isBegun = true;
 }
 
-void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
-                       const Vector2F&                    position,
-                       const ColorF&                      colorMask)
+void SpriteBatch::Draw(const System::SharedPointer<Graphics::ITextureView>& texture,
+                       const System::Vector2F&                              position,
+                       const Graphics::ColorF&                              colorMask)
 {
     PreDraw(texture);
 
@@ -230,9 +235,9 @@ void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
                 colorMask);
 }
 
-void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
-                       const RectangleF&                  destinationRectangle,
-                       const ColorF&                      colorMask)
+void SpriteBatch::Draw(const System::SharedPointer<Graphics::ITextureView>& texture,
+                       const System::RectangleF&                            destinationRectangle,
+                       const Graphics::ColorF&                              colorMask)
 {
     PreDraw(texture);
 
@@ -243,18 +248,18 @@ void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
                 colorMask);
 }
 
-void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
-                       const RectangleF&                  destinationRectangle,
-                       const RectangleI&                  sourceRectangle,
-                       const ColorF&                      colorMask)
+void SpriteBatch::Draw(const System::SharedPointer<Graphics::ITextureView>& texture,
+                       const System::RectangleF&                            destinationRectangle,
+                       const System::RectangleI&                            sourceRectangle,
+                       const Graphics::ColorF&                              colorMask)
 {
     PreDraw(texture);
 
-    Vector2F texCoordTL = {(Float32)sourceRectangle.X / texture->Description.ViewTexture->Description.Size.X,
-                           (Float32)sourceRectangle.Y / texture->Description.ViewTexture->Description.Size.Y};
+    System::Vector2F texCoordTL = {(Float32)sourceRectangle.X / texture->Description.ViewTexture->Description.Size.X,
+                                   (Float32)sourceRectangle.Y / texture->Description.ViewTexture->Description.Size.Y};
 
-    Vector2F texCoordBR = {texCoordTL.X + ((Float32)sourceRectangle.Width / texture->Description.ViewTexture->Description.Size.X),
-                           texCoordTL.Y + ((Float32)sourceRectangle.Height / texture->Description.ViewTexture->Description.Size.Y)};
+    System::Vector2F texCoordBR = {texCoordTL.X + ((Float32)sourceRectangle.Width / texture->Description.ViewTexture->Description.Size.X),
+                                   texCoordTL.Y + ((Float32)sourceRectangle.Height / texture->Description.ViewTexture->Description.Size.Y)};
 
     AppendBatch({destinationRectangle.X, destinationRectangle.Y, 0},
                 {destinationRectangle.Width, destinationRectangle.Height},
@@ -263,18 +268,18 @@ void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
                 colorMask);
 }
 
-void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
-                       const Vector2F&                    position,
-                       const RectangleI&                  sourceRectangle,
-                       const ColorF&                      colorMask)
+void SpriteBatch::Draw(const System::SharedPointer<Graphics::ITextureView>& texture,
+                       const System::Vector2F&                              position,
+                       const System::RectangleI&                            sourceRectangle,
+                       const Graphics::ColorF&                              colorMask)
 {
     PreDraw(texture);
 
-    Vector2F texCoordTL = {(Float32)sourceRectangle.X / texture->Description.ViewTexture->Description.Size.X,
-                           (Float32)sourceRectangle.Y / texture->Description.ViewTexture->Description.Size.Y};
+    System::Vector2F texCoordTL = {(Float32)sourceRectangle.X / texture->Description.ViewTexture->Description.Size.X,
+                                   (Float32)sourceRectangle.Y / texture->Description.ViewTexture->Description.Size.Y};
 
-    Vector2F texCoordBR = {texCoordTL.X + ((Float32)sourceRectangle.Width / texture->Description.ViewTexture->Description.Size.X),
-                           texCoordTL.Y + ((Float32)sourceRectangle.Height / texture->Description.ViewTexture->Description.Size.Y)};
+    System::Vector2F texCoordBR = {texCoordTL.X + ((Float32)sourceRectangle.Width / texture->Description.ViewTexture->Description.Size.X),
+                                   texCoordTL.Y + ((Float32)sourceRectangle.Height / texture->Description.ViewTexture->Description.Size.Y)};
 
     AppendBatch({position.X, position.Y, 0},
                 {sourceRectangle.Width, sourceRectangle.Height},
@@ -283,23 +288,23 @@ void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
                 colorMask);
 }
 
-void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
-                       const RectangleF&                  destinationRectangle,
-                       const RectangleI&                  sourceRectangle,
-                       const ColorF&                      colorMask,
-                       Float32                            rotation,
-                       const Vector2F&                    origin,
-                       SpriteEffectFlags                  spriteEffect,
-                       Float32                            layerDepth)
+void SpriteBatch::Draw(const System::SharedPointer<Graphics::ITextureView>& texture,
+                       const System::RectangleF&                            destinationRectangle,
+                       const System::RectangleI&                            sourceRectangle,
+                       const Graphics::ColorF&                              colorMask,
+                       Float32                                              rotation,
+                       const System::Vector2F&                              origin,
+                       SpriteEffectFlags                                    spriteEffect,
+                       Float32                                              layerDepth)
 {
     PreDraw(texture);
 
-    Vector2F spriteOrigin = origin;
+    System::Vector2F spriteOrigin = origin;
 
-    Vector2F texCoordTL = {(Float32)sourceRectangle.X / texture->Description.ViewTexture->Description.Size.X,
-                           (Float32)sourceRectangle.Y / texture->Description.ViewTexture->Description.Size.Y};
-    Vector2F texCoordBR = {(Float32)(sourceRectangle.X + sourceRectangle.Width) / texture->Description.ViewTexture->Description.Size.X,
-                           (Float32)(sourceRectangle.Y + sourceRectangle.Height) / texture->Description.ViewTexture->Description.Size.Y};
+    System::Vector2F texCoordTL = {(Float32)sourceRectangle.X / texture->Description.ViewTexture->Description.Size.X,
+                                   (Float32)sourceRectangle.Y / texture->Description.ViewTexture->Description.Size.Y};
+    System::Vector2F texCoordBR = {(Float32)(sourceRectangle.X + sourceRectangle.Width) / texture->Description.ViewTexture->Description.Size.X,
+                                   (Float32)(sourceRectangle.Y + sourceRectangle.Height) / texture->Description.ViewTexture->Description.Size.Y};
 
     if ((Bool)(spriteEffect & SpriteEffect::FlipVertically))
     {
@@ -317,17 +322,17 @@ void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
 
     if (rotation == 0)
     {
-        AppendBatch(Vector3F(destinationRectangle.X - spriteOrigin.X, destinationRectangle.Y - spriteOrigin.Y, layerDepth),
-                    Vector2F(destinationRectangle.Width, destinationRectangle.Height),
+        AppendBatch(System::Vector3F(destinationRectangle.X - spriteOrigin.X, destinationRectangle.Y - spriteOrigin.Y, layerDepth),
+                    System::Vector2F(destinationRectangle.Width, destinationRectangle.Height),
                     texCoordTL,
                     texCoordBR,
                     colorMask);
     }
     else
     {
-        AppendBatch(Vector3F(destinationRectangle.X, destinationRectangle.Y, layerDepth),
-                    Vector2F(-spriteOrigin.X, -spriteOrigin.Y),
-                    Vector2F(destinationRectangle.Width, destinationRectangle.Height),
+        AppendBatch(System::Vector3F(destinationRectangle.X, destinationRectangle.Y, layerDepth),
+                    System::Vector2F(-spriteOrigin.X, -spriteOrigin.Y),
+                    System::Vector2F(destinationRectangle.Width, destinationRectangle.Height),
                     std::sin(rotation),
                     std::cos(rotation),
                     texCoordTL,
@@ -336,15 +341,15 @@ void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
     }
 }
 
-void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
-                       const Vector2F&                    position,
-                       const RectangleI&                  sourceRectangle,
-                       const ColorF&                      colorMask,
-                       Float32                            rotation,
-                       const Vector2F&                    origin,
-                       const Vector2F&                    scale,
-                       SpriteEffectFlags                  spriteEffect,
-                       Float32                            layerDepth)
+void SpriteBatch::Draw(const System::SharedPointer<Graphics::ITextureView>& texture,
+                       const System::Vector2F&                              position,
+                       const System::RectangleI&                            sourceRectangle,
+                       const Graphics::ColorF&                              colorMask,
+                       Float32                                              rotation,
+                       const System::Vector2F&                              origin,
+                       const System::Vector2F&                              scale,
+                       SpriteEffectFlags                                    spriteEffect,
+                       Float32                                              layerDepth)
 {
     PreDraw(texture);
 
@@ -352,15 +357,15 @@ void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
     spriteOrigin.X *= scale.X;
     spriteOrigin.Y *= scale.Y;
 
-    Vector2F size = {
+    System::Vector2F size = {
         sourceRectangle.Width * scale.X,
         sourceRectangle.Height * scale.Y,
     };
 
-    Vector2F texCoordTL = {(Float32)sourceRectangle.X / texture->Description.ViewTexture->Description.Size.X,
-                           (Float32)sourceRectangle.Y / texture->Description.ViewTexture->Description.Size.Y};
-    Vector2F texCoordBR = {(Float32)(sourceRectangle.X + sourceRectangle.Width) / texture->Description.ViewTexture->Description.Size.X,
-                           (Float32)(sourceRectangle.Y + sourceRectangle.Height) / texture->Description.ViewTexture->Description.Size.Y};
+    System::Vector2F texCoordTL = {(Float32)sourceRectangle.X / texture->Description.ViewTexture->Description.Size.X,
+                                   (Float32)sourceRectangle.Y / texture->Description.ViewTexture->Description.Size.Y};
+    System::Vector2F texCoordBR = {(Float32)(sourceRectangle.X + sourceRectangle.Width) / texture->Description.ViewTexture->Description.Size.X,
+                                   (Float32)(sourceRectangle.Y + sourceRectangle.Height) / texture->Description.ViewTexture->Description.Size.Y};
 
     if ((Bool)(spriteEffect & SpriteEffect::FlipVertically))
     {
@@ -378,7 +383,7 @@ void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
 
     if (rotation == 0)
     {
-        AppendBatch(Vector3F(position.X - spriteOrigin.X, position.Y - spriteOrigin.Y, layerDepth),
+        AppendBatch(System::Vector3F(position.X - spriteOrigin.X, position.Y - spriteOrigin.Y, layerDepth),
                     size,
                     texCoordTL,
                     texCoordBR,
@@ -386,8 +391,8 @@ void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
     }
     else
     {
-        AppendBatch(Vector3F(position.X, position.Y, layerDepth),
-                    Vector2F(-spriteOrigin.X, -spriteOrigin.Y),
+        AppendBatch(System::Vector3F(position.X, position.Y, layerDepth),
+                    System::Vector2F(-spriteOrigin.X, -spriteOrigin.Y),
                     size,
                     std::sin(rotation),
                     std::cos(rotation),
@@ -397,24 +402,25 @@ void SpriteBatch::Draw(const SharedPointer<ITextureView>& texture,
     }
 }
 
-void SpriteBatch::DrawRectangle(const RectangleF& rectangle, const ColorF& color)
+void SpriteBatch::DrawRectangle(const System::RectangleF& rectangle,
+                                const Graphics::ColorF&   color)
 {
     return Draw(_whiteTextureView, rectangle, color);
 }
 
-void SpriteBatch::DrawString(const SharedPointer<SpriteFont>& spriteFont,
-                             StringView<WChar>                text,
-                             const Vector2F&                  position,
-                             const ColorF&                    colorMask)
+void SpriteBatch::DrawString(const System::SharedPointer<SpriteFont>& spriteFont,
+                             System::StringView<WChar>                text,
+                             const System::Vector2F&                  position,
+                             const Graphics::ColorF&                  colorMask)
 {
     PreDraw<false>(spriteFont->GetFontAtlas());
 
-    Vector2F origin = position;
+    System::Vector2F origin = position;
 
-    Vector2F fontOrigin = {origin.X,
-                           origin.Y};
+    System::Vector2F fontOrigin = {origin.X,
+                                   origin.Y};
 
-    Vector2F currentOriginPosition = fontOrigin;
+    System::Vector2F currentOriginPosition = fontOrigin;
 
     Bool firstGlyphOfLine = true;
     auto endGlyph         = spriteFont->GetCharacterGlyphsMap().end();
@@ -439,15 +445,14 @@ void SpriteBatch::DrawString(const SharedPointer<SpriteFont>& spriteFont,
         if (glyph == endGlyph && rectangle == endRect)
             continue;
 
-        Vector2F drawingPos = currentOriginPosition;
-        Vector2F offset     = {};
+        System::Vector2F drawingPos = currentOriginPosition;
 
         if (!firstGlyphOfLine && glyph->Second.Bearing.X > 0)
             drawingPos.X += (Float32)glyph->Second.Bearing.X;
 
-        drawingPos.Y += (Float32)glyph->Second.Bearing.Y;
+        drawingPos.Y += spriteFont->GetLineHeight() - (Float32)glyph->Second.Bearing.Y;
 
-        currentOriginPosition.X = drawingPos.X + (Float32)glyph->Second.Advance.X;
+        currentOriginPosition.X += (Float32)glyph->Second.Advance.X;
 
         // Draws the character if it is not a space character
         if (rectangle != endRect)
@@ -457,18 +462,18 @@ void SpriteBatch::DrawString(const SharedPointer<SpriteFont>& spriteFont,
 
             _spriteCount++;
 
-            auto texCoordTL = Vector2F(rectangle->Second.X / (Float32)spriteFont->GetFontAtlas()->Description.ViewTexture->Description.Size.X,
-                                       rectangle->Second.Y / (Float32)spriteFont->GetFontAtlas()->Description.ViewTexture->Description.Size.Y);
+            auto texCoordTL = System::Vector2F(rectangle->Second.X / (Float32)spriteFont->GetFontAtlas()->Description.ViewTexture->Description.Size.X,
+                                               rectangle->Second.Y / (Float32)spriteFont->GetFontAtlas()->Description.ViewTexture->Description.Size.Y);
 
-            auto texCoordBR = Vector2F((rectangle->Second.X + rectangle->Second.Width) / (Float32)spriteFont->GetFontAtlas()->Description.ViewTexture->Description.Size.X,
-                                       (rectangle->Second.Y + rectangle->Second.Height) / (Float32)spriteFont->GetFontAtlas()->Description.ViewTexture->Description.Size.Y);
+            auto texCoordBR = System::Vector2F((rectangle->Second.X + rectangle->Second.Width) / (Float32)spriteFont->GetFontAtlas()->Description.ViewTexture->Description.Size.X,
+                                               (rectangle->Second.Y + rectangle->Second.Height) / (Float32)spriteFont->GetFontAtlas()->Description.ViewTexture->Description.Size.Y);
 
-            AppendBatch(Vector3F(drawingPos.X, drawingPos.Y, 0.0f),
-                        Vector2F(rectangle->Second.Width, rectangle->Second.Height),
+            AppendBatch(System::Vector3F(drawingPos.X, drawingPos.Y, 0.0f),
+                        System::Vector2F(rectangle->Second.Width, rectangle->Second.Height),
                         texCoordTL,
                         texCoordBR,
                         colorMask);
-        }
+        } 
 
         firstGlyphOfLine = false;
     }
@@ -477,7 +482,7 @@ void SpriteBatch::DrawString(const SharedPointer<SpriteFont>& spriteFont,
 void SpriteBatch::End()
 {
     if (!_isBegun)
-        throw InvalidOperationException("`Begin` must be called before `End`!");
+        throw System::InvalidOperationException("`Begin` must be called before `End`!");
 
     _isBegun = false;
 
@@ -486,9 +491,9 @@ void SpriteBatch::End()
     _currentTextureView = nullptr;
 }
 
-SpriteBatch::Vertex::Vertex(const Vector3F& position,
-                            const ColorF&   colorMask,
-                            const Vector2F& textureCoordinate) noexcept :
+SpriteBatch::Vertex::Vertex(const System::Vector3F& position,
+                            const Graphics::ColorF& colorMask,
+                            const System::Vector2F& textureCoordinate) noexcept :
     Position(position),
     ColorMask(colorMask),
     TextureCoordinate(textureCoordinate) {}
@@ -497,41 +502,41 @@ Size SpriteBatch::PipelineStateKey::Hasher::operator()(const SpriteBatch::Pipeli
 {
     Size hash = 0;
 
-    hash = Math::HashCombine(hash, (Size)pipelineStateKey.Blend.BlendEnable);
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Blend.DestAlphaBlendFactor));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Blend.DestColorBlendFactor));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Blend.SourceAlphaBlendFactor));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Blend.SourceAlphaBlendFactor));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Blend.AlphaOperation));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Blend.ColorOperation));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Blend.WriteChannelFlags));
+    hash = System::Math::HashCombine(hash, (Size)pipelineStateKey.Blend.BlendEnable);
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Blend.DestAlphaBlendFactor));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Blend.DestColorBlendFactor));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Blend.SourceAlphaBlendFactor));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Blend.SourceAlphaBlendFactor));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Blend.AlphaOperation));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Blend.ColorOperation));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Blend.WriteChannelFlags));
 
-    hash = Math::HashCombine(hash, (Size)pipelineStateKey.Depth.DepthTestEnable);
-    hash = Math::HashCombine(hash, (Size)pipelineStateKey.Depth.DepthWriteEnable);
-    hash = Math::HashCombine(hash, (Size)pipelineStateKey.Depth.StencilEnable);
-    hash = Math::HashCombine(hash, (Size)pipelineStateKey.Depth.StencilReadMask);
-    hash = Math::HashCombine(hash, (Size)pipelineStateKey.Depth.StencilWriteMask);
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Depth.DepthCompareFunction));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Depth.BackFaceStencilOperation.StencilCompareFunction));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Depth.BackFaceStencilOperation.StencilFailOperation));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Depth.BackFaceStencilOperation.StencilPassDepthPassOperation));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Depth.BackFaceStencilOperation.StencilPassDepthFailOperation));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Depth.FrontFaceStencilOperation.StencilCompareFunction));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Depth.FrontFaceStencilOperation.StencilFailOperation));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Depth.FrontFaceStencilOperation.StencilPassDepthPassOperation));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Depth.FrontFaceStencilOperation.StencilPassDepthFailOperation));
+    hash = System::Math::HashCombine(hash, (Size)pipelineStateKey.Depth.DepthTestEnable);
+    hash = System::Math::HashCombine(hash, (Size)pipelineStateKey.Depth.DepthWriteEnable);
+    hash = System::Math::HashCombine(hash, (Size)pipelineStateKey.Depth.StencilEnable);
+    hash = System::Math::HashCombine(hash, (Size)pipelineStateKey.Depth.StencilReadMask);
+    hash = System::Math::HashCombine(hash, (Size)pipelineStateKey.Depth.StencilWriteMask);
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Depth.DepthCompareFunction));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Depth.BackFaceStencilOperation.StencilCompareFunction));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Depth.BackFaceStencilOperation.StencilFailOperation));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Depth.BackFaceStencilOperation.StencilPassDepthPassOperation));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Depth.BackFaceStencilOperation.StencilPassDepthFailOperation));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Depth.FrontFaceStencilOperation.StencilCompareFunction));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Depth.FrontFaceStencilOperation.StencilFailOperation));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Depth.FrontFaceStencilOperation.StencilPassDepthPassOperation));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Depth.FrontFaceStencilOperation.StencilPassDepthFailOperation));
 
     Uint32 depthBiasClampHash       = (*(Uint32*)(&pipelineStateKey.Rasterizer.DepthBiasClamp));
     Uint32 slopeScaledDepthBiasHash = (*(Uint32*)(&pipelineStateKey.Rasterizer.SlopeScaledDepthBias));
 
-    hash = Math::HashCombine(hash, (Size)pipelineStateKey.Rasterizer.DepthClipEnable);
-    hash = Math::HashCombine(hash, (Size)pipelineStateKey.Rasterizer.ScissorTestEnable);
-    hash = Math::HashCombine(hash, (Size)pipelineStateKey.Rasterizer.DepthBias);
-    hash = Math::HashCombine(hash, (Size)depthBiasClampHash);
-    hash = Math::HashCombine(hash, (Size)slopeScaledDepthBiasHash);
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Rasterizer.FaceCulling));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Rasterizer.FrontFaceWinding));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(pipelineStateKey.Rasterizer.PrimitiveFillMode));
+    hash = System::Math::HashCombine(hash, (Size)pipelineStateKey.Rasterizer.DepthClipEnable);
+    hash = System::Math::HashCombine(hash, (Size)pipelineStateKey.Rasterizer.ScissorTestEnable);
+    hash = System::Math::HashCombine(hash, (Size)pipelineStateKey.Rasterizer.DepthBias);
+    hash = System::Math::HashCombine(hash, (Size)depthBiasClampHash);
+    hash = System::Math::HashCombine(hash, (Size)slopeScaledDepthBiasHash);
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Rasterizer.FaceCulling));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Rasterizer.FrontFaceWinding));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(pipelineStateKey.Rasterizer.PrimitiveFillMode));
 
     return hash;
 }
@@ -574,14 +579,14 @@ Bool SpriteBatch::PipelineStateKey::operator==(const SpriteBatch::PipelineStateK
     return depthEqual && rasterizerEqual && blendEqual;
 }
 
-Size SpriteBatch::SamplerDescriptionHasher::operator()(const SamplerDescription& samplerDescription) const noexcept
+Size SpriteBatch::SamplerDescriptionHasher::operator()(const Graphics::SamplerDescription& samplerDescription) const noexcept
 {
     Size hash = 0;
-    hash      = Math::HashCombine(hash, (Size)samplerDescription.MaxAnisotropyLevel);
-    hash      = Math::HashCombine(hash, (Size)samplerDescription.AnisotropyEnable);
-    hash      = Math::HashCombine(hash, Enum::GetUnderlyingValue(samplerDescription.AddressModeU));
-    hash      = Math::HashCombine(hash, Enum::GetUnderlyingValue(samplerDescription.AddressModeV));
-    hash      = Math::HashCombine(hash, Enum::GetUnderlyingValue(samplerDescription.AddressModeW));
+    hash      = System::Math::HashCombine(hash, (Size)samplerDescription.MaxAnisotropyLevel);
+    hash      = System::Math::HashCombine(hash, (Size)samplerDescription.AnisotropyEnable);
+    hash      = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(samplerDescription.AddressModeU));
+    hash      = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(samplerDescription.AddressModeV));
+    hash      = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(samplerDescription.AddressModeW));
 
     Uint32 colorRHash = (*(Uint32*)(&samplerDescription.BorderColor.R));
     Uint32 colorGHash = (*(Uint32*)(&samplerDescription.BorderColor.G));
@@ -592,24 +597,24 @@ Size SpriteBatch::SamplerDescriptionHasher::operator()(const SamplerDescription&
     Uint32 minLoad  = (*(Uint32*)(&samplerDescription.MinLOD));
     Uint32 maxLoad  = (*(Uint32*)(&samplerDescription.MaxLOD));
 
-    hash = Math::HashCombine(hash, colorRHash);
-    hash = Math::HashCombine(hash, colorGHash);
-    hash = Math::HashCombine(hash, colorBHash);
-    hash = Math::HashCombine(hash, colorAHash);
+    hash = System::Math::HashCombine(hash, colorRHash);
+    hash = System::Math::HashCombine(hash, colorGHash);
+    hash = System::Math::HashCombine(hash, colorBHash);
+    hash = System::Math::HashCombine(hash, colorAHash);
 
-    hash = Math::HashCombine(hash, loadBias);
-    hash = Math::HashCombine(hash, minLoad);
-    hash = Math::HashCombine(hash, maxLoad);
+    hash = System::Math::HashCombine(hash, loadBias);
+    hash = System::Math::HashCombine(hash, minLoad);
+    hash = System::Math::HashCombine(hash, maxLoad);
 
 
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(samplerDescription.MagFilter));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(samplerDescription.MinFilter));
-    hash = Math::HashCombine(hash, Enum::GetUnderlyingValue(samplerDescription.MipFilter));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(samplerDescription.MagFilter));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(samplerDescription.MinFilter));
+    hash = System::Math::HashCombine(hash, System::Enum::GetUnderlyingValue(samplerDescription.MipFilter));
 
     return hash;
 }
 
-Bool SpriteBatch::SamplerDescriptionComparer::operator()(const SamplerDescription& LHS, const SamplerDescription& RHS) const noexcept
+Bool SpriteBatch::SamplerDescriptionComparer::operator()(const Graphics::SamplerDescription& LHS, const Graphics::SamplerDescription& RHS) const noexcept
 {
     return LHS.MaxAnisotropyLevel == RHS.MaxAnisotropyLevel &&
         LHS.AnisotropyEnable == RHS.AnisotropyEnable &&
@@ -628,7 +633,7 @@ Bool SpriteBatch::SamplerDescriptionComparer::operator()(const SamplerDescriptio
         LHS.MipFilter == RHS.MipFilter;
 }
 
-SharedPointer<IGraphicsPipeline> SpriteBatch::GetGraphicsPipeline(const PipelineStateKey& key)
+System::SharedPointer<Graphics::IGraphicsPipeline> SpriteBatch::GetGraphicsPipeline(const PipelineStateKey& key)
 {
     if (!_graphicsDevice || !_swapChain)
         return nullptr;
@@ -637,29 +642,29 @@ SharedPointer<IGraphicsPipeline> SpriteBatch::GetGraphicsPipeline(const Pipeline
 
     if (it == _pipelineCaches.end())
     {
-        GraphicsPipelineDescription graphicsPipelineDescription = {};
-        graphicsPipelineDescription.VertexShader                = _vertexShaderModule;
-        graphicsPipelineDescription.FragmentShader              = _fragmentShaderModule;
+        Graphics::GraphicsPipelineDescription graphicsPipelineDescription = {};
+        graphicsPipelineDescription.VertexShader                          = _vertexShaderModule;
+        graphicsPipelineDescription.FragmentShader                        = _fragmentShaderModule;
 
-        graphicsPipelineDescription.VertexBindingDescriptions = List<VertexBindingDescription>(1);
-        VertexBindingDescription& vertexBindingDesc           = graphicsPipelineDescription.VertexBindingDescriptions[0];
+        graphicsPipelineDescription.VertexBindingDescriptions = System::List<Graphics::VertexBindingDescription>(1);
+        Graphics::VertexBindingDescription& vertexBindingDesc = graphicsPipelineDescription.VertexBindingDescriptions[0];
         vertexBindingDesc.BindingSlot                         = 0;
-        vertexBindingDesc.Attributes                          = List<VertexAttribute>(3);
+        vertexBindingDesc.Attributes                          = System::List<Graphics::VertexAttribute>(3);
 
         vertexBindingDesc.Attributes[0].Location = 0;
-        vertexBindingDesc.Attributes[0].Type     = ShaderDataType::Float3; // Vertex position
+        vertexBindingDesc.Attributes[0].Type     = Graphics::ShaderDataType::Float3; // Vertex position
 
         vertexBindingDesc.Attributes[1].Location = 1;
-        vertexBindingDesc.Attributes[1].Type     = ShaderDataType::Float4; // Color blending
+        vertexBindingDesc.Attributes[1].Type     = Graphics::ShaderDataType::Float4; // Color blending
 
         vertexBindingDesc.Attributes[2].Location = 2;
-        vertexBindingDesc.Attributes[2].Type     = ShaderDataType::Float2; // UV Coordinate
+        vertexBindingDesc.Attributes[2].Type     = Graphics::ShaderDataType::Float2; // UV Coordinate
 
-        graphicsPipelineDescription.Binding = PipelineBinding::Graphics;
+        graphicsPipelineDescription.Binding = Graphics::PipelineBinding::Graphics;
         graphicsPipelineDescription.Blend   = {
             {key.Blend},
             false,
-            LogicOperation::NoOperation};
+            Graphics::LogicOperation::NoOperation};
         graphicsPipelineDescription.DepthStencil = key.Depth;
         graphicsPipelineDescription.Rasterizer   = key.Rasterizer;
 
@@ -678,7 +683,7 @@ SharedPointer<IGraphicsPipeline> SpriteBatch::GetGraphicsPipeline(const Pipeline
     return it->Second;
 }
 
-SharedPointer<ISampler> SpriteBatch::GetSampler(const SamplerDescription& samplerDesc)
+System::SharedPointer<Graphics::ISampler> SpriteBatch::GetSampler(const Graphics::SamplerDescription& samplerDesc)
 {
     if (!_graphicsDevice || !_swapChain)
         return nullptr;
@@ -702,33 +707,33 @@ SharedPointer<ISampler> SpriteBatch::GetSampler(const SamplerDescription& sample
 
 void SpriteBatch::UpdateTranslationMatrix()
 {
-    PVoid mappedMemory = _immediateGraphicsDeviceContext->MapBuffer(_currentMatrixTranslation, MapAccess::Write, MapType::Discard);
+    PVoid mappedMemory = _immediateGraphicsDeviceContext->MapBuffer(_currentMatrixTranslation, Graphics::MapAccess::Write, Graphics::MapType::Discard);
 
     auto windowSize = _swapChain->Description.TargetWindow->GetSize();
 
-    FloatMatrix4x4 translationMatrix = {};
-    translationMatrix(0, 0)          = 2.0f / (Float32)windowSize.X;
-    translationMatrix(1, 1)          = 2.0f / (Float32)windowSize.Y;
-    translationMatrix(2, 2)          = 1.0f;
-    translationMatrix(0, 3)          = -1.0f;
-    translationMatrix(1, 3)          = -1.0f;
-    translationMatrix(3, 3)          = 1.0f;
+    System::FloatMatrix4x4 translationMatrix = {};
+    translationMatrix(0, 0)                  = 2.0f / (Float32)windowSize.X;
+    translationMatrix(1, 1)                  = 2.0f / (Float32)windowSize.Y;
+    translationMatrix(2, 2)                  = 1.0f;
+    translationMatrix(0, 3)                  = -1.0f;
+    translationMatrix(1, 3)                  = -1.0f;
+    translationMatrix(3, 3)                  = 1.0f;
 
-    std::memcpy(mappedMemory, &translationMatrix, sizeof(FloatMatrix4x4));
+    std::memcpy(mappedMemory, &translationMatrix, sizeof(System::FloatMatrix4x4));
 
     _immediateGraphicsDeviceContext->UnmapBuffer(_currentMatrixTranslation);
 }
 
 template <Bool IncrementCount>
-void SpriteBatch::PreDraw(const SharedPointer<ITextureView>& texture)
+void SpriteBatch::PreDraw(const System::SharedPointer<Graphics::ITextureView>& texture)
 {
     // Checks if batch has begun or not
     if (!_isBegun)
-        throw InvalidOperationException("`Begin` must be called before drawing.");
+        throw System::InvalidOperationException("`Begin` must be called before drawing.");
 
     // Requires 2D texture
-    if (texture->Description.ViewDimension != TextureViewDimension::Texture2D)
-        throw InvalidOperationException("Texture must be 2D!");
+    if (texture->Description.ViewDimension != Graphics::TextureViewDimension::Texture2D)
+        throw System::InvalidOperationException("Texture must be 2D!");
 
     if (_currentTextureView)
     {
@@ -761,7 +766,9 @@ void SpriteBatch::Flush()
 
     // Maps vertex buffer memory
     {
-        PVoid mappedVertexMemory = _immediateGraphicsDeviceContext->MapBuffer(_vertexBuffer, MapAccess::Write, MapType::Discard);
+        PVoid mappedVertexMemory = _immediateGraphicsDeviceContext->MapBuffer(_vertexBuffer,
+                                                                              Graphics::MapAccess::Write,
+                                                                              Graphics::MapType::Discard);
 
         std::memcpy(mappedVertexMemory, _vertices.GetData(), _vertices.GetLength() * sizeof(Vertex));
 
@@ -770,16 +777,18 @@ void SpriteBatch::Flush()
 
     // Maps index buffer memory
     {
-        PVoid mappedIndexMemory = _immediateGraphicsDeviceContext->MapBuffer(_indexBuffer, MapAccess::Write, MapType::Discard);
+        PVoid mappedIndexMemory = _immediateGraphicsDeviceContext->MapBuffer(_indexBuffer,
+                                                                             Graphics::MapAccess::Write,
+                                                                             Graphics::MapType::Discard);
 
         std::memcpy(mappedIndexMemory, _indices.GetData(), _indices.GetLength() * sizeof(IndexType));
 
         _immediateGraphicsDeviceContext->UnmapBuffer(_indexBuffer);
     }
 
-    SharedPointer<ISampler>     samplers[]      = {_currentSampler};
-    SharedPointer<ITextureView> textureViews[]  = {_currentTextureView};
-    SharedPointer<IBuffer>      vertexBuffers[] = {_vertexBuffer};
+    System::SharedPointer<Graphics::ISampler>     samplers[]      = {_currentSampler};
+    System::SharedPointer<Graphics::ITextureView> textureViews[]  = {_currentTextureView};
+    System::SharedPointer<Graphics::IBuffer>      vertexBuffers[] = {_vertexBuffer};
 
     // Binds sampler to the resource heap
     _resourceHeap->BindSamplers(1, samplers, textureViews);
@@ -805,34 +814,34 @@ void SpriteBatch::Flush()
     _indices.Clear();
 }
 
-void SpriteBatch::AppendBatch(const Vector3F& position,
-                              const Vector2F& size,
-                              const Vector2F& texCoordTL,
-                              const Vector2F& texCoordBR,
-                              const ColorF&   colorMask)
+void SpriteBatch::AppendBatch(const System::Vector3F& position,
+                              const System::Vector2F& size,
+                              const System::Vector2F& texCoordTL,
+                              const System::Vector2F& texCoordBR,
+                              const Graphics::ColorF& colorMask)
 
 {
     _vertices.ReserveFor(_vertices.GetLength() + 4);
 
     // Top left vertex
-    _vertices.EmplaceBack(Vector3F(position.X, position.Y, position.Z),
+    _vertices.EmplaceBack(System::Vector3F(position.X, position.Y, position.Z),
                           colorMask,
-                          Vector2F(texCoordTL.X, texCoordTL.Y));
+                          System::Vector2F(texCoordTL.X, texCoordTL.Y));
 
     // Top right vertex
-    _vertices.EmplaceBack(Vector3F(position.X + size.X, position.Y, position.Z),
+    _vertices.EmplaceBack(System::Vector3F(position.X + size.X, position.Y, position.Z),
                           colorMask,
-                          Vector2F(texCoordBR.X, texCoordTL.Y));
+                          System::Vector2F(texCoordBR.X, texCoordTL.Y));
 
     // Bottom right vertex
-    _vertices.EmplaceBack(Vector3F(position.X + size.X, position.Y + size.Y, position.Z),
+    _vertices.EmplaceBack(System::Vector3F(position.X + size.X, position.Y + size.Y, position.Z),
                           colorMask,
-                          Vector2F(texCoordBR.X, texCoordBR.Y));
+                          System::Vector2F(texCoordBR.X, texCoordBR.Y));
 
     // Bottom left vertex
-    _vertices.EmplaceBack(Vector3F(position.X, position.Y + size.Y, position.Z),
+    _vertices.EmplaceBack(System::Vector3F(position.X, position.Y + size.Y, position.Z),
                           colorMask,
-                          Vector2F(texCoordTL.X, texCoordBR.Y));
+                          System::Vector2F(texCoordTL.X, texCoordBR.Y));
 
     try
     {
@@ -857,36 +866,36 @@ void SpriteBatch::AppendBatch(const Vector3F& position,
     _indices.EmplaceBack((IndexType)(((_spriteCount - 1) * 4) + 3));
 }
 
-void SpriteBatch::AppendBatch(const Vector3F& position,
-                              const Vector2F& delta,
-                              const Vector2F& size,
-                              Float32         sin,
-                              Float32         cos,
-                              const Vector2F& texCoordTL,
-                              const Vector2F& texCoordBR,
-                              const ColorF&   colorMask)
+void SpriteBatch::AppendBatch(const System::Vector3F& position,
+                              const System::Vector2F& delta,
+                              const System::Vector2F& size,
+                              Float32                 sin,
+                              Float32                 cos,
+                              const System::Vector2F& texCoordTL,
+                              const System::Vector2F& texCoordBR,
+                              const Graphics::ColorF& colorMask)
 {
     _vertices.ReserveFor(_vertices.GetLength() + 4);
 
     // Top left vertex
-    _vertices.EmplaceBack(Vector3F(position.X + delta.X * cos - delta.Y * sin, position.Y + delta.X * sin + delta.Y * cos, position.Z),
+    _vertices.EmplaceBack(System::Vector3F(position.X + delta.X * cos - delta.Y * sin, position.Y + delta.X * sin + delta.Y * cos, position.Z),
                           colorMask,
-                          Vector2F(texCoordTL.X, texCoordTL.Y));
+                          System::Vector2F(texCoordTL.X, texCoordTL.Y));
 
     // Top right vertex
-    _vertices.EmplaceBack(Vector3F(position.X + (delta.X + size.X) * cos - delta.Y * sin, position.Y + (delta.X + size.X) * sin + delta.Y * cos, position.Z),
+    _vertices.EmplaceBack(System::Vector3F(position.X + (delta.X + size.X) * cos - delta.Y * sin, position.Y + (delta.X + size.X) * sin + delta.Y * cos, position.Z),
                           colorMask,
-                          Vector2F(texCoordBR.X, texCoordTL.Y));
+                          System::Vector2F(texCoordBR.X, texCoordTL.Y));
 
     // Bottom right vertex
-    _vertices.EmplaceBack(Vector3F(position.X + (delta.X + size.X) * cos - (delta.Y + size.Y) * sin, position.Y + (delta.X + size.X) * sin + (delta.Y + size.Y) * cos, position.Z),
+    _vertices.EmplaceBack(System::Vector3F(position.X + (delta.X + size.X) * cos - (delta.Y + size.Y) * sin, position.Y + (delta.X + size.X) * sin + (delta.Y + size.Y) * cos, position.Z),
                           colorMask,
-                          Vector2F(texCoordBR.X, texCoordBR.Y));
+                          System::Vector2F(texCoordBR.X, texCoordBR.Y));
 
     // Bottom left vertex
-    _vertices.EmplaceBack(Vector3F(position.X + delta.X * cos - (delta.Y + size.Y) * sin, position.Y + delta.X * sin + (delta.Y + size.Y) * cos, position.Z),
+    _vertices.EmplaceBack(System::Vector3F(position.X + delta.X * cos - (delta.Y + size.Y) * sin, position.Y + delta.X * sin + (delta.Y + size.Y) * cos, position.Z),
                           colorMask,
-                          Vector2F(texCoordTL.X, texCoordBR.Y));
+                          System::Vector2F(texCoordTL.X, texCoordBR.Y));
 
     try
     {
@@ -910,5 +919,7 @@ void SpriteBatch::AppendBatch(const Vector3F& position,
     _indices.EmplaceBack((IndexType)(((_spriteCount - 1) * 4) + 2));
     _indices.EmplaceBack((IndexType)(((_spriteCount - 1) * 4) + 3));
 }
+
+} // namespace Renderer
 
 } // namespace Axis

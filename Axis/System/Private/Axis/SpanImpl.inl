@@ -12,6 +12,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <RawType T>
 inline constexpr Span<T>::Span() noexcept :
     _begin(nullptr),
@@ -93,6 +96,8 @@ inline constexpr const T& Span<T>::operator[](Size index) const
 
     return _begin[index];
 }
+
+} // namespace System
 
 } // namespace Axis
 

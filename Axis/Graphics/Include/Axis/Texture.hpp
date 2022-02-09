@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file SwapChain.hpp
-///
-/// \brief Contains `Axis::ITexture` and `Axis::ITextureView` interface class.
-
 #ifndef AXIS_GRAPHICS_TEXTURE_HPP
 #define AXIS_GRAPHICS_TEXTURE_HPP
 #pragma once
@@ -17,12 +13,13 @@
 #include "GraphicsCommon.hpp"
 #include "StatedGraphicsResource.hpp"
 
-
-
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 struct TextureViewDescription;
 class ITextureView;
 class IDeviceContext;
@@ -75,7 +72,7 @@ struct TextureDescription final
     TextureDimension Dimension = {};
 
     /// \brief Defines the number of size in each dimension X, Y, Z.
-    Vector3UI Size = {};
+    System::Vector3UI Size = {};
 
     /// \brief Specifies what can texture be bound into.
     TextureBindingFlags TextureBinding = {};
@@ -121,7 +118,7 @@ public:
     ///        itself to create the texture view.
     ///
     /// \note Default texture view contains all subresource ranges of this texture.
-    SharedPointer<ITextureView> CreateDefaultTextureView();
+    System::SharedPointer<ITextureView> CreateDefaultTextureView();
 
 protected:
     /// \brief Constructor
@@ -173,7 +170,7 @@ typedef TextureViewUsage TextureViewUsageFlags;
 struct TextureViewDescription final
 {
     /// \brief The Texture which is viewing to.
-    SharedPointer<ITexture> ViewTexture = {};
+    System::SharedPointer<ITexture> ViewTexture = {};
 
     /// \brief Describes the View to the Texture.
     TextureViewDimension ViewDimension = {};
@@ -242,11 +239,13 @@ constexpr TextureViewUsageFlags GetTextureViewUsageFlagsFromTextureFormat(Textur
     case TextureFormat::UnormDepth24Stencil8:
         return TextureViewUsage::Depth | TextureViewUsage::Stencil;
     default:
-        throw InvalidArgumentException("`textureFormat` was invalid!");
+        throw System::InvalidArgumentException("`textureFormat` was invalid!");
     }
 
     // clang-format on
 }
+
+} // namespace Graphics
 
 } // namespace Axis
 

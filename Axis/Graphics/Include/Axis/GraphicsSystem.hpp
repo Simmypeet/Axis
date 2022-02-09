@@ -25,12 +25,21 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Window
+{
+
+class DisplayWindow;
+
+} // namespace Window
+
+namespace Graphics
+{
+
+// Forward declarations
 class IGraphicsDevice;
 class IDeviceContext;
 class ISwapChain;
 struct SwapChainDescription;
-class DisplayWindow;
 
 /// \brief Graphics APIs for renderer backend.
 enum class GraphicsAPI : Uint8
@@ -59,13 +68,13 @@ struct GraphicsCapability final
     Uint32 MaxVertexInputBinding = {};
 
     /// \brief The maximum dimension of frame buffer. X and Y for width and height, Z for layer count.
-    Vector3UI MaxFramebufferDimension = {};
+    System::Vector3UI MaxFramebufferDimension = {};
 
     /// \brief Max pipeline layout binding index count.
     Uint32 MaxPipelineLayoutBinding = {};
 
     /// \brief Gets all supported texture format
-    List<TextureFormat> SupportedTextureFormats = {};
+    System::List<TextureFormat> SupportedTextureFormats = {};
 };
 
 /// \brief Types of the graphics adapter.
@@ -101,7 +110,7 @@ struct DeviceQueueFamily final
 struct SwapChainSpecification
 {
     /// \brief Contains a list of supported texture formats for swap chain.
-    List<TextureFormat> SupportedFormats = {};
+    System::List<TextureFormat> SupportedFormats = {};
 
     /// \brief Maximum number of back buffers that swap chain could have.
     Uint32 MaxBackBufferCount = {};
@@ -120,10 +129,10 @@ struct GraphicsAdapter final
     GraphicsAdapterType AdapterType = {};
 
     /// \brief All device queue families that this GraphicsAdapter contains.
-    List<DeviceQueueFamily> DeviceQueueFamilies = {};
+    System::List<DeviceQueueFamily> DeviceQueueFamilies = {};
 
     /// \brief Name of the GraphicsAdapter.
-    String8 Name = {};
+    System::String8 Name = {};
 };
 
 /// \brief Used in immediate device context creation
@@ -134,42 +143,44 @@ struct ImmediateContextCreateInfo final
 };
 
 /// \brief Represents the GraphicsAPI which will be used in various graphics operations.
-class AXIS_GRAPHICS_API IGraphicsSystem : public ISharedFromThis
+class AXIS_GRAPHICS_API IGraphicsSystem : public System::ISharedFromThis
 {
 public:
     /// \brief Description of the graphics system.
     AXIS_NODISCARD virtual GraphicsSystemDescription GetGraphicsSystemDescription() const = 0;
 
     /// \brief Contains all graphics adapters info which supports this graphics system.
-    AXIS_NODISCARD virtual List<GraphicsAdapter> GetGraphicsAdapters() const = 0;
+    AXIS_NODISCARD virtual System::List<GraphicsAdapter> GetGraphicsAdapters() const = 0;
 
     /// \brief Creates graphics device and immediate device contexts.
     ///
-    /// \param[in] adapterIndex Graphics adapter index in the \a `Axis::IGraphicsSystem::GetGraphicsAdapters` array, uses in graphics device creation.
+    /// \param[in] adapterIndex Graphics adapter index in the \a `IGraphicsSystem::GetGraphicsAdapters` array, uses in graphics device creation.
     /// \param[in] pImmediateContextCreateInfos Array of ImmediateContextCreateInfo used in immediate device contexts creation.
     /// \param[in] immediateContextCount The number of immediate device context to create and pDeviceQueueFamilyIndices index count.
     /// \param[out] graphicsDeviceOut Pointer to the IGraphics* pointer.
     /// \param[out] pDeviceContextsOut Pointer to the array IDeviceContext* pointer.
     ///
     /// \note The result in the pDeviceContextsOut are not guaranteed to be exactly corresponded to the pImmediateContextCreateInfos.
-    AXIS_NODISCARD virtual Pair<SharedPointer<IGraphicsDevice>, List<SharedPointer<IDeviceContext>>> CreateGraphicsDeviceAndContexts(Uint32                                  adapterIndex,
-                                                                                                                                     const Span<ImmediateContextCreateInfo>& immediateContextCreateInfos) = 0;
+    AXIS_NODISCARD virtual System::Pair<System::SharedPointer<IGraphicsDevice>, System::List<System::SharedPointer<IDeviceContext>>> CreateGraphicsDeviceAndContexts(Uint32                                          adapterIndex,
+                                                                                                                                                                     const System::Span<ImmediateContextCreateInfo>& immediateContextCreateInfos) = 0;
 
     /// \brief Gets the swap chain specification to the specified target window.
     ///
     /// \param[in] adapterIndex Index of the GraphicsAdapter coorespoding to the IGraphicsSystem::GetGraphicsAdapters.
     /// \param[in] targetWindow The window which the swap chain will present their images to.
-    AXIS_NODISCARD virtual SwapChainSpecification GetSwapChainSpecification(Uint32                              adapterIndex,
-                                                                            const SharedPointer<DisplayWindow>& targetWindow) const = 0;
+    AXIS_NODISCARD virtual SwapChainSpecification GetSwapChainSpecification(Uint32                                              adapterIndex,
+                                                                            const System::SharedPointer<Window::DisplayWindow>& targetWindow) const = 0;
 
 protected:
     /// \brief constructor
     IGraphicsSystem() noexcept;
 
     // Throws the exceptions upon errors
-    void ValidateCreateGraphicsDeviceAndContexts(Uint32                                  adapterIndex,
-                                                 const Span<ImmediateContextCreateInfo>& immediateContextCreateInfos);
+    void ValidateCreateGraphicsDeviceAndContexts(Uint32                                          adapterIndex,
+                                                 const System::Span<ImmediateContextCreateInfo>& immediateContextCreateInfos);
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

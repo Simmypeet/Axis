@@ -1,10 +1,11 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Function object : [Axis::System]")
 {
-    using namespace Axis;
-
     static Size InstanceCount = 0;
 
     /// \brief A functor that increments the instance count.

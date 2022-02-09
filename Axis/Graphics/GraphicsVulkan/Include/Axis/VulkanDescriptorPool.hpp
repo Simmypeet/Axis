@@ -16,7 +16,10 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class IFence;
 class VulkanGraphicsDevice;
 class VulkanDescriptorPool;
@@ -26,64 +29,63 @@ class VulkanBuffer;
 class VulkanTextureView;
 enum class StateTransition : Uint8;
 
-/// \brief Specifies the group of required descriptor sets requested from resource heap.
+// Specifies the group of required descriptor sets requested from resource heap.
 class VulkanDescriptorSetGroup final : public DeviceChild
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanDescriptorSetGroup(VkDescriptorSet       descriptorSet,
                              VulkanGraphicsDevice& vulkanGraphicsDevice);
 
-    /// \brief Vulkan descriptor set representation.
+    // Vulkan descriptor set representation.
     const VkDescriptorSet DescriptorSet;
 
-    /// \brief Sets the fences.
+    // Sets the fences.
     void PrepareBindDescriptorSetGroup(VulkanDeviceContext& vulkanDeviceContext);
 
-    /// \brief Checks if this descriptor set group is available for use
+    // Checks if this descriptor set group is available for use
     Bool IsAvailable() const noexcept;
 
     // Checks whether if the descriptor should be updated for the next use
     Bool UpToDate = false;
 
 private:
-    SharedPointer<IFence>   _descriptorFinished      = nullptr;
-    Uint64                  _expectedValue           = 0;
-    ResourceHeapDescription _resourceHeapDescription = {};
+    System::SharedPointer<IFence> _descriptorFinished      = nullptr;
+    Uint64                        _expectedValue           = 0;
+    ResourceHeapDescription       _resourceHeapDescription = {};
 };
 
-/// \brief Descriptor pool recycling the descriptor set group.
+// Descriptor pool recycling the descriptor set group.
 class VulkanDescriptorPool final : public DeviceChild
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanDescriptorPool(const ResourceHeapDescription& description,
                          VulkanGraphicsDevice&          vulkanGraphicsDevice);
 
-    /// \brief Gets the existing descriptor group in the pool / allocates new descriptor set group.
-    ///
-    /// \return Returns nullptr if the error occurred.
-    UniquePointer<VulkanDescriptorSetGroup> GetDescriptorSetGroup();
+    // Gets the existing descriptor group in the pool / allocates new descriptor set group.
+    System::UniquePointer<VulkanDescriptorSetGroup> GetDescriptorSetGroup();
 
-    /// \brief Returns the descriptor set group back to the pool for future uses.
-    void ReturnDescriptorSetGroup(UniquePointer<VulkanDescriptorSetGroup>&& descriptorSetGroup) noexcept;
+    // Returns the descriptor set group back to the pool for future uses.
+    void ReturnDescriptorSetGroup(System::UniquePointer<VulkanDescriptorSetGroup>&& descriptorSetGroup) noexcept;
 
-    /// \brief Makes all pooled descriptors marked as not up to date.
+    // Makes all pooled descriptors marked as not up to date.
     void MarkAllAsNotUpToDate() noexcept;
 
 private:
-    /// Private methods
     inline Size GetCurrentGroupSize() const noexcept { return InitialDescriptorSetPoolSize + _descriptorPools.GetLength() - 1; }
     void        AddPool();
 
-    List<VkPtr<VkDescriptorPool>>                 _descriptorPools     = {};
-    List<UniquePointer<VulkanDescriptorSetGroup>> _descriptorSetGroups = {};
-    std::atomic<Size>                             _currentAllocation   = 0;
-    ResourceHeapDescription                       _resourceHeapDesc    = {};
-    std::mutex                                    _vectorMutex         = {};
+    System::List<VkPtr<VkDescriptorPool>>                         _descriptorPools     = {};
+    System::List<System::UniquePointer<VulkanDescriptorSetGroup>> _descriptorSetGroups = {};
+    std::atomic<Size>                                             _currentAllocation   = 0;
+    ResourceHeapDescription                                       _resourceHeapDesc    = {};
+    std::mutex                                                    _vectorMutex         = {};
 
     static constexpr Size InitialDescriptorSetPoolSize = 3;
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

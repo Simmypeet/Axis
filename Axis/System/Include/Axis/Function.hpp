@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Function.hpp
-///
-/// \brief Contains `Axis::Function` template class.
-
 #ifndef AXIS_SYSTEM_FUNCTION_HPP
 #define AXIS_SYSTEM_FUNCTION_HPP
 #pragma once
@@ -15,6 +11,9 @@
 #include "Utility.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Template type erasure container class for containing all callable objects.
@@ -122,6 +121,8 @@ private:
         StaticStorage<SmallBufferOptimizationSize> Storage;
     };
 };
+
+} // namespace System
 
 } // namespace Axis
 

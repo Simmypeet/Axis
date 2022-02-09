@@ -1,7 +1,6 @@
 /// \copyright Simmypeet - Copyright (C)
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
-///
 
 #ifndef AXIS_GRAPHICS_COLORIMPL_INL
 #define AXIS_GRAPHICS_COLORIMPL_INL
@@ -12,8 +11,11 @@
 namespace Axis
 {
 
-template <ArithmeticType T>
-template <ArithmeticType U, ArithmeticType V, ArithmeticType W, ArithmeticType X>
+namespace Graphics
+{
+
+template <System::ArithmeticType T>
+template <System::ArithmeticType U, System::ArithmeticType V, System::ArithmeticType W, System::ArithmeticType X>
 inline constexpr Color<T>::Color(U r,
                                  V g,
                                  W b,
@@ -24,24 +26,26 @@ inline constexpr Color<T>::Color(U r,
     A((T)a)
 {}
 
-template <ArithmeticType T>
+template <System::ArithmeticType T>
 inline constexpr Color<T>::Color(T value) noexcept :
     R(value),
     G(value),
     B(value),
     A(value) {}
 
-template <ArithmeticType T>
+template <System::ArithmeticType T>
 inline constexpr Bool Color<T>::operator==(const Color<T>& rhs) const noexcept
 {
     return (R == rhs.R) && (G == rhs.G) && (B == rhs.B) && (A == rhs.A);
 }
 
-template <ArithmeticType T>
+template <System::ArithmeticType T>
 inline constexpr Bool Color<T>::operator!=(const Color<T>& rhs) const noexcept
 {
     return !(*this == rhs);
 }
+
+} // namespace Graphics
 
 } // namespace Axis
 

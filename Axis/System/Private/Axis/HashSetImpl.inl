@@ -12,10 +12,12 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
 inline HashSet<T, Hasher, Comparer, Allocator>::~HashSet() noexcept
 {
-
     if (_pTable)
         ClearInternal<true>(_pTable, _capacity);
 }
@@ -597,7 +599,8 @@ inline void HashSet<T, Hasher, Comparer, Allocator>::ClearInternal(Node** pTable
         {
             Node* nextNode = currentNode->Next;
 
-            currentNode->Data.~T();
+            if constexpr (!PodType<T>)
+                currentNode->Data.~T();
 
             Allocator::Deallocate(currentNode);
 
@@ -646,6 +649,8 @@ inline IteratorVariant HashSet<T, Hasher, Comparer, Allocator>::End() const requ
 {
     return IteratorVariant(_pTable, _capacity, _capacity, nullptr);
 }
+
+} // namespace System
 
 } // namespace Axis
 

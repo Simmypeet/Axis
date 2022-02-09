@@ -9,6 +9,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 Size VertexBindingDescription::GetStride() const
 {
     if (!Attributes)
@@ -26,5 +29,7 @@ Size VertexBindingDescription::GetStride() const
 IGraphicsPipeline::IGraphicsPipeline(const GraphicsPipelineDescription& description) :
     IPipeline(PipelineBinding::Graphics),
     Description(description) {}
+
+} // namespace Graphics
 
 } // namespace Axis

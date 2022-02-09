@@ -9,21 +9,26 @@
 namespace Axis
 {
 
+namespace Core
+{
+
 namespace Detail
 {
 
 // Predicate for update order
-constexpr auto UpdateOrderPredicate = [](ApplicationComponent* component) -> Int32 {
-    return component->GetUpdateOrder();
+constexpr auto UpdateOrderPredicate = [](ApplicationComponent& component) -> Int32 {
+    return component.GetUpdateOrder();
 };
 
 // Predicate for render order
-constexpr auto RenderOrderPredicate = [](ApplicationComponent* component) -> Int32 {
-    return component->GetRenderOrder();
+constexpr auto RenderOrderPredicate = [](ApplicationComponent& component) -> Int32 {
+    return component.GetRenderOrder();
 };
 
 template <class Predicate>
-inline void AppendSortedList(List<ApplicationComponent*>& array, ApplicationComponent* component, const Predicate& predicate)
+inline void AppendSortedList(System::List<System::SharedPointer<ApplicationComponent>>& array,
+                             ApplicationComponent*                                      component,
+                             const Predicate&                                           predicate)
 {
     // The array is already sorted.
     // Inserts the new element in the correct position.
@@ -31,7 +36,9 @@ inline void AppendSortedList(List<ApplicationComponent*>& array, ApplicationComp
     // Using binary search to find the correct position.
     // The array is sorted in ascending order.
 
-    Int32 value = predicate(component);
+    ApplicationComponent& componentRef = *component;
+
+    Int32 value = predicate(componentRef);
 
     Size start = 0;
     Size end   = array.GetLength() - 1;
@@ -40,7 +47,7 @@ inline void AppendSortedList(List<ApplicationComponent*>& array, ApplicationComp
     {
         Size middle = (start + end) / 2;
 
-        if (value < predicate(array[middle]))
+        if (value < predicate(*array[middle]))
         {
             end = middle - 1;
         }
@@ -54,9 +61,9 @@ inline void AppendSortedList(List<ApplicationComponent*>& array, ApplicationComp
 }
 
 template <class Predicate>
-inline void RemoveSortedList(List<ApplicationComponent*>& array,
-                             ApplicationComponent*        component,
-                             const Predicate&             predicate)
+inline void RemoveSortedList(System::List<System::SharedPointer<ApplicationComponent>>& array,
+                             ApplicationComponent*                                      component,
+                             const Predicate&                                           predicate)
 {
     // The array is already sorted.
     // Removes the element from the correct position.
@@ -64,7 +71,9 @@ inline void RemoveSortedList(List<ApplicationComponent*>& array,
     // Using binary search to find the correct position.
     // The array is sorted in ascending order.
 
-    Int32 value = predicate(component);
+    ApplicationComponent& componentRef = *component;
+
+    Int32 value = predicate(componentRef);
 
     Size start = 0;
     Size end   = array.GetLength() - 1;
@@ -73,7 +82,7 @@ inline void RemoveSortedList(List<ApplicationComponent*>& array,
     {
         Size middle = (start + end) / 2;
 
-        if (value < predicate(array[middle]))
+        if (value < predicate(*array[middle]))
         {
             end = middle - 1;
         }
@@ -92,7 +101,7 @@ inline void RemoveSortedList(List<ApplicationComponent*>& array,
 ComponentCollection::ComponentCollection(Application& application) noexcept :
     _application(application) {}
 
-void ComponentCollection::Append(SharedPointer<ApplicationComponent>&& component)
+void ComponentCollection::Append(System::SharedPointer<ApplicationComponent>&& component)
 {
     try
     {
@@ -115,7 +124,7 @@ void ComponentCollection::Append(SharedPointer<ApplicationComponent>&& component
     _componentAddedEvent.Invoke(*component);
 }
 
-void ComponentCollection::AppendHighest(SharedPointer<ApplicationComponent>&& component)
+void ComponentCollection::AppendHighest(System::SharedPointer<ApplicationComponent>&& component)
 {
     Int32 updateOrder = component->GetUpdateOrder();
     Int32 renderOrder = component->GetRenderOrder();
@@ -169,7 +178,7 @@ Bool ComponentCollection::Remove(const ApplicationComponent& component)
     return found;
 }
 
-void ComponentCollection::UpdateAll(const TimePeriod& timeStep)
+void ComponentCollection::UpdateAll(const System::TimePeriod& timeStep)
 {
     // Updates all the components in the collection.
     for (Size i = 0; i < _componentsUpdateOrder.GetLength(); ++i)
@@ -183,7 +192,7 @@ void ComponentCollection::UpdateAll(const TimePeriod& timeStep)
     }
 }
 
-void ComponentCollection::RenderAll(const TimePeriod& timeStep)
+void ComponentCollection::RenderAll(const System::TimePeriod& timeStep)
 {
     // Draws all the components in the collection.
     for (Size i = 0; i < _componentsDrawOrder.GetLength(); ++i)
@@ -196,5 +205,7 @@ void ComponentCollection::RenderAll(const TimePeriod& timeStep)
         }
     }
 }
+
+} // namespace Core
 
 } // namespace Axis

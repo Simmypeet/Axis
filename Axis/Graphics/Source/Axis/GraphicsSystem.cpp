@@ -11,32 +11,37 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 // Default constructor
 IGraphicsSystem::IGraphicsSystem() noexcept = default;
 
-void IGraphicsSystem::ValidateCreateGraphicsDeviceAndContexts(Uint32                                  adapterIndex,
-                                                              const Span<ImmediateContextCreateInfo>& immediateContextCreateInfos)
+void IGraphicsSystem::ValidateCreateGraphicsDeviceAndContexts(Uint32                                          adapterIndex,
+                                                              const System::Span<ImmediateContextCreateInfo>& immediateContextCreateInfos)
 {
     auto graphicsAdapters = GetGraphicsAdapters();
 
     if (adapterIndex >= graphicsAdapters.GetLength())
-        throw ArgumentOutOfRangeException("`adapterIndex` was out of range!");
+        throw System::ArgumentOutOfRangeException("`adapterIndex` was out of range!");
 
     if (!immediateContextCreateInfos)
-        throw InvalidArgumentException("`immediateContextCreateInfos` was nullptr!");
+        throw System::InvalidArgumentException("`immediateContextCreateInfos` was nullptr!");
 
-    List<DeviceQueueFamily> currentDeviceQueueFamilies = graphicsAdapters[adapterIndex].DeviceQueueFamilies;
+    System::List<DeviceQueueFamily> currentDeviceQueueFamilies = graphicsAdapters[adapterIndex].DeviceQueueFamilies;
 
     for (Uint64 i = 0; i < immediateContextCreateInfos.GetLength(); i++)
     {
         if (immediateContextCreateInfos[i].DeviceQueueFamilyIndex >= currentDeviceQueueFamilies.GetLength())
-            throw InvalidArgumentException("`immediateContextCreateInfos` contained out of range device queue family indices!");
+            throw System::InvalidArgumentException("`immediateContextCreateInfos` contained out of range device queue family indices!");
 
         if (!currentDeviceQueueFamilies[immediateContextCreateInfos[i].DeviceQueueFamilyIndex].QueueCount)
-            throw InvalidArgumentException("`immediateContextCreateInfos` requested more device queue than provided!");
+            throw System::InvalidArgumentException("`immediateContextCreateInfos` requested more device queue than provided!");
 
         currentDeviceQueueFamilies[immediateContextCreateInfos[i].DeviceQueueFamilyIndex].QueueCount--;
     }
 }
+
+} // namespace Graphics
 
 } // namespace Axis

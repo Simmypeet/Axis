@@ -12,6 +12,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <RawType T, Size N>
 inline constexpr Size StaticArray<T, N>::GetLength() const noexcept
 {
@@ -59,6 +62,8 @@ inline constexpr const T* StaticArray<T, N>::end() const noexcept
 {
     return _Elements + N;
 }
+
+} // namespace System
 
 } // namespace Axis
 

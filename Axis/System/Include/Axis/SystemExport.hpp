@@ -3,10 +3,6 @@
 ///            file 'LICENSE', which is part of this source code package.
 ///
 
-/// \file SystemExport.hpp
-///
-/// \brief Contains portable export/import macro for \a `System` module.
-
 #ifndef AXIS_SYSTEM_SYSTEMEXPORT_HPP
 #define AXIS_SYSTEM_SYSTEMEXPORT_HPP
 #pragma once

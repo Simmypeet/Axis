@@ -13,6 +13,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 inline constexpr Random::Random(Int32 seed) noexcept :
     inext(0),
     inextp(21)
@@ -137,6 +140,8 @@ inline constexpr Float64 Random::GetSampleForLargeRange() noexcept
     d /= 2 * (Uint32)2147483647 - 1;
     return d;
 }
+
+} // namespace System
 
 } // namespace Axis
 

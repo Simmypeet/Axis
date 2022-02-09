@@ -1,14 +1,15 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Rectangle data structure : [Axis::System]")
 {
     DOCTEST_SUBCASE("`Axis::Rectangle `Constructors")
     {
         DOCTEST_SUBCASE("Default constructor")
         {
-            using namespace Axis;
-
             Rectangle<Int32> rectangle;
 
             DOCTEST_CHECK(rectangle.X == 0);
@@ -19,8 +20,6 @@ DOCTEST_TEST_CASE("Rectangle data structure : [Axis::System]")
 
         DOCTEST_SUBCASE("Constructor with defined values")
         {
-            using namespace Axis;
-
             Rectangle<Int32> rectangle(1, 2, 3, 4);
 
             DOCTEST_CHECK(rectangle.X == 1);
@@ -31,8 +30,6 @@ DOCTEST_TEST_CASE("Rectangle data structure : [Axis::System]")
 
         DOCTEST_SUBCASE("Copy constructor")
         {
-            using namespace Axis;
-
             Rectangle<Int32> rectangle(1, 2, 3, 4);
             Rectangle<Int32> rectangleCopy(rectangle);
 
@@ -45,8 +42,6 @@ DOCTEST_TEST_CASE("Rectangle data structure : [Axis::System]")
 
     DOCTEST_SUBCASE("Equality comparisons")
     {
-        using namespace Axis;
-
         Rectangle<Int32> rectangle(1, 2, 3, 4);
         Rectangle<Int32> rectangleCopy(rectangle);
         Rectangle<Int32> anotherRect(2, 3, 4, 5);
@@ -57,8 +52,6 @@ DOCTEST_TEST_CASE("Rectangle data structure : [Axis::System]")
 
     DOCTEST_SUBCASE("Inequality comparisons")
     {
-        using namespace Axis;
-
         Rectangle<Int32> rectangle(1, 2, 3, 4);
         Rectangle<Int32> rectangleCopy(rectangle);
         Rectangle<Int32> anotherRect(2, 3, 4, 5);

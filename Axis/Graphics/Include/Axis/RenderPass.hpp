@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file RenderPass.hpp
-///
-/// \brief Contains `Axis::IRenderPass` interface class.
-
 #ifndef AXIS_GRAPHICS_RENDERPASS_HPP
 #define AXIS_GRAPHICS_RENDERPASS_HPP
 #pragma once
@@ -15,6 +11,9 @@
 #include "GraphicsCommon.hpp"
 
 namespace Axis
+{
+
+namespace Graphics
 {
 
 /// \brief Specifies how the content should be treated at the first use of subpass.
@@ -91,10 +90,10 @@ struct AttachmentReference final
 struct SubpassDescription final
 {
     /// \brief References to the RenderTarget attachments, The array correspond to the out index in fragment shader.
-    List<AttachmentReference> RenderTargetReferences = {};
+    System::List<AttachmentReference> RenderTargetReferences = {};
 
     /// \brief References to the Input attachments.
-    List<AttachmentReference> InputReferences = {};
+    System::List<AttachmentReference> InputReferences = {};
 
     /// \brief Reference to the DepthStencil attachments.
     AttachmentReference DepthStencilReference = {};
@@ -129,13 +128,13 @@ struct SubpassDependency final
 struct RenderPassDescription final
 {
     /// \brief Specifies all attachments which Subpasses will reference to.
-    List<RenderPassAttachment> Attachments = {};
+    System::List<RenderPassAttachment> Attachments = {};
 
     /// \brief All subpasses contained in the RenderPass.
-    List<SubpassDescription> Subpasses = {};
+    System::List<SubpassDescription> Subpasses = {};
 
     /// \brief All dependencies contained in the RenderPass.
-    List<SubpassDependency> Dependencies = {};
+    System::List<SubpassDependency> Dependencies = {};
 };
 
 /// \brief Represents collections of Subpasses and Attachments and describes how attachments will be use over the courses of Subpasses.
@@ -150,6 +149,8 @@ protected:
     /// \brief Constructor
     IRenderPass(const RenderPassDescription& Description);
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

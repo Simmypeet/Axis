@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file StatedGraphicsResource.hpp
-///
-/// \brief Contains `Axis::StatedGraphicsResource` class.
-
 #ifndef AXIS_GRAPHICS_STATEDGRAPHICSRESOURCE_HPP
 #define AXIS_GRAPHICS_STATEDGRAPHICSRESOURCE_HPP
 #pragma once
@@ -14,6 +10,9 @@
 #include "GraphicsCommon.hpp"
 
 namespace Axis
+{
+
+namespace Graphics
 {
 
 /// \brief Graphics resource which able to track down their current resource state.
@@ -39,6 +38,8 @@ private:
     ///
     ResourceState _resourceState = ResourceState::Undefined;
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

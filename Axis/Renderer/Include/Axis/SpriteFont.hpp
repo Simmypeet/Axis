@@ -14,44 +14,54 @@
 #include "../../../System/Include/Axis/Vector2.hpp"
 #include "RendererExport.hpp"
 
+// FT_Face forward declaration
+typedef struct FT_FaceRec_* FT_Face;
+
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
 class IGraphicsDevice;
 class IDeviceContext;
 class ITexture;
+
+} // namespace Graphics
+
+namespace Renderer
+{
 
 /// \brief Contains font's glyph information in a character
 struct Glyph
 {
     /// \brief Offset of the bitmap font (Assumed if the font is drawn in the top-left corner position) (in pixel).
-    Vector2F Bearing = {};
+    System::Vector2I Bearing = {};
 
     /// \brief Advance of the bitmap font (in pixel).
-    Vector2F Advance = {};
+    System::Vector2I Advance = {};
 
     /// \brief Area in the texture where the glyph is located.
-    RectangleF SourceRectangle = {};
+    System::RectangleUI SourceRectangle = {};
 };
 
 /// \brief Specifies how sprite font should create font atlas texture.
 struct FontAtlasConfiguration
 {
     /// \brief Graphics device used in texture creations.
-    SharedPointer<IGraphicsDevice> GraphicsDevice = {};
+    System::SharedPointer<Graphics::IGraphicsDevice> GraphicsDevice = {};
 
     /// \brief Immediate device context used in data transferation.
-    SharedPointer<IDeviceContext> ImmediateDeviceContext = {};
+    System::SharedPointer<Graphics::IDeviceContext> ImmediateDeviceContext = {};
 
     /// \brief Specifies whether to generate mip level chains or not.
     Bool GenerateMip = {};
 
     /// \brief Specifies the resource usage of the created textures.
-    ResourceUsage Usage = {};
+    Graphics::ResourceUsage Usage = {};
 
     /// \brief Specifies the binding of the created textures.
-    TextureBinding Binding = {};
+    Graphics::TextureBinding Binding = {};
 
     /// \brief Specifies which device queue family index (at specifies bit position) can use this resource.
     ///
@@ -74,10 +84,10 @@ struct FontAtlasConfiguration
 
 /// \brief Contains loaded font information and font atlas texture.
 ///
-class AXIS_RENDERER_API SpriteFont : public ISharedFromThis
+class AXIS_RENDERER_API SpriteFont : public System::ISharedFromThis
 {
 public:
-    /// \brief Passes this value to \a `Axis::SpriteFont::LoadFont` to
+    /// \brief Passes this value to \a `SpriteFont::LoadFont` to
     ///        let only passed immeidateDeviceContext can use sprite font atlas.
     static constexpr Uint64 DefaultDeviceQueueFamilyMask = 0;
 
@@ -86,7 +96,7 @@ public:
     /// \param[in] fileStream True type font file stream. The filestream must be opened in binary mode and must be readable.
     /// \param[in] size Size or height of the font (in pixel).
     /// \param[in] atlasConfiguration Configuration of the font atlas texture.
-    SpriteFont(FileStream&                   fileStream,
+    SpriteFont(System::FileStream&           fileStream,
                Uint32                        size,
                const FontAtlasConfiguration& atlasConfiguration);
 
@@ -101,23 +111,20 @@ public:
                Uint32                        fontSize,
                const FontAtlasConfiguration& atlasConfiguration);
 
-    /// \brief Destructor
-    ~SpriteFont() noexcept;
-
     /// \brief Gets the font atlas texture view.
     ///
     /// \return Font atlas texture.
-    inline const SharedPointer<ITextureView>& GetFontAtlas() const noexcept { return _fontAtlasView; }
+    inline const System::SharedPointer<Graphics::ITextureView>& GetFontAtlas() const noexcept { return _fontAtlasView; }
 
     /// \brief Gets characters atlas texture rectangle map.
     ///
     /// \return Characters atlas texture rectangle map.
-    inline const HashMap<WChar, RectangleI>& GetCharactersRectangleMap() const noexcept { return _charRects; }
+    inline const System::HashMap<WChar, System::RectangleUI>& GetCharactersRectangleMap() const noexcept { return _charRects; }
 
     /// \brief Gets characters glyph map.
     ///
     /// \return Characters glyph map.
-    inline const HashMap<WChar, Glyph>& GetCharacterGlyphsMap() const noexcept { return _charGlyphs; }
+    inline const System::HashMap<WChar, Glyph>& GetCharacterGlyphsMap() const noexcept { return _charGlyphs; }
 
     /// \brief Gets font size.
     ///
@@ -127,12 +134,12 @@ public:
     /// \brief Gets line spacing height (in pixel).
     ///
     /// \return Line spacing height.
-    inline Float32 GetLineHeight() const noexcept { return _lineHeight; }
+    inline Size GetLineHeight() const noexcept { return _lineHeight; }
 
     /// \brief Sets new line spacing height (in pixel).
     ///
     /// \param[in] lineHeight New line spacing height.
-    inline void SetLineHeight(Float32 lineHeight) noexcept { _lineHeight = lineHeight; }
+    inline void SetLineHeight(Size lineHeight) noexcept { _lineHeight = lineHeight; }
 
     /// \brief Calculates the size of the specified string (in pixel)
     ///        if it was rendered with this font.
@@ -140,23 +147,42 @@ public:
     /// \param[in] string String to calculate size of.
     ///
     /// \return Size of the specified string (in pixel).
-    inline Vector2F MeasureString(const StringView<WChar>& string) const noexcept;
+    inline System::Vector2UI MeasureString(const System::StringView<WChar>& string) const noexcept;
 
 private:
-    /// Private methods
+    class FontFaceRAII
+    {
+    public:
+        FontFaceRAII() noexcept = default;
+        ~FontFaceRAII() noexcept;
+        inline FontFaceRAII(FT_Face fontFace) noexcept :
+            _fontFace(fontFace) {}
+        FontFaceRAII(const FontFaceRAII&) = delete;
+        FontFaceRAII(FontFaceRAII&&) noexcept;
+        FontFaceRAII&  operator=(const FontFaceRAII&) = delete;
+        FontFaceRAII&  operator                       =(FontFaceRAII&&) noexcept;
+        inline         operator FT_Face() const noexcept { return _fontFace; }
+        inline FT_Face operator->() const noexcept { return _fontFace; }
+
+    private:
+        FT_Face _fontFace = nullptr;
+    };
     void Initialize(); ///< Initializes the font
 
-    PVoid                       _fontFace      = nullptr; // FT_Face
-    UniquePointer<Byte[]>       _fontByte      = nullptr;
-    Size                        _fontByteSize  = 0;
-    Uint32                      _fontSize      = 0;       // Font Size
-    SharedPointer<ITexture>     _fontAtlas     = nullptr; // Font atlas texture
-    SharedPointer<ITextureView> _fontAtlasView = nullptr; // Font atlas texture view
-    HashMap<WChar, RectangleI>  _charRects     = {};      // Character rectangles
-    HashMap<WChar, Glyph>       _charGlyphs    = {};      // Character glyphs
-    FontAtlasConfiguration      _atlasConfig   = {};      // Font atlas configuration
-    Float32                     _lineHeight    = 0;       // Line height
+    FontFaceRAII                                  _fontFace      = nullptr; // FT_Face
+    System::UniquePointer<Byte[]>                 _fontByte      = nullptr;
+    Size                                          _fontByteSize  = 0;
+    Uint32                                        _fontSize      = 0;       // Font Size
+    System::SharedPointer<Graphics::ITexture>     _fontAtlas     = nullptr; // Font atlas texture
+    System::SharedPointer<Graphics::ITextureView> _fontAtlasView = nullptr; // Font atlas texture view
+    System::HashMap<WChar, System::RectangleUI>   _charRects     = {};      // Character rectangles
+    System::HashMap<WChar, System::RectangleUI>   _charDebug     = {};      // Character rectangles
+    System::HashMap<WChar, Glyph>                 _charGlyphs    = {};      // Character glyphs
+    FontAtlasConfiguration                        _atlasConfig   = {};      // Font atlas configuration
+    Size                                          _lineHeight    = 0;       // Line height
 };
+
+} // namespace Renderer
 
 } // namespace Axis
 

@@ -2,12 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Config.hpp
-///
-/// \brief Contains Axis's basic typedefs and macros to handle
-///		   differences of the basic types between compilers and
-///        platform.
-
 #ifndef AXIS_SYSTEM_CONFIG_HPP
 #define AXIS_SYSTEM_CONFIG_HPP
 #pragma once
@@ -209,7 +203,6 @@ static_assert(sizeof(Uint64) == 8, "Size of `Axis::Uint64` was not 8 bytes (64 b
 static_assert(sizeof(UintPtr) == PointerSize, "Size of `Axis::UintPtr` was not the same to `Axis::PointerSize`");
 
 /// \brief No discard compiler warning attribute
-///
 #define AXIS_NODISCARD [[nodiscard]]
 
 } // namespace Axis

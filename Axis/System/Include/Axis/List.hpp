@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file List.hpp
-///
-/// \brief Contains the definition of `Axis::List` template container class.
-
 #ifndef AXIS_SYSTEM_LIST_HPP
 #define AXIS_SYSTEM_LIST_HPP
 #pragma once
@@ -15,6 +11,9 @@
 #include "Utility.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Template array container class which can contain multiple elements
@@ -95,8 +94,9 @@ public:
     /// - The list is then resized to 0. The memory is not deallocated.
     void Clear() noexcept;
 
-    /// \brief Invokes the destructor followed by default constructor on all the elements in the list.
-    void Reset() noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_default_constructible_v<T>);
+    /// \brief Invokes the destructor followed by constructor forwarded on all the elements in the list.
+    template <class... Args>
+    void Reset(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>);
 
     /// \brief Constructs an element at the end of the list.
     ///
@@ -224,6 +224,8 @@ private:
     Size _allocatedLength = 0;       ///< The length of the allocated buffer.
     Size _length          = 0;       ///< The length of the list.
 };
+
+} // namespace System
 
 } // namespace Axis
 

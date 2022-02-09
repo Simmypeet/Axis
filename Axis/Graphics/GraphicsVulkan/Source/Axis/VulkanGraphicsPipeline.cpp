@@ -15,6 +15,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription& description,
                                                VulkanGraphicsDevice&              vulkanGraphicsDevice) :
     IGraphicsPipeline(description)
@@ -24,7 +27,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
     auto CreateVkPipelineLayout = [&]() -> VkPipelineLayout {
         VkPipelineLayout vkPipelineLayout = VK_NULL_HANDLE;
 
-        List<VkDescriptorSetLayout> descriptorSetLayouts;
+        System::List<VkDescriptorSetLayout> descriptorSetLayouts;
         descriptorSetLayouts.ReserveFor(description.ResourceHeapLayouts.GetLength());
 
         for (const auto& resourceHeapLayout : description.ResourceHeapLayouts)
@@ -46,7 +49,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
                                                &vkPipelineLayout);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to create VkPipelineLayout!");
+            throw System::ExternalException("Failed to create VkPipelineLayout!");
 
         return vkPipelineLayout;
     };
@@ -61,8 +64,8 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
     if (!description.RenderPass)
     {
         RenderPassDescription renderPassDesc = {};
-        renderPassDesc.Attachments           = List<RenderPassAttachment>(description.DepthStencilViewFormat == TextureFormat::Unknown ? description.RenderTargetViewFormats.GetLength() : description.RenderTargetViewFormats.GetLength() + 1);
-        renderPassDesc.Subpasses             = List<SubpassDescription>(1);
+        renderPassDesc.Attachments           = System::List<RenderPassAttachment>(description.DepthStencilViewFormat == TextureFormat::Unknown ? description.RenderTargetViewFormats.GetLength() : description.RenderTargetViewFormats.GetLength() + 1);
+        renderPassDesc.Subpasses             = System::List<SubpassDescription>(1);
 
         auto& allAttachments = renderPassDesc.Attachments;
 
@@ -84,7 +87,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
             renderPassDesc.Subpasses[0].DepthStencilReference.SubpassState = ResourceState::DepthStencilWrite;
         }
 
-        renderPassDesc.Subpasses[0].RenderTargetReferences = List<AttachmentReference>(description.RenderTargetViewFormats.GetLength());
+        renderPassDesc.Subpasses[0].RenderTargetReferences = System::List<AttachmentReference>(description.RenderTargetViewFormats.GetLength());
 
         for (Size i = 0; i < description.RenderTargetViewFormats.GetLength(); i++)
         {
@@ -112,7 +115,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
     auto CreateVkPipeline = [&]() -> VkPipeline {
         VkPipeline vkPipeline = VK_NULL_HANDLE;
 
-        List<VkPipelineShaderStageCreateInfo> shaderStages = {};
+        System::List<VkPipelineShaderStageCreateInfo> shaderStages = {};
         shaderStages.ReserveFor(2);
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
@@ -133,8 +136,8 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
         vertexInputInfo.sType                                = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-        List<VkVertexInputBindingDescription>   inputBindingDescriptions;
-        List<VkVertexInputAttributeDescription> inputAttributesDescriptions;
+        System::List<VkVertexInputBindingDescription>   inputBindingDescriptions;
+        System::List<VkVertexInputAttributeDescription> inputAttributesDescriptions;
         inputBindingDescriptions.ReserveFor(description.VertexBindingDescriptions.GetLength());
         inputAttributesDescriptions.ReserveFor(description.VertexBindingDescriptions.GetLength());
 
@@ -231,7 +234,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
         multisampling.sampleShadingEnable                  = VK_FALSE;
 
 
-        List<VkPipelineColorBlendAttachmentState> attachmentBlendStates = {};
+        System::List<VkPipelineColorBlendAttachmentState> attachmentBlendStates = {};
         attachmentBlendStates.ReserveFor(description.Blend.RenderTargetBlendStates.GetLength());
 
         for (const auto& attachmentBlendState : description.Blend.RenderTargetBlendStates)
@@ -326,7 +329,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
                                                   &vkPipeline);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to create VkPipeline!");
+            throw System::ExternalException("Failed to create VkPipeline!");
 
         return vkPipeline;
     };
@@ -337,5 +340,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
 
     _vulkanPipeline = VkPtr<VkPipeline>(CreateVkPipeline, std::move(DestroyVkPipeline));
 }
+
+} // namespace Graphics
 
 } // namespace Axis

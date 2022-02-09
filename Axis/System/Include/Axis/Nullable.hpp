@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Nullable.hpp
-///
-/// \brief Contains `Axis::Nullable` template container class.
-
 #ifndef AXIS_SYSTEM_NULLABLE_HPP
 #define AXIS_SYSTEM_NULLABLE_HPP
 #pragma once
@@ -14,6 +10,9 @@
 #include "Utility.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief The type of the object which can be either in null state or regular state.
@@ -118,6 +117,8 @@ private:
     Bool                                 _isValid = false; ///< The flag which indicates whether the object is in null state or not.
     StaticStorage<sizeof(T), alignof(T)> _storage = {};    ///< The storage for the object.
 };
+
+} // namespace System
 
 } // namespace Axis
 

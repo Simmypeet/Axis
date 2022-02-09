@@ -9,7 +9,12 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 ISampler::ISampler(const SamplerDescription& description) :
     Description(description) {}
+
+} // namespace Graphics
 
 } // namespace Axis

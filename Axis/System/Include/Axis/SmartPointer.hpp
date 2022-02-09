@@ -2,19 +2,17 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file SmartPointer.hpp
-///
-/// \brief Contains the definition of various smart pointer classes.
-
 #ifndef AXIS_SYSTEM_SMARTPOINTER_HPP
 #define AXIS_SYSTEM_SMARTPOINTER_HPP
 
 #include "Memory.hpp"
 #include "Trait.hpp"
 #include <atomic>
-#include <memory>
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Type which can be used with the smart pointer.
@@ -432,7 +430,7 @@ AXIS_NODISCARD SharedPointer<T> AllocatedMakeShared(Args&&... args) requires(std
 template <SmartPointerType T, AllocatorType Allocator, typename = std::enable_if_t<std::is_unbounded_array_v<T>, Int32>>
 AXIS_NODISCARD SharedPointer<T> AllocatedMakeShared(Size elementCount) requires(std::is_default_constructible_v<std::remove_all_extents_t<T>>);
 
-/// \brief Inherits this class to be able to generate \a `Axis::SharedPointer`
+/// \brief Inherits this class to be able to generate \a `SharedPointer`
 ///        via the reference to the object itself when the object is created via SharedPointer.
 class AXIS_SYSTEM_API ISharedFromThis
 {
@@ -449,13 +447,13 @@ public:
     ISharedFromThis& operator=(const ISharedFromThis&) = delete;
     ISharedFromThis& operator=(ISharedFromThis&&) = delete;
 
-    /// \brief Generates the \a `Axis::SharedPointer` and increments
+    /// \brief Generates the \a `SharedPointer` and increments
     ///        the strong reference count by one.
     ///
     /// \warning If the object which is passed to the function is still under construction (constructor),
     ///          the function will return `nullptr`.
     ///
-    /// \warning This function will return nullptr \a `Axis::ReferencePointer`
+    /// \warning This function will return nullptr \a `SharedPointer`
     ///          if the function is called in the constructor or the object
     ///          is not created by SharedPointer
     template <SmartPointerType T>
@@ -474,10 +472,6 @@ public:
     AXIS_NODISCARD static WeakPointer<T> CreateWeakPointerFromThis(T& object) noexcept requires(!std::is_array_v<T> && std::is_base_of_v<ISharedFromThis, T> && std::is_convertible_v<T*, ISharedFromThis*>);
 
 private:
-    /////////////////////////////////////////////////////////////////
-    /// Private members
-    ///
-    /////////////////////////////////////////////////////////////////
     PVoid _objectPtr = nullptr;        /// Raw pointer to the object. The pointer is stored as it
                                        /// was created with Axis::CreateRef, Axis::CreateRaw.
     PVoid _referenceCounter = nullptr; /// Pointer to the reference counter object.
@@ -491,6 +485,8 @@ private:
     template <SmartPointerType U, AllocatorType Allocator, typename>
     friend SharedPointer<U> AllocatedMakeShared(Size) requires(std::is_default_constructible_v<std::remove_all_extents_t<U>>); // friend function to allow the AllocatedMakeShared function to access the private members
 };
+
+} // namespace System
 
 } // namespace Axis
 

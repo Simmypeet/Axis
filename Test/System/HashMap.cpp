@@ -1,10 +1,11 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Hash map : [Axis::System]")
 {
-    using namespace Axis;
-
     DOCTEST_SUBCASE("Insert and Remove")
     {
         HashMap<Int32, Bool> map;

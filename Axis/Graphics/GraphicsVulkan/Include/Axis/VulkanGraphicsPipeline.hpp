@@ -12,28 +12,33 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class VulkanGraphicsDevice;
 
-/// \brief An implementation of IGraphicsPipeline interface in Vulkan backend.
+// An implementation of IGraphicsPipeline interface in Vulkan backend.
 class VulkanGraphicsPipeline final : public IGraphicsPipeline
 {
 public:
-    /// Constructor
+    // Constructor
     VulkanGraphicsPipeline(const GraphicsPipelineDescription& description,
                            VulkanGraphicsDevice&              vulkanGraphicsDevice);
 
-    /// \brief Gets the internal VkPipeline handle.
+    // Gets the internal VkPipeline handle.
     inline VkPipeline GetVkPipelineHandle() const noexcept { return _vulkanPipeline; }
 
-    /// \brief Gets the internal VkPipelineLayout handle.
+    // Gets the internal VkPipelineLayout handle.
     inline VkPipelineLayout GetVkPipelineLayoutHandle() const noexcept { return _vulkanPipelineLayout; }
 
 private:
     VkPtr<VkPipelineLayout>    _vulkanPipelineLayout = {};
     VkPtr<VkPipeline>          _vulkanPipeline       = {};
-    SharedPointer<IRenderPass> _implicitRenderPass   = nullptr;
+    System::SharedPointer<IRenderPass> _implicitRenderPass   = nullptr;
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

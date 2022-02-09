@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file `LICENSE`, which is part of this source code package.
 
-/// \file StringView.hpp
-///
-/// \brief Contains `Axis::StringView` template container class.
-
 #ifndef AXIS_SYSTEM_STRINGVIEW_HPP
 #define AXIS_SYSTEM_STRINGVIEW_HPP
 #pragma once
@@ -13,6 +9,9 @@
 #include "String.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Represents the view to the non-owning string sequences.
@@ -90,14 +89,16 @@ private:
     Bool         _nullTerminatedView = false;   // Indicates whether the viewed string was taken from null terminated string sequence
 };
 
+} // namespace System
+
 } // namespace Axis
 
 /// \brief Appends the string view to the string
 ///
 /// \param[in] LHS Left hand side string to be appended.
 /// \param[in] RHS Right hand side string to append.
-template <Axis::CharType T, Axis::CharType U, Axis::AllocatorType Allocator>
-Axis::String<T, Allocator>& operator+=(Axis::String<T, Allocator>& LHS, const Axis::StringView<U>& RHS);
+template <Axis::System::CharType T, Axis::System::CharType U, Axis::System::AllocatorType Allocator>
+Axis::System::String<T, Allocator>& operator+=(Axis::System::String<T, Allocator>& LHS, const Axis::System::StringView<U>& RHS);
 
 #include "../../Private/Axis/StringViewImpl.inl"
 

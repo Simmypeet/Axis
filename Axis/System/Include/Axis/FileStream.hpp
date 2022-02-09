@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file `LICENSE`, which is part of this source code package.
 
-/// \file FileStream.hpp
-///
-/// \brief Contains `Axis::FileStream` class.
-
 #ifndef AXIS_FILESTREAM_HPP
 #define AXIS_FILESTREAM_HPP
 #pragma once
@@ -17,6 +13,9 @@
 #include "Utility.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Specifies how the operating system should open the file.
@@ -34,12 +33,12 @@ enum class FileMode : Uint8
     /// \brief The position of the stream pointer is set to the end of the file.
     AtTheEnd = AXIS_BIT(4),
 
-    /// \brief All write operations would be done at the end of the file, appending to its existing contents. Can't be used with \a `Axis::Truncate`.
-    ///        Supports only \a `Axis::Write`.
+    /// \brief All write operations would be done at the end of the file, appending to its existing contents. Can't be used with \a `Truncate`.
+    ///        Supports only \a `Write`.
     Append = AXIS_BIT(5),
 
-    /// \brief Any contents that existed in the file before it is open are discarded. Can't be used with \a `Axis::Append`.
-    ///        Requires \a `Axis::Write`.
+    /// \brief Any contents that existed in the file before it is open are discarded. Can't be used with \a `Append`.
+    ///        Requires \a `Write`.
     Truncate = AXIS_BIT(6),
 };
 
@@ -149,6 +148,8 @@ private:
     WString       _filePath   = nullptr; ///< File path.
     FileModeFlags _fileModes  = {};      ///< File mode used during construction.
 };
+
+} // namespace System
 
 } // namespace Axis
 

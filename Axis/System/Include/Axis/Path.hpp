@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Path.hpp
-///
-/// \brief Contains utility functions for working with paths and directories.
-
 #ifndef AXIS_SYSTEM_PATH_HPP
 #define AXIS_SYSTEM_PATH_HPP
 #pragma once
@@ -14,9 +10,12 @@
 #include "StaticArray.hpp"
 #include "String.hpp"
 #include "StringView.hpp"
-#    include "SystemExport.hpp"
+#include "SystemExport.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 namespace Path
@@ -64,6 +63,8 @@ AXIS_NODISCARD Bool AXIS_SYSTEM_API IsPathValid(const StringView<WChar>& path);
 AXIS_NODISCARD WString AXIS_SYSTEM_API CombinePath(const Span<WString>& paths);
 
 } // namespace Path
+
+} // namespace System
 
 } // namespace Axis
 

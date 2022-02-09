@@ -1,11 +1,6 @@
 /// \copyright Simmypeet - Copyright (C)
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
-///
-
-/// \file GraphicsCommon.hpp
-///
-/// \brief Contains commoon graphics enumerations and data structures.
 
 #ifndef AXIS_GRAPHICS_GRAPHICSCOMMON_HPP
 #define AXIS_GRAPHICS_GRAPHICSCOMMON_HPP
@@ -19,7 +14,10 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 struct RenderPassDescription;
 struct FramebufferDescription;
 struct TextureViewDescription;
@@ -103,9 +101,6 @@ enum class TextureFormat : Uint8
 
     /// \brief Unsigned normalized 24-Bits Depth and Stencil components, 16-Bits for Depth, 8-Bits for Stencil.
     UnormDepth16Stencil8,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = UnormDepth16Stencil8,
 };
 
 /// \brief The type of component contained in Axis::TextureFormat.
@@ -131,9 +126,6 @@ enum class TextureFormatComponentType : Uint8
 
     /// \brief The texture format is made up of unsigned normalized integer in sRGB linear encoding.
     UnsignedNormalizedSRGB,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = UnsignedNormalizedSRGB,
 };
 
 /// \brief Supported Shader stages.
@@ -145,15 +137,12 @@ enum class ShaderStage : Uint8
 
     /// \brief (AKA: PixelShader) Handles the color fragments output from the rasterization.
     Fragment = AXIS_BIT(2),
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Fragment,
 };
 
 /// \brief Supported Shader stages. (Bit mask)
 typedef ShaderStage ShaderStageFlags;
 
-/// \brief The usage of the \a `Axis::TextureFormat`.
+/// \brief The usage of the \a `TextureFormat`.
 enum class TextureFormatUsageType : Uint8
 {
     /// \brief Can be used in color attachment.
@@ -164,12 +153,9 @@ enum class TextureFormatUsageType : Uint8
 
     /// \brief Can be used in stencil attachment.
     Stencil = AXIS_BIT(3),
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Stencil,
 };
 
-/// \brief The usage of the \a `Axis::TextureFormat`. (Bit mask)
+/// \brief The usage of the \a `TextureFormat`. (Bit mask)
 typedef TextureFormatUsageType TextureFormatUsageTypeFlags;
 
 /// \brief The type or layout of the attachments.
@@ -189,9 +175,6 @@ enum class ViewLayout : Uint8
 
     /// \brief Layout used for presentation.
     Present,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Present,
 };
 
 /// \brief Specifies memory access types that will participate in a memory dependency.
@@ -210,9 +193,6 @@ enum class AccessMode : Uint8
 
     /// \brief Specifies all memory access.
     MemoryReadWrite,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = MemoryReadWrite,
 };
 
 /// \brief Specifies memory access types that will participate in a memory dependency. (Bit mask)
@@ -251,9 +231,6 @@ enum class PipelineStage : Uint32
 
     /// \brief The bottom of the pipeline.
     BottomOfPipeline = AXIS_BIT(9),
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = BottomOfPipeline,
 };
 
 /// \brief Enumeration contains the whole rendering pipeline stages. (Bit mask)
@@ -283,9 +260,6 @@ enum class ShaderDataType : Uint8
     /// \note GLSL counterpart      : vec4.
     ///       Axis counterpart   : Axis::Color<Float32>
     Float4,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Float4,
 };
 
 /// \brief Specifies the access mode to specific memory.
@@ -299,9 +273,6 @@ enum class MemoryAccess : Uint8
 
     /// \brief Write access
     Write = AXIS_BIT(2),
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Write,
 };
 
 /// \brief The usage of the Axis::TextureFormat. (Bit mask)
@@ -320,9 +291,6 @@ enum class ResourceUsage : Uint8
 
     /// \brief The memory will be on the system and mappable to the CPU, GPU access to this type of memory is slow.
     StagingSource,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = StagingSource,
 };
 
 /// \brief Supported operations in a device queue.
@@ -336,9 +304,6 @@ enum class QueueOperation : Uint8
 
     /// \brief Specifies that queues supports graphics operations.
     Graphics = AXIS_BIT(3),
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Graphics,
 };
 
 /// \brief Supported operations in a device queue. (Bit mask)
@@ -379,9 +344,6 @@ enum class ResourceState : Uint32
 
     /// \brief Presentation (in SwapChain). (Texture)
     Present = AXIS_BIT(11),
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Present,
 };
 
 /// \brief Available value comparison functions.
@@ -410,9 +372,6 @@ enum class CompareFunction : Uint8
 
     /// \brief Returns true if the value is not equal to another.
     NotEqual,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = NotEqual,
 };
 
 /// \brief Specifies the state transition behaviour when resource is
@@ -428,9 +387,6 @@ enum class StateTransition : Uint8
     /// \brief This flag indicates that the client is already explicitly transited the resource state
     ///        to the required one.
     Explicit,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Explicit,
 };
 
 /// \brief Specifies the buffer mapping behaviour.
@@ -442,16 +398,10 @@ enum class ResourceMapType : Uint8
     /// \brief Discards the old memory of the buffer and allocates the new one.
     ///        This way you can avoid the memory races.
     Discard,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Discard,
 };
 
 /// \brief The state of the graphics resource. (Bit mask)
 typedef ResourceState ResourceStateFlags;
-
-namespace Graphics
-{
 
 /// \brief States that can only be found in texture
 constexpr ResourceStateFlags TextureStatesExclusive =
@@ -520,7 +470,7 @@ inline constexpr TextureFormatComponentType GetTextureFormatComponentTypeFormTex
     case TextureFormat::UnormR8G8B8A8sRGB:
         return TextureFormatComponentType::UnsignedNormalizedSRGB;
     default:
-        throw InvalidArgumentException("`textureFormat` was invalid!");
+        throw System::InvalidArgumentException("`textureFormat` was invalid!");
     }
 
     // clang-format on
@@ -538,7 +488,7 @@ inline constexpr Size GetShaderDataTypeSize(ShaderDataType shaderDataType)
         case ShaderDataType::Float3: return 12;
         case ShaderDataType::Float4: return 16;
         default: 
-            throw InvalidArgumentException("`shaderDataType` was invalid!");
+            throw System::InvalidArgumentException("`shaderDataType` was invalid!");
     }
 
     // clang-format on
@@ -570,7 +520,7 @@ inline constexpr MemoryAccessFlags GetMemoryAccessFromResourceState(ResourceStat
         case ResourceState::Undefined:
             return MemoryAccess::None;
         default:
-            throw InvalidArgumentException("`state` was invalid!");
+            throw System::InvalidArgumentException("`state` was invalid!");
     }
 }
 

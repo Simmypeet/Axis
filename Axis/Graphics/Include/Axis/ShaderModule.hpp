@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file ShaderModule.hpp
-///
-/// \brief Contains `Axis::IShaderModule` interface class.
-
 #ifndef AXIS_GRAPHICS_SHADERMODULE_HPP
 #define AXIS_GRAPHICS_SHADERMODULE_HPP
 #pragma once
@@ -16,6 +12,9 @@
 #include "GraphicsExport.hpp"
 
 namespace Axis
+{
+
+namespace Graphics
 {
 
 /// \brief Supported Shader languages.
@@ -44,7 +43,7 @@ struct ShaderModuleDescription final
     ShaderStage Stage = {};
 
     /// \brief The function name to be used as the entry point.
-    String8 EntryPoint = {};
+    System::String8 EntryPoint = {};
 };
 
 /// \brief Represents the program designed to on some stage in the GraphicsPipeline.
@@ -58,6 +57,8 @@ protected:
     /// \brief Constructor
     IShaderModule(const ShaderModuleDescription& Description);
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Random.hpp
-///
-/// \brief Contains pseudo random number generator \a `Axis::Math::Random` class.
-
 #ifndef AXIS_SYSTEM_RANDOM_HPP
 #define AXIS_SYSTEM_RANDOM_HPP
 #pragma once
@@ -13,6 +9,9 @@
 #include "SystemExport.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Pseudo random number generator class.
@@ -31,7 +30,7 @@ public:
     constexpr explicit Random(Int32 seed) noexcept;
 
     /// \brief Gets the next random value, range from the
-    ///        0 to maximum value of \a `Axis::Int32`.
+    ///        0 to maximum value of \a `Int32`.
     AXIS_NODISCARD constexpr Int32 Next() noexcept;
 
     /// \brief Gets the next random value.
@@ -48,10 +47,10 @@ public:
     /// \brief Gets the next random Float64 value, ranges from 0.0 to 1.0
     AXIS_NODISCARD constexpr Float64 NextDouble() noexcept;
 
-    /// \brief Gets the next random \a `Axis::Unit8` value.
+    /// \brief Gets the next random \a `Unit8` value.
     AXIS_NODISCARD constexpr Uint8 NextByte() noexcept;
 
-    /// \brief Gets the next random \a `Axis::Size` value.
+    /// \brief Gets the next random \a `Size` value.
     AXIS_NODISCARD constexpr Size NextSize() noexcept;
 
 private:
@@ -66,6 +65,8 @@ private:
     Int32 inextp        = {};
     Int32 SeedArray[56] = {};
 };
+
+} // namespace System
 
 } // namespace Axis
 

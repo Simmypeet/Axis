@@ -12,6 +12,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 namespace Detail
 {
 
@@ -79,7 +82,7 @@ inline String<T, Allocator>::String(NullptrType) noexcept {}
 template <CharType T, AllocatorType Allocator>
 template <CharType U>
 inline String<T, Allocator>::String(const U* str) :
-    _stringLength(::Axis::String<U, Allocator>::GetStringLength(str))
+    _stringLength(String<U, Allocator>::GetStringLength(str))
 {
     auto pointer = Reserve(_stringLength);
 
@@ -117,7 +120,7 @@ inline String<T, Allocator>::String(String<T, Allocator>&& other) noexcept :
 {
     if (_isSmallString)
     {
-        Detail::CopyElement<true>(other.SmallStringBuffer, other.SmallStringBuffer, _stringLength);
+        Detail::CopyElement<true>(other.SmallStringBuffer, SmallStringBuffer, _stringLength);
     }
     else
     {
@@ -587,6 +590,8 @@ inline String<T, Allocator> String<T, Allocator>::ToString(const U& value)
 
     return stringToReturn;
 }
+
+} // namespace System
 
 } // namespace Axis
 

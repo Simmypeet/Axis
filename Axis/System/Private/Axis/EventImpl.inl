@@ -12,6 +12,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <class ReturnType, class... Args>
 inline void Event<ReturnType(Args...)>::operator()(Args&&... args)
 {
@@ -124,6 +127,8 @@ inline Bool EventToken<ReturnType(Args...)>::IsSubscribed() const noexcept
 {
     return _event != nullptr;
 }
+
+} // namespace System
 
 } // namespace Axis
 

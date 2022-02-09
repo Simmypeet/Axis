@@ -2,11 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file DisplayWindow.hpp
-///
-/// \brief This file includes the header which contains defintinion of \a
-///        `Axis::Window::DisplayWindow`in the correct platform.
-
 #ifndef AXIS_WINDOW_DISPLAYWINDOW_HPP
 #define AXIS_WINDOW_DISPLAYWINDOW_HPP
 #pragma once
@@ -21,6 +16,9 @@
 
 
 namespace Axis
+{
+
+namespace Window
 {
 
 /// \brief Enumeration of window styles.
@@ -53,18 +51,20 @@ struct WindowDescription
 
     /// \brief Size of the window (in pixels) (This excludes the bounds of title
     /// bar and border)
-    Vector2UI WindowSize = {};
+    System::Vector2UI WindowSize = {};
 
     /// \brief The position of the window (This excludes the bounds of title bar
     /// and border)
-    Vector2I WindowPosition = {};
+    System::Vector2I WindowPosition = {};
 
     /// \brief The window's title name
-    WString Title = {};
+    System::WString Title = {};
 
     /// \brief Window's style flags.
     WindowStyleFlags WindowStyle = {};
 };
+
+} // namespace Window
 
 } // namespace Axis
 

@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Graphics
-///
-/// \brief Contains all header files of the Axis::Graphics module.
-
 #ifndef AXIS_GRAPHICS_GRAPHICSHEADER_HPP
 #define AXIS_GRAPHICS_GRAPHICSHEADER_HPP
 #pragma once

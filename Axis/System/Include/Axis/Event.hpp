@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Event.hpp
-///
-/// \brief Contains `Axis::Event` template class.
-
 #ifndef AXIS_SYSTEM_EVENT_HPP
 #define AXIS_SYSTEM_EVENT_HPP
 #pragma once
@@ -15,6 +11,9 @@
 #include "Trait.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Defines an event notification class. When event is raised it will
@@ -157,6 +156,8 @@ private:
     Size                                           _token = {};      ///< Token used in registration
     typename Event<ReturnType(Args...)>::Register* _event = nullptr; ///< Event to subscribe to
 };
+
+} // namespace System
 
 } // namespace Axis
 

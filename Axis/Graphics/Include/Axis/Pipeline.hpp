@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Pipeline.hpp
-///
-/// \brief Contains `Axis::IPipeline` interface class.
-
 #ifndef AXIS_GRAPHICS_PIPELINE_HPP
 #define AXIS_GRAPHICS_PIPELINE_HPP
 #pragma once
@@ -18,7 +14,10 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class IResourceHeapLayout;
 
 /// \brief Specifies the available pipeline bindings.
@@ -35,7 +34,7 @@ enum class PipelineBinding : Uint8
 struct BasePipelineDescription
 {
     /// \brief Provides the layout of resource bindings.
-    List<SharedPointer<IResourceHeapLayout>> ResourceHeapLayouts = {};
+    System::List<System::SharedPointer<IResourceHeapLayout>> ResourceHeapLayouts = {};
 };
 
 /// \brief Describes the behaviour of each rendering operation step.
@@ -49,6 +48,8 @@ protected:
     /// \brief Constructor
     IPipeline(const PipelineBinding& binding);
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

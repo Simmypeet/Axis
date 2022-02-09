@@ -1,12 +1,6 @@
 /// \copyright Simmypeet - Copyright (C)
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
-///
-
-/// \file Sampler.hpp
-///
-/// \brief Contains `Axis::ISampler` interface class.
-///
 
 #ifndef AXIS_GRAPHICS_SAMPLER_HPP
 #define AXIS_GRAPHICS_SAMPLER_HPP
@@ -18,6 +12,9 @@
 #include "GraphicsExport.hpp"
 
 namespace Axis
+{
+
+namespace Graphics
 {
 
 /// \brief Specifies the filter used in texture sampling.
@@ -59,29 +56,29 @@ struct SamplerDescription
     /// \brief Indicates that maximum LOD clamping should not be performed.
     static constexpr Float32 NoLODClamp = 1000.0f;
 
-    /// \brief Is a \a `Axis::SamplerFilter` value specifying the
+    /// \brief Is a \a `SamplerFilter` value specifying the
     ///        filter to apply to minification sampling.
     SamplerFilter MinFilter = {};
 
-    /// \brief Is a \a `Axis::SamplerFilter` value specifying the
+    /// \brief Is a \a `SamplerFilter` value specifying the
     ///        filter to apply to magnification sampling.
     SamplerFilter MagFilter = {};
 
-    /// \brief Is a \a `Axis::SamplerFilter` value specifying the
+    /// \brief Is a \a `SamplerFilter` value specifying the
     ///        filter to apply to mip sampling.
     SamplerFilter MipFilter = {};
 
-    /// \brief Is a \a `Axis::SamplerAddressMode` value specifying the
+    /// \brief Is a \a `SamplerAddressMode` value specifying the
     ///        address mode to apply when sampling the texture outside of the texture
     ///        U coordinate.
     SamplerAddressMode AddressModeU = {};
 
-    /// \brief Is a \a `Axis::SamplerAddressMode` value specifying the
+    /// \brief Is a \a `SamplerAddressMode` value specifying the
     ///        address mode to apply when sampling the texture outside of the texture
     ///        V coordinate.
     SamplerAddressMode AddressModeV = {};
 
-    /// \brief Is a \a `Axis::SamplerAddressMode` value specifying the
+    /// \brief Is a \a `SamplerAddressMode` value specifying the
     ///        address mode to apply when sampling the texture outside of the texture
     ///        W coordinate.
     SamplerAddressMode AddressModeW = {};
@@ -103,10 +100,10 @@ struct SamplerDescription
     ///        specifies \a NoLODClamp.
     Float32 MaxLOD = {};
 
-    /// \brief Border color for \a `Axis::SamplerAddressMode::ClampToBorder`.
+    /// \brief Border color for \a `SamplerAddressMode::ClampToBorder`.
     ColorF BorderColor = {};
 
-    /// \brief Gets \a `Axis::SamplerDescription` for linear filtering
+    /// \brief Gets \a `SamplerDescription` for linear filtering
     ///        and texture coordinate clamping.
     inline static SamplerDescription GetLinearClamp() noexcept
     {
@@ -125,7 +122,7 @@ struct SamplerDescription
             {0.0f, 0.0f, 0.0f, 0.0f}};
     }
 
-    /// \brief Gets \a `Axis::SamplerDescription` for linear filtering
+    /// \brief Gets \a `SamplerDescription` for linear filtering
     ///        and texture coordinate wraping.
     inline static SamplerDescription GetLinearWrap() noexcept
     {
@@ -144,7 +141,7 @@ struct SamplerDescription
             {0.0f, 0.0f, 0.0f, 0.0f}};
     }
 
-    /// \brief Gets \a `Axis::SamplerDescription` for nearest filtering
+    /// \brief Gets \a `SamplerDescription` for nearest filtering
     ///        and texture coordinate clamping.
     inline static SamplerDescription GetPointClamp() noexcept
     {
@@ -163,7 +160,7 @@ struct SamplerDescription
             {0.0f, 0.0f, 0.0f, 0.0f}};
     }
 
-    /// \brief Gets \a `Axis::SamplerDescription` for nearest filtering
+    /// \brief Gets \a `SamplerDescription` for nearest filtering
     ///        and texture coordinate wraping.
     inline static SamplerDescription GetPointWrap() noexcept
     {
@@ -195,6 +192,8 @@ protected:
     /// \brief Constructor
     ISampler(const SamplerDescription& description);
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

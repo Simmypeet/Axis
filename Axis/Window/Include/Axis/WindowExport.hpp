@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file WindowExport.hpp
-/// 
-/// \brief Contains portable export/import macro for \a `Window` module.
-
 #ifndef AXIS_WINDOW_WINDOWEXPORT_HPP
 #define AXIS_WINDOW_WINDOWEXPORT_HPP
 #pragma once

@@ -9,8 +9,13 @@
 namespace Axis
 {
 
+namespace System
+{
+
 ISharedFromThis::ISharedFromThis() noexcept = default;
 
 ISharedFromThis::~ISharedFromThis() noexcept = default;
+
+} // namespace System
 
 } // namespace Axis

@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Color.hpp
-///
-/// \brief Contains the definition of `Axis::Color` template class.
-
 #ifndef AXIS_GRAPHICS_COLOR_HPP
 #define AXIS_GRAPHICS_COLOR_HPP
 #pragma once
@@ -15,15 +11,18 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 /// \brief Graphical Color template data structure for all numeric types.
-template <ArithmeticType T>
+template <System::ArithmeticType T>
 struct Color
 {
     /// \brief Default constructor
     constexpr Color() noexcept = default;
 
     /// \brief Constructs the Color data structure with specified RGBA values.
-    template <ArithmeticType U, ArithmeticType V, ArithmeticType W, ArithmeticType X>
+    template <System::ArithmeticType U, System::ArithmeticType V, System::ArithmeticType W, System::ArithmeticType X>
     constexpr Color(U r,
                     V g,
                     W b,
@@ -76,9 +75,10 @@ typedef Color<Float32> ColorF;
 ///
 typedef Color<Uint8> ColorUI8;
 
+} // namespace Graphics
+
 } // namespace Axis
 
-/// Implementations are in another header file
 #include "../../Private/Axis/ColorImpl.hpp"
 
 #endif // AXIS_GRAPHICS_COLOR_HPP

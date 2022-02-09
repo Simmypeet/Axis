@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file GraphicsPipeline.hpp
-///
-/// \brief Contains `Axis::IGraphicsPipeline` interface class.
-
 #ifndef AXIS_GRAPHICS_GRAPHICSPIPELINE_HPP
 #define AXIS_GRAPHICS_GRAPHICSPIPELINE_HPP
 #pragma once
@@ -15,7 +11,10 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 class IShaderModule;
 class IRenderPass;
 
@@ -33,7 +32,7 @@ struct VertexAttribute final
 struct AXIS_GRAPHICS_API VertexBindingDescription final
 {
     /// \brief Describes how the vertex data will be interpreted in the Vertex shader.
-    List<VertexAttribute> Attributes = {};
+    System::List<VertexAttribute> Attributes = {};
 
     /// \brief The binding slot to receive the data from the VertexBuffer.
     ///        The binding slot number should not exceeded the IGraphicsDevice::Capability::MaxVertexInputBinding.
@@ -70,10 +69,7 @@ enum class StencilOperation : Uint8
     Replace,
 
     /// \brief Do bitwise INVERT(~) operation to the value.
-    Invert,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Invert,
+    Invert
 };
 
 /// \brief An operation to execute upon stencil testing.
@@ -121,7 +117,7 @@ struct DepthStencilState final
     /// \brief Stencil operation to execute upon stencil testing for back face.
     StencilOperationDescription BackFaceStencilOperation = {};
 
-    /// \brief Gets \a `Axis::DepthStencilState` for not using a depth stencil buffer.
+    /// \brief Gets \a `DepthStencilState` for not using a depth stencil buffer.
     inline static DepthStencilState GetNone() noexcept
     {
         return {
@@ -142,7 +138,7 @@ struct DepthStencilState final
         };
     }
 
-    /// \brief Gets \a `Axis::DepthStencilState` for using a depth stencil buffer.
+    /// \brief Gets \a `DepthStencilState` for using a depth stencil buffer.
     inline static DepthStencilState GetDefault() noexcept
     {
         return {
@@ -163,7 +159,7 @@ struct DepthStencilState final
         };
     }
 
-    /// \brief Gets \a `Axis::DepthStencilState` for enabling a read-only depth stencil buffer.
+    /// \brief Gets \a `DepthStencilState` for enabling a read-only depth stencil buffer.
     inline static DepthStencilState GetDepthRead() noexcept
     {
         return {
@@ -192,10 +188,7 @@ enum class FillMode : Uint8
     Solid,
 
     /// \brief Draws the lines that define a primitive face.
-    WiredFrame,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = WiredFrame,
+    WiredFrame
 };
 
 /// \brief Specifies how to determine the front face of the premitives.
@@ -205,10 +198,7 @@ enum class FrontFace : Uint8
     Clockwise,
 
     /// \brief A primitive which has counter clockwise winding will be considered as front face.
-    CounterClockwise,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = CounterClockwise,
+    CounterClockwise
 };
 
 /// \brief Specifies the primitives culling.
@@ -221,10 +211,7 @@ enum class CullMode : Uint8
     FrontFace = AXIS_BIT(1),
 
     /// \brief Culls the primitives which are considered as front face.
-    BackFace = AXIS_BIT(2),
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = BackFace,
+    BackFace = AXIS_BIT(2)
 };
 
 /// \brief Specifies the primitives culling. (Bit mask)
@@ -258,7 +245,7 @@ struct RasterizerState final
     /// \brief Indicates whether to clips the depth value against near and far clip planes.
     Bool DepthClipEnable = {};
 
-    /// \brief Gets \a `Axis::RasterizerState` with settings for culling primitives with clockwise winding order.
+    /// \brief Gets \a `RasterizerState` with settings for culling primitives with clockwise winding order.
     inline static RasterizerState GetCullClockwise() noexcept
     {
         return {
@@ -272,7 +259,7 @@ struct RasterizerState final
             true};
     }
 
-    /// \brief AGets \a `Axis::RasterizerState` with settings for culling primitives with counter-clockwise winding order.
+    /// \brief AGets \a `RasterizerState` with settings for culling primitives with counter-clockwise winding order.
     inline static RasterizerState GetCullCounterClockwise() noexcept
     {
         return {
@@ -286,7 +273,7 @@ struct RasterizerState final
             true};
     }
 
-    /// \brief Gets \a `Axis::RasterizerState` with settings for not culling any primitives.
+    /// \brief Gets \a `RasterizerState` with settings for not culling any primitives.
     inline static RasterizerState GetCullNone() noexcept
     {
         return {
@@ -356,10 +343,7 @@ enum class BlendFactor : Uint8
     OneMinusSource1Color,
 
     /// \brief Uses one and minus with the alpha value in the second source color as the factor.
-    OneMinusSource1Alpha,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = OneMinusSource1Alpha,
+    OneMinusSource1Alpha
 };
 
 /// \brief The available equations for blending.
@@ -378,10 +362,7 @@ enum class BlendOperation : Uint8
     Min,
 
     /// \brief The formula: Result = Max(Source, Dest);
-    Max,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Max,
+    Max
 };
 
 /// \brief Logical operations to apply in color blending.
@@ -433,10 +414,7 @@ enum class LogicOperation : Uint8
     NAND,
 
     /// \brief Sets value to 1
-    Set,
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Set,
+    Set
 };
 
 /// \brief Availables graphics color channels.
@@ -455,10 +433,7 @@ enum class ColorChannel : Uint8
     Blue = AXIS_BIT(3),
 
     /// \brief Alpha channel
-    Alpha = AXIS_BIT(4),
-
-    /// \brief Required for enum reflection.
-    MaximumEnumValue = Alpha,
+    Alpha = AXIS_BIT(4)
 };
 
 /// \brief Availables graphics color channels. (Bit mask)
@@ -491,7 +466,7 @@ struct AttachmentBlendState
     /// \brief Specifies which color channels can store the data.
     ColorChannelFlags WriteChannelFlags = {};
 
-    /// \brief Gets \a `Axis::AttachmentBlendState` for alpha blend,
+    /// \brief Gets \a `AttachmentBlendState` for alpha blend,
     ///        that is blending the source and destination data using alpha.
     inline static AttachmentBlendState GetAlphaBlend() noexcept
     {
@@ -507,7 +482,7 @@ struct AttachmentBlendState
         };
     }
 
-    /// \brief Gets \a `Axis::AttachmentBlendState` for additive blend,
+    /// \brief Gets \a `AttachmentBlendState` for additive blend,
     ///        which is adding the destination data to the source data without using alpha.
     inline static AttachmentBlendState GetAdditiveBlend() noexcept
     {
@@ -523,7 +498,7 @@ struct AttachmentBlendState
         };
     }
 
-    /// \brief Gets \a `Axis::AttachmentBlendState` with non-premultipled alpha,
+    /// \brief Gets \a `AttachmentBlendState` with non-premultipled alpha,
     ///        that is blending source and destination data using alpha while assuming the color data contains no alpha information.
     inline static AttachmentBlendState GetNonPremultiplied() noexcept
     {
@@ -539,7 +514,7 @@ struct AttachmentBlendState
         };
     }
 
-    /// \brief Gets \a `Axis::AttachmentBlendState` for opaque blend,
+    /// \brief Gets \a `AttachmentBlendState` for opaque blend,
     ///        that is overwriting the source with the destination data.
     inline static AttachmentBlendState GetOpaque() noexcept
     {
@@ -560,7 +535,7 @@ struct AttachmentBlendState
 struct BlendState
 {
     /// \brief Specifies the blending state for each render target's color attachments.
-    List<AttachmentBlendState> RenderTargetBlendStates = {};
+    System::List<AttachmentBlendState> RenderTargetBlendStates = {};
 
     /// \brief Indicates whether to enable logic operation for this render target.
     Bool LogicOperationEnable = {};
@@ -574,21 +549,21 @@ struct GraphicsPipelineDescription final : public BasePipelineDescription
 {
     /// \brief The shader that handles the processing of individual vertices fed into the pipeline.
     ///        Vertex shader stage typically performs the transformation on the vertices.
-    SharedPointer<IShaderModule> VertexShader = {};
+    System::SharedPointer<IShaderModule> VertexShader = {};
 
     /// \brief (AKA: PixelShader) The shader that handles the color fragments outputted from the rasterization.
-    SharedPointer<IShaderModule> FragmentShader = {};
+    System::SharedPointer<IShaderModule> FragmentShader = {};
 
     /// \brief Describes the environment that the pipeline will be used in.
     ///        If RenderPass is null, the variable RenderTargetViewFormats and RenderTargetViewFormats are required.
-    SharedPointer<IRenderPass> RenderPass = {};
+    System::SharedPointer<IRenderPass> RenderPass = {};
 
     /// \brief The starting index of subpass.
     Uint32 SubpassIndex = {};
 
     /// \brief Specifies this variable if PipelineDescription::RenderPass is nullptr,
     ///        TextureFormat of render targets also specifies the count of render target attachments.
-    List<TextureFormat> RenderTargetViewFormats = {};
+    System::List<TextureFormat> RenderTargetViewFormats = {};
 
     /// \brief Specifies this variable if PipelineDescription::RenderPass is nullptr,
     ///        TextureFormat of depth stencil attachment. Specifies TextureFormat::Unkown for no depth stencil attachment.
@@ -603,7 +578,7 @@ struct GraphicsPipelineDescription final : public BasePipelineDescription
 
     /// \brief Describes the data of VertexInput in each binding.
     ///        The binding number in each description should be unique and should not exceed the GraphicsCapability::MaxVertexInputBinding;
-    List<VertexBindingDescription> VertexBindingDescriptions = {};
+    System::List<VertexBindingDescription> VertexBindingDescriptions = {};
 
     /// \brief Specifies the depth / stencil test operations.
     DepthStencilState DepthStencil = {};
@@ -626,6 +601,8 @@ protected:
     /// \brief Constructor
     IGraphicsPipeline(const GraphicsPipelineDescription& description);
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

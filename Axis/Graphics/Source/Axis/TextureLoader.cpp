@@ -15,38 +15,41 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 static void ValidateTextureLoadConfiguration(const TextureLoadConfiguration& loadConfiguration)
 {
     if (!loadConfiguration.GraphicsDevice)
-        throw InvalidArgumentException("loadConfiguration.GraphicsDevice was nullptr!");
+        throw System::InvalidArgumentException("loadConfiguration.GraphicsDevice was nullptr!");
 
     if (!loadConfiguration.ImmediateDeviceContext)
-        throw InvalidArgumentException("loadConfiguration.ImmediateDeviceContext was nullptr!");
+        throw System::InvalidArgumentException("loadConfiguration.ImmediateDeviceContext was nullptr!");
 
     if (loadConfiguration.GenerateMip && !(Bool)(loadConfiguration.ImmediateDeviceContext->SupportedQueueOperations & QueueOperation::Graphics))
-        throw InvalidArgumentException("if loadConfiguration.GenerateMip was used, loadConfiguration.ImmediateDeviceContext must support graphics operations!");
+        throw System::InvalidArgumentException("if loadConfiguration.GenerateMip was used, loadConfiguration.ImmediateDeviceContext must support graphics operations!");
 }
 
-TextureLoader::TextureLoader(FileStream&&                    fileStream,
+TextureLoader::TextureLoader(System::FileStream&&            fileStream,
                              const TextureLoadConfiguration& loadConfiguration) :
     _loadConfiguration(loadConfiguration),
     _fileStream(std::move(fileStream))
 {
     if (!_fileStream.IsOpen())
-        throw InvalidArgumentException("fileStream was not opened!");
+        throw System::InvalidArgumentException("fileStream was not opened!");
 
     if (!_fileStream.CanRead())
-        throw InvalidArgumentException("fileStream was not readable!");
+        throw System::InvalidArgumentException("fileStream was not readable!");
 
-    if (!(Bool)(_fileStream.GetFileModes() & FileMode::Binary))
-        throw InvalidArgumentException("fileStream was not in binary mode!");
+    if (!(Bool)(_fileStream.GetFileModes() & System::FileMode::Binary))
+        throw System::InvalidArgumentException("fileStream was not in binary mode!");
 
     _pixels = stbi_load_from_file(_fileStream.GetFileHandle(), &_texWidth, &_texHeight, &_texChannels, STBI_rgb_alpha);
 
     ValidateTextureLoadConfiguration(loadConfiguration);
 
     if (!_pixels)
-        throw ExternalException("Failed to load image!");
+        throw System::ExternalException("Failed to load image!");
 }
 
 TextureLoader::~TextureLoader() noexcept
@@ -55,7 +58,7 @@ TextureLoader::~TextureLoader() noexcept
         stbi_image_free(_pixels);
 }
 
-SharedPointer<ITexture> TextureLoader::CreateTexture()
+System::SharedPointer<ITexture> TextureLoader::CreateTexture()
 {
     auto textureDescription = GetTextureDescription();
     auto texture            = _loadConfiguration.GraphicsDevice->CreateTexture(textureDescription);
@@ -67,7 +70,7 @@ SharedPointer<ITexture> TextureLoader::CreateTexture()
         bufferDescription.BufferSize            = _texHeight * _texWidth * 4;
         bufferDescription.BufferBinding         = BufferBinding::TransferSource;
         bufferDescription.Usage                 = ResourceUsage::StagingSource;
-        bufferDescription.DeviceQueueFamilyMask = Math::AssignBitToPosition(bufferDescription.DeviceQueueFamilyMask, _loadConfiguration.ImmediateDeviceContext->DeviceQueueFamilyIndex, true);
+        bufferDescription.DeviceQueueFamilyMask = System::Math::AssignBitToPosition(bufferDescription.DeviceQueueFamilyMask, _loadConfiguration.ImmediateDeviceContext->DeviceQueueFamilyIndex, true);
 
         _stagingBuffer = _loadConfiguration.GraphicsDevice->CreateBuffer(bufferDescription, nullptr);
     }
@@ -119,9 +122,11 @@ TextureDescription TextureLoader::GetTextureDescription() const
     description.Usage                 = _loadConfiguration.Usage;
     description.DeviceQueueFamilyMask = _loadConfiguration.DeviceQueueFamilyMask;
 
-    description.DeviceQueueFamilyMask = Math::AssignBitToPosition(description.DeviceQueueFamilyMask, _loadConfiguration.ImmediateDeviceContext->DeviceQueueFamilyIndex, true);
+    description.DeviceQueueFamilyMask = System::Math::AssignBitToPosition(description.DeviceQueueFamilyMask, _loadConfiguration.ImmediateDeviceContext->DeviceQueueFamilyIndex, true);
 
     return description;
 }
+
+} // namespace Graphics
 
 } // namespace Axis

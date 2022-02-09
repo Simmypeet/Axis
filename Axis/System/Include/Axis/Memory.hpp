@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Memory.hpp
-///
-/// \brief Contains the memory management functions and classes.
-
 #ifndef AXIS_SYSTEM_MEMORY_HPP
 #define AXIS_SYSTEM_MEMORY_HPP
 #pragma once
@@ -15,6 +11,9 @@
 #include <concepts>
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Concept for checking if a type is capable being an allocator
@@ -70,10 +69,10 @@ struct AXIS_SYSTEM_API PoolAllocator
 };
 
 /// \brief Axis's default container type memory allocator.
-using DefaultAllocator = PoolAllocator;
+using DefaultAllocator = MallocAllocator;
 
 /// \brief Creates a new instance of the specified type using the
-///        specified allocator on the heap. Uses \a `Axis::Delete` to delete
+///        specified allocator on the heap. Uses \a `Delete` to delete
 ///        the instance.
 ///
 /// \tparam T Type of the instance to create.
@@ -84,7 +83,7 @@ template <AllocatorType Allocator, RawType T, class... Args>
 AXIS_NODISCARD T* AllocatedNew(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>);
 
 /// \brief Creates the array of new instances of the specified type using
-///        the specified allocator on the heap. Uses \a `Axis::DeleteArray` to
+///        the specified allocator on the heap. Uses \a `DeleteArray` to
 ///        delete the array.
 ///
 /// \tparam T Type of the instance to create.
@@ -117,7 +116,7 @@ template <AllocatorType Allocator, RawConstableType T>
 void AllocatedDeleteArray(T* array) noexcept;
 
 /// \brief Creates a new instance of the specified type using the
-///        default allocator on the heap. Uses \a `Axis::Delete` to delete
+///        default allocator on the heap. Uses \a `Delete` to delete
 ///        the instance.
 ///
 /// \tparam T Type of the instance to create.
@@ -127,7 +126,7 @@ template <RawType T, class... Args>
 AXIS_NODISCARD inline T* New(Args&&... args) { return AllocatedNew<DefaultAllocator, T>(std::forward<Args>(args)...); }
 
 /// \brief Creates the array of new instances of the specified type using
-///        the default allocator on the heap. Uses \a `Axis::DeleteArray` to
+///        the default allocator on the heap. Uses \a `DeleteArray` to
 ///        delete the array.
 ///
 /// \tparam T Type of the instance to create.
@@ -153,6 +152,8 @@ inline void Delete(T* instance) noexcept { AllocatedDelete<DefaultAllocator, T>(
 /// \param[in] array Pointer to the array to delete.
 template <RawConstableType T>
 inline void DeleteArray(T* array) noexcept { AllocatedDeleteArray<DefaultAllocator, T>(array); }
+
+} // namespace System
 
 } // namespace Axis
 

@@ -9,7 +9,12 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 IPipeline::IPipeline(const PipelineBinding& binding) :
     Binding(binding) {}
+
+} // namespace Graphics
 
 } // namespace Axis

@@ -14,18 +14,21 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 Size VulkanRenderPassCacheKey::GetHash() const noexcept
 {
     std::hash<Uint8> hasher = {};
 
     Size hash = hasher(SampleCount);
 
-    hash = Math::HashCombine(hash, hasher(Enum::GetUnderlyingValue(DepthStencilViewFormat)));
+    hash = System::Math::HashCombine(hash, hasher(System::Enum::GetUnderlyingValue(DepthStencilViewFormat)));
 
     if (RenderTargetViewFormats)
     {
         for (const auto& format : RenderTargetViewFormats)
-            hash = Math::HashCombine(hash, hasher(Enum::GetUnderlyingValue(format)));
+            hash = System::Math::HashCombine(hash, hasher(System::Enum::GetUnderlyingValue(format)));
     }
 
     return hash;
@@ -63,20 +66,20 @@ VulkanRenderPassCache::VulkanRenderPassCache(VulkanGraphicsDevice& vulkanGraphic
 // Default destructor
 VulkanRenderPassCache::~VulkanRenderPassCache() noexcept {}
 
-SharedPointer<IRenderPass> VulkanRenderPassCache::GetRenderPass(const VulkanRenderPassCacheKey& renderPassCacheKey)
+System::SharedPointer<IRenderPass> VulkanRenderPassCache::GetRenderPass(const VulkanRenderPassCacheKey& renderPassCacheKey)
 {
     AXIS_ASSERT(renderPassCacheKey.RenderTargetViewFormats, "renderPassCacheKey.RenderTargetViewFormats can't be nullptr!");
 
     std::scoped_lock lockGuard(_mutex);
 
-    auto                       iterator = _hashCache.Find(renderPassCacheKey);
-    SharedPointer<IRenderPass> result;
+    auto                               iterator = _hashCache.Find(renderPassCacheKey);
+    System::SharedPointer<IRenderPass> result;
 
     if (iterator == _hashCache.end())
     {
         RenderPassDescription renderPassDesc = {};
-        renderPassDesc.Attachments           = List<RenderPassAttachment>(renderPassCacheKey.DepthStencilViewFormat == TextureFormat::Unknown ? renderPassCacheKey.RenderTargetViewFormats.GetLength() : renderPassCacheKey.RenderTargetViewFormats.GetLength() + 1);
-        renderPassDesc.Subpasses             = List<SubpassDescription>(1);
+        renderPassDesc.Attachments           = System::List<RenderPassAttachment>(renderPassCacheKey.DepthStencilViewFormat == TextureFormat::Unknown ? renderPassCacheKey.RenderTargetViewFormats.GetLength() : renderPassCacheKey.RenderTargetViewFormats.GetLength() + 1);
+        renderPassDesc.Subpasses             = System::List<SubpassDescription>(1);
 
         auto& allAttachments = renderPassDesc.Attachments;
 
@@ -98,7 +101,7 @@ SharedPointer<IRenderPass> VulkanRenderPassCache::GetRenderPass(const VulkanRend
             renderPassDesc.Subpasses[0].DepthStencilReference.SubpassState = ResourceState::DepthStencilWrite;
         }
 
-        renderPassDesc.Subpasses[0].RenderTargetReferences = List<AttachmentReference>(renderPassCacheKey.RenderTargetViewFormats.GetLength());
+        renderPassDesc.Subpasses[0].RenderTargetReferences = System::List<AttachmentReference>(renderPassCacheKey.RenderTargetViewFormats.GetLength());
 
         for (Size i = 0; i < renderPassCacheKey.RenderTargetViewFormats.GetLength(); i++)
         {
@@ -120,7 +123,7 @@ SharedPointer<IRenderPass> VulkanRenderPassCache::GetRenderPass(const VulkanRend
             renderPassDesc.Subpasses[0].RenderTargetReferences[i].SubpassState = ResourceState::RenderTarget;
         }
 
-        SharedPointer<IRenderPass> renderPass = GetCreatorDevice()->CreateRenderPass(renderPassDesc);
+        System::SharedPointer<IRenderPass> renderPass = GetCreatorDevice()->CreateRenderPass(renderPassDesc);
 
         _hashCache.Insert({renderPassCacheKey, renderPass});
 
@@ -133,5 +136,7 @@ SharedPointer<IRenderPass> VulkanRenderPassCache::GetRenderPass(const VulkanRend
 
     return result;
 }
+
+} // namespace Graphics
 
 } // namespace Axis

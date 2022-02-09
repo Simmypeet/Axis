@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////
+/// \copyright Simmypeet - Copyright (C)
 ///            This file is subject to the terms and conditions defined in
-///            file 'LICENSE', which is part of this source code package.
+///            file `LICENSE`, which is part of this source code package.
 
 #include <Axis/SystemPch.hpp>
 
@@ -9,6 +9,9 @@
 #include <Windows.h>
 
 namespace Axis
+{
+
+namespace System
 {
 
 namespace Path
@@ -30,5 +33,7 @@ WString GetExecutableDirectoryPath()
 }
 
 } // namespace Path
+
+} // namespace System
 
 } // namespace Axis

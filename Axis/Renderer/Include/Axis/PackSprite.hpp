@@ -16,18 +16,18 @@
 namespace Axis
 {
 
+namespace Renderer
+{
+
 /// \brief Struct for storing the result of packed sprites.
-///
-template <class Key, class Hasher = Hash<Key>>
+template <System::RawType Key, System::HasherType<Key> Hasher = System::Hash<Key>>
 struct SpritePackingResult
 {
     /// \brief The size of the packed texture.
-    ///
-    Vector2UI PackedTextureSize;
+    System::Vector2UI PackedTextureSize;
 
     /// \brief Contains all the locations of the packed sprites in the packed texture.
-    ///
-    HashMap<Key, RectangleUI, Hasher> SpriteLocations;
+    System::HashMap<Key, System::RectangleUI, Hasher> SpriteLocations;
 };
 
 /// \brief Packs sprites into a texture.
@@ -36,8 +36,8 @@ struct SpritePackingResult
 ///
 /// \param[in] spriteList The list of sprites to pack.
 ///
-template <class Key = Size, class Hasher = Hash<Key>>
-AXIS_NODISCARD SpritePackingResult<Key, Hasher> PackSprite(List<Pair<Key, Vector2UI>>&& spiteList) noexcept;
+template <System::RawType Key = Size, System::HasherType<Key> Hasher = System::Hash<Key>>
+AXIS_NODISCARD SpritePackingResult<Key, Hasher> PackSprite(System::List<System::Pair<Key, System::Vector2UI>>&& spiteList);
 
 /// \brief Packs sprites into a texture.
 ///
@@ -45,8 +45,10 @@ AXIS_NODISCARD SpritePackingResult<Key, Hasher> PackSprite(List<Pair<Key, Vector
 ///
 /// \param[in] spriteList The list of sprites to pack.
 ///
-template <class Key = Size, class Hasher = Hash<Key>>
-AXIS_NODISCARD SpritePackingResult<Key, Hasher> PackSprite(const List<Pair<Key, Vector2UI>>& spiteList) noexcept;
+template <System::RawType Key = Size, System::HasherType<Key> Hasher = System::Hash<Key>>
+AXIS_NODISCARD SpritePackingResult<Key, Hasher> PackSprite(const System::List<System::Pair<Key, System::Vector2UI>>& spiteList);
+
+} // namespace Renderer
 
 } // namespace Axis
 

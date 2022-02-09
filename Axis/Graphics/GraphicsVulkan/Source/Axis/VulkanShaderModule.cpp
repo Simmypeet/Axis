@@ -16,9 +16,12 @@
 namespace Axis
 {
 
-VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription& description,
-                                       const StringView<Char>&        sourceCode,
-                                       VulkanGraphicsDevice&          vulkanGraphicsDevice) :
+namespace Graphics
+{
+
+VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription&  description,
+                                       const System::StringView<Char>& sourceCode,
+                                       VulkanGraphicsDevice&           vulkanGraphicsDevice) :
     IShaderModule(description)
 {
     constexpr const TBuiltInResource DefaultTBuiltInResource = {
@@ -138,7 +141,7 @@ VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription& descriptio
         Bool result             = glslang::InitializeProcess();
 
         if (!result)
-            throw ExternalException("Failed to initialize glslang library!");
+            throw System::ExternalException("Failed to initialize glslang library!");
     }
 
     auto CreateVkShaderModule = [&]() -> VkShaderModule {
@@ -153,7 +156,7 @@ VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription& descriptio
         case ShaderStage::Fragment:
             return EShLanguage::EShLangFragment;
         default:
-            throw InvalidArgumentException("`ShaderStage` was invalid!");
+            throw System::InvalidArgumentException("`ShaderStage` was invalid!");
 
         }
 
@@ -171,7 +174,7 @@ VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription& descriptio
         case ShaderLanguage::HLSL:
             return glslang::EShSource::EShSourceHlsl;
         default:
-            throw InvalidArgumentException("`ShaderLanguage` was invalid!");
+            throw System::InvalidArgumentException("`ShaderLanguage` was invalid!");
         }
 
             // clang-format on
@@ -228,14 +231,14 @@ VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription& descriptio
                                                Includer);
 
         if (!glslangResult)
-            throw ExternalException("glslang failed to compile shader!");
+            throw System::ExternalException("glslang failed to compile shader!");
 
 
         if (!shader.parse(&DefaultTBuiltInResource,
                           450,
                           false,
                           EShMessages::EShMsgDefault))
-            throw ExternalException("glslang failed to compile shader!");
+            throw System::ExternalException("glslang failed to compile shader!");
 
         glslang::TProgram shaderProgram;
 
@@ -243,7 +246,7 @@ VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription& descriptio
 
 
         if (!shaderProgram.link(EShMessages::EShMsgSpvRules | EShMessages::EShMsgVulkanRules))
-            throw ExternalException("glslang failed to compile shader!");
+            throw System::ExternalException("glslang failed to compile shader!");
 
         spv::SpvBuildLogger logger;
         glslang::SpvOptions spvOptions;
@@ -273,7 +276,7 @@ VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription& descriptio
                                              &shaderModule);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to create VkShaderModule!");
+            throw System::ExternalException("Failed to create VkShaderModule!");
 
         return shaderModule;
     };
@@ -284,5 +287,7 @@ VulkanShaderModule::VulkanShaderModule(const ShaderModuleDescription& descriptio
 
     _vulkanShaderModule = VkPtr<VkShaderModule>(CreateVkShaderModule, std::move(DestroyVkShaderModule));
 }
+
+} // namespace Graphics
 
 } // namespace Axis

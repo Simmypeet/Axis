@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Span.hpp
-///
-/// \brief Contains \a `Axis::Span` template container class.
-
 #ifndef AXIS_SYSTEM_SPAN_HPP
 #define AXIS_SYSTEM_SPAN_HPP
 #pragma once
@@ -15,6 +11,9 @@
 #include "Trait.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Represents the non-owning, read-only continuous block of memory.
@@ -43,8 +42,8 @@ public:
     constexpr Span(const T* begin,
                    const T* end);
 
-    /// \brief Constructs the span class with \a `Axis::Array` class.
-    ///        The span stores the whole \a `Axis::Array`.
+    /// \brief Constructs the span class with \a `Array` class.
+    ///        The span stores the whole \a `Array`.
     ///
     /// \param[in] array Array to store in the span
     Span(const List<T>& array) noexcept;
@@ -88,6 +87,8 @@ private:
     const T* _begin;
     const T* _end;
 };
+
+} // namespace System
 
 } // namespace Axis
 

@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file TimePeriod.hpp
-///
-/// \brief Contains `Axis::TimePeriod` data structure.
-
 #ifndef AXIS_TIMEPERIOD_HPP
 #define AXIS_TIMEPERIOD_HPP
 #pragma once
@@ -13,6 +9,9 @@
 #include "Config.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Specifies the period/intervals of time.
@@ -138,6 +137,8 @@ public:
     /// \brief Period of time stored in microseconds magnitude.
     Size Microseconds = 0;
 };
+
+} // namespace System
 
 } // namespace Axis
 

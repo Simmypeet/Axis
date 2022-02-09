@@ -13,89 +13,85 @@
 namespace Axis
 {
 
-/// Forward declarations
+namespace Graphics
+{
+
+// Forward declarations
 struct VulkanDeviceQueueFamily;
 struct VulkanCommandBuffer;
 struct VulkanCommandPool;
 class VulkanGraphicsDevice;
 
-/// \brief Wrapper over VkDeviceQueue
+// Wrapper over VkDeviceQueue
 struct VulkanDeviceQueue final
 {
 public:
-    /// \brief Constructor
+    // Constructor
     VulkanDeviceQueue(VulkanDeviceQueueFamily& deviceQueueFamily,
                       VulkanGraphicsDevice&    vulkanGraphicsDevice,
                       Uint32                   deviceQueueIndex);
 
-    /// \brief Default constructor
+    // Default constructor
     VulkanDeviceQueue() noexcept = default;
 
-    /// \brief Blocks the CPU thread until this queue is idle.
+    // Blocks the CPU thread until this queue is idle.
     void WaitQueueIdle() const noexcept;
 
-    /// \brief Submits command buffer to this queue.
+    // Submits command buffer to this queue.
     void QueueSubmit(VulkanCommandBuffer& commandBuffer,
                      VkDevice             device);
 
-    /// \brief Adds semaphore to wait upon next queue submission.
-    ///
-    /// \param[in] semaphore Semaphore to be wait.
-    /// \param[in] waitStages Pipeline stages which waiting will occur.
-    /// \param[in] waitValue Value to wait for (if semaphore is binary
-    ///            semaphore the value will be ignored).
+    // Adds semaphore to wait upon next queue submission.
     void AppendWaitSemaphore(VkSemaphore          semaphore,
                              VkPipelineStageFlags waitStages,
                              Uint64               waitValue);
 
-    /// \brief Adds the semaphore to signal upon next queue submission.
-    ///
-    /// \param[in] semaphore Semaphore to signal.
-    /// \param[in] signalValue Value to signal
-    ///            (if semaphore is binary semaphore the value will be ignored).
+    // Adds the semaphore to signal upon next queue submission.
     void AppendSignalSeamphore(VkSemaphore semaphore,
                                Uint64      signalValue);
 
-    /// \brief Gets the index of this device queue from DeviceQueueFamily.
+    // Gets the index of this device queue from DeviceQueueFamily.
     inline Uint32 GetDeviceQueueIndex() const noexcept { return _deviceQueueIndex; }
 
-    /// \brief Gets internal VkDeviceQueue handle.
+    // Gets internal VkDeviceQueue handle.
     inline VkQueue GetVkQueueHandle() const noexcept { return _deviceQueue; }
 
 private:
-    Uint32                     _deviceQueueIndex = 0;
-    VkQueue                    _deviceQueue      = {};
-    List<VkSemaphore>          _waitSemaphores   = {};
-    List<Uint64>               _waitValues       = {};
-    List<VkPipelineStageFlags> _waitStages       = {};
-    List<VkSemaphore>          _signalSemaphores = {};
-    List<Uint64>               _signalValues     = {};
+    Uint32                             _deviceQueueIndex = 0;
+    VkQueue                            _deviceQueue      = {};
+    System::List<VkSemaphore>          _waitSemaphores   = {};
+    System::List<Uint64>               _waitValues       = {};
+    System::List<VkPipelineStageFlags> _waitStages       = {};
+    System::List<VkSemaphore>          _signalSemaphores = {};
+    System::List<Uint64>               _signalValues     = {};
 };
 
-/// \brief Wrapper over vulkan device queue
+// Wrapper over vulkan device queue
 struct VulkanDeviceQueueFamily final
 {
-    /// Constructor
+    // Constructor
     VulkanDeviceQueueFamily(Uint32                deviceQueueFamilyIndex,
                             Uint32                deviceQueueCount,
                             VulkanGraphicsDevice& vulkanGraphicsDevice) noexcept;
 
-    /// Default constructor
+    // Default constructor
     VulkanDeviceQueueFamily() noexcept = default;
 
-    /// \brief Queue family index.
+    // Queue family index.
     inline Uint32 GetDeviceQueueFamilyIndex() const noexcept { return _deviceQueueFamilyIndex; }
 
-    /// \brief Gets the device queues contained in this family.
+    // Gets the device queues contained in this family.
     VulkanDeviceQueue& GetDeviceQueue(Uint32 deviceQueueIndex);
 
     // Gets the number of device queues in this device queue family.
     inline Size GetDeviceQueueCount() const noexcept { return _deviceQueues.GetLength(); }
 
 private:
-    Uint32                  _deviceQueueFamilyIndex = 0;
-    List<VulkanDeviceQueue> _deviceQueues           = {};
+    Uint32                          _deviceQueueFamilyIndex = 0;
+    System::List<VulkanDeviceQueue> _deviceQueues           = {};
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

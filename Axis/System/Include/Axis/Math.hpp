@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Math.hpp
-///
-/// \brief Contains basic mathematical functions.
-
 #ifndef AXIS_SYSTEM_MATH_HPP
 #define AXIS_SYSTEM_MATH_HPP
 #pragma once
@@ -16,6 +12,9 @@
 
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief For both signed and unsigned numerics integral types.
@@ -144,6 +143,8 @@ namespace Math
     AXIS_NODISCARD constexpr T NextPrime(T num) noexcept;
 
 } // namespace Math
+
+} // namespace System
 
 } // namespace Axis
 

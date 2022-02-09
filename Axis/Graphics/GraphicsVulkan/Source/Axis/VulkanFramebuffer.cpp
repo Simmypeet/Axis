@@ -11,6 +11,10 @@
 
 namespace Axis
 {
+
+namespace Graphics
+{
+
 VulkanFramebuffer::VulkanFramebuffer(FramebufferDescription description,
                                      VulkanGraphicsDevice&  vulkanGraphicsDevice) :
     IFramebuffer(description)
@@ -20,7 +24,7 @@ VulkanFramebuffer::VulkanFramebuffer(FramebufferDescription description,
     auto CreateVkFramebuffer = [&]() -> VkFramebuffer {
         VkFramebuffer vkFramebuffer = {};
 
-        List<VkImageView> imageViews = {};
+        System::List<VkImageView> imageViews = {};
         imageViews.ReserveFor(description.Attachments.GetLength());
 
         Size index = 0;
@@ -43,7 +47,7 @@ VulkanFramebuffer::VulkanFramebuffer(FramebufferDescription description,
         auto vkResult = vkCreateFramebuffer(((VulkanGraphicsDevice*)GetCreatorDevice())->GetVkDeviceHandle(), &frameBufferCreateInfo, nullptr, &vkFramebuffer);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to create vkBuffer!");
+            throw System::ExternalException("Failed to create vkBuffer!");
         else
             return vkFramebuffer;
     };
@@ -54,5 +58,7 @@ VulkanFramebuffer::VulkanFramebuffer(FramebufferDescription description,
 
     _vulkanFramebuffer = VkPtr<VkFramebuffer>(CreateVkFramebuffer, std::move(DestroyVkFramebuffer));
 }
+
+} // namespace Graphics
 
 } // namespace Axis

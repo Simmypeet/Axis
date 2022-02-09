@@ -14,6 +14,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <ArithmeticType T, Size RowSize, Size ColumnSize, Bool IsColumnMajor>
 inline constexpr Matrix<T, RowSize, ColumnSize, IsColumnMajor>::Matrix() noexcept {}
 
@@ -246,29 +249,8 @@ inline constexpr Matrix<T, RowSize, ColumnSize, IsColumnMajor> Matrix<T, RowSize
     return result;
 }
 
+} // namespace System
+
 } // namespace Axis
-
-template <Axis::ArithmeticType T, Axis::Size RowSize, Axis::Size ColumnSize, Axis::Bool IsColumnMajor, class OStream>
-OStream& operator<<(OStream& os, const Axis::Matrix<T, RowSize, ColumnSize, IsColumnMajor>& matrix)
-{
-    for (Axis::Size row = 0; row < RowSize; row++)
-    {
-        os << "( ";
-
-        for (Axis::Size column = 0; column < ColumnSize; column++)
-        {
-            os << matrix(row, column);
-            if (column != ColumnSize - 1)
-                os << ", ";
-        }
-
-        os << " )";
-
-        if (row != RowSize - 1)
-            os << "\n";
-    }
-
-    return os;
-}
 
 #endif // AXIS_MATH_MATRIXIMPL_INL

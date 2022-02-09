@@ -16,6 +16,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 /// \brief Defines the base class for all exceptions.
 class AXIS_SYSTEM_API Exception
 {
@@ -120,6 +123,8 @@ class AXIS_SYSTEM_API FileNotFoundException : public IOException
 public:
     using IOException::IOException;
 };
+
+} // namespace System
 
 } // namespace Axis
 

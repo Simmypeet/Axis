@@ -1,14 +1,15 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 {
     DOCTEST_SUBCASE("`Axis::Vector3` constructors")
     {
         DOCTEST_SUBCASE("Default constructor")
         {
-            using namespace Axis;
-
             // Default vector
             Vector3<Int32> vector;
 
@@ -28,8 +29,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Coordinate constructor")
         {
-            using namespace Axis;
-
             // Constructs a vector
             Vector3<Int32> vector(1, 2, 3);
 
@@ -49,8 +48,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Conversion constructor")
         {
-            using namespace Axis;
-
             // Constructs a vector
             Vector3<Int32> vector(Vector3<Float32>(1.0f, 2.0f, 3.0f));
 
@@ -65,8 +62,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
     {
         DOCTEST_SUBCASE("Addition")
         {
-            using namespace Axis;
-
             // Constructs a vector
             Vector3<Int32> vector(1, 2, 3);
 
@@ -92,8 +87,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Subtraction")
         {
-            using namespace Axis;
-
             // Constructs a vector
             Vector3<Int32> vector(1, 2, 3);
 
@@ -119,8 +112,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Multiplication")
         {
-            using namespace Axis;
-
             // Constructs a vector
             Vector3<Int32> vector(1, 2, 3);
 
@@ -146,8 +137,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Division")
         {
-            using namespace Axis;
-
             // Constructs a vector
             Vector3<Int32> vector(1, 2, 3);
 
@@ -173,8 +162,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Multiplication by a scalar value")
         {
-            using namespace Axis;
-
             // Constructs a vector
             Vector3<Int32> vector(1, 2, 3);
 
@@ -200,8 +187,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Division by a scalar value")
         {
-            using namespace Axis;
-
             // Constructs a vector
             Vector3<Int32> vector(1, 2, 3);
 
@@ -230,8 +215,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
     {
         DOCTEST_SUBCASE("Addition")
         {
-            using namespace Axis;
-
             // Constructs a vector
             Vector3<Int32> vector(1, 2, 3);
 
@@ -257,10 +240,9 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Subtraction")
         {
-            using namespace Axis;
-
             // Constructs a vector
-            Vector3<Int32> vector(1, 2, 3);
+            Vector3<Int32>
+                vector(1, 2, 3);
 
             // Subtracts a vector
             vector -= Vector3<Int32>(4, 5, 6);
@@ -284,10 +266,9 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Multiplication")
         {
-            using namespace Axis;
-
             // Constructs a vector
-            Vector3<Int32> vector(1, 2, 3);
+            Vector3<Int32>
+                vector(1, 2, 3);
 
             // Multiplies a vector
             vector *= Vector3<Int32>(4, 5, 6);
@@ -311,10 +292,9 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Division")
         {
-            using namespace Axis;
-
             // Constructs a vector
-            Vector3<Int32> vector(1, 2, 3);
+            Vector3<Int32>
+                vector(1, 2, 3);
 
             // Divides a vector
             vector /= Vector3<Int32>(4, 5, 6);
@@ -338,10 +318,9 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Multiplication by a scalar value")
         {
-            using namespace Axis;
-
             // Constructs a vector
-            Vector3<Int32> vector(1, 2, 3);
+            Vector3<Int32>
+                vector(1, 2, 3);
 
             // Multiplies a vector
             vector *= 4;
@@ -365,10 +344,9 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Division by a scalar value")
         {
-            using namespace Axis;
-
             // Constructs a vector
-            Vector3<Int32> vector(1, 2, 3);
+            Vector3<Int32>
+                vector(1, 2, 3);
 
             // Divides a vector
             vector /= 4;
@@ -395,8 +373,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
     {
         DOCTEST_SUBCASE("Equality")
         {
-            using namespace Axis;
-
             // Constructs two vectors
             Vector3<Int32> vector1(1, 2, 3);
             Vector3<Int32> vector2(1, 2, 3);
@@ -407,8 +383,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
         DOCTEST_SUBCASE("Inequality")
         {
-            using namespace Axis;
-
             // Constructs two vectors
             Vector3<Int32> vector1(1, 2, 3);
             Vector3<Int32> vector2(1, 3, 3);
@@ -420,8 +394,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
     DOCTEST_SUBCASE("Magnitude")
     {
-        using namespace Axis;
-
         Vector3<Int32> vector(2, 3, 4);
 
         // Checks if the magnitude of the vector is correct
@@ -430,8 +402,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
     DOCTEST_SUBCASE("Normalize")
     {
-        using namespace Axis;
-
         Vector3<Float32> vector(2, 3, 4);
 
         // Normalizes the vector
@@ -443,8 +413,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
     DOCTEST_SUBCASE("DotProduct")
     {
-        using namespace Axis;
-
         Vector3<Int32> vector1(2, 3, 4);
         Vector3<Int32> vector2(3, 4, 5);
 
@@ -454,8 +422,6 @@ DOCTEST_TEST_CASE("Vector3 template class : [Axis::System]")
 
     DOCTEST_SUBCASE("CrossProduct")
     {
-        using namespace Axis;
-
         Vector3<Int32> vector1(2, 3, 4);
         Vector3<Int32> vector2(3, 4, 5);
 

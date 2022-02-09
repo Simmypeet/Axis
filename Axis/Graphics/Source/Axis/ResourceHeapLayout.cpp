@@ -9,7 +9,12 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 IResourceHeapLayout::IResourceHeapLayout(const ResourceHeapLayoutDescription& description) :
     Description(description) {}
+
+} // namespace Graphics
 
 } // namespace Axis

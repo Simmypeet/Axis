@@ -20,13 +20,16 @@
 namespace Axis
 {
 
-static void CreateSwapChain(const SwapChainDescription&        description,
-                            Bool                               vSync,
-                            VulkanGraphicsDevice&              vulkanGraphicsDevice,
-                            VkSurfaceKHR&                      surfaceOut,
-                            VkPtr<VkSwapchainKHR>&             currentSwapchainKHR,
-                            List<SharedPointer<ITextureView>>& renderTargetViewsOut,
-                            List<SharedPointer<ITextureView>>& depthStencilViewsOut)
+namespace Graphics
+{
+
+static void CreateSwapChain(const SwapChainDescription&                        description,
+                            Bool                                               vSync,
+                            VulkanGraphicsDevice&                              vulkanGraphicsDevice,
+                            VkSurfaceKHR&                                      surfaceOut,
+                            VkPtr<VkSwapchainKHR>&                             currentSwapchainKHR,
+                            System::List<System::SharedPointer<ITextureView>>& renderTargetViewsOut,
+                            System::List<System::SharedPointer<ITextureView>>& depthStencilViewsOut)
 {
     auto vulkanGraphicsSystem = (VulkanGraphicsSystem*)vulkanGraphicsDevice.GraphicsSystem;
 
@@ -41,7 +44,7 @@ static void CreateSwapChain(const SwapChainDescription&        description,
                                          &supported);
 
     if (!supported)
-        throw ExternalException("physicalDevice didn't support!");
+        throw System::ExternalException("physicalDevice didn't support!");
 
     const auto& vulkanPhysicalDevice = vulkanGraphicsSystem->GetVulkanPhysicalDevices()[vulkanGraphicsDevice.GraphicsAdapterIndex];
 
@@ -62,19 +65,19 @@ static void CreateSwapChain(const SwapChainDescription&        description,
         auto windowSize = description.TargetWindow->GetSize();
 
         // Tries to get the nearest image extent as the window size
-        preferredImageExtent.width = Math::Clamp(windowSize.X,
-                                                 surfaceCapabilities.minImageExtent.width,
-                                                 surfaceCapabilities.maxImageExtent.width);
+        preferredImageExtent.width = System::Math::Clamp(windowSize.X,
+                                                         surfaceCapabilities.minImageExtent.width,
+                                                         surfaceCapabilities.maxImageExtent.width);
 
 
-        preferredImageExtent.height = Math::Clamp(windowSize.Y,
-                                                  surfaceCapabilities.minImageExtent.height,
-                                                  surfaceCapabilities.maxImageExtent.height);
+        preferredImageExtent.height = System::Math::Clamp(windowSize.Y,
+                                                          surfaceCapabilities.minImageExtent.height,
+                                                          surfaceCapabilities.maxImageExtent.height);
 
         // Clamps the back buffer count into the capability's range
-        preferredBackBufferCount = Math::Clamp(preferredBackBufferCount,
-                                               surfaceCapabilities.minImageCount,
-                                               surfaceCapabilities.maxImageCount);
+        preferredBackBufferCount = System::Math::Clamp(preferredBackBufferCount,
+                                                       surfaceCapabilities.minImageCount,
+                                                       surfaceCapabilities.maxImageCount);
     }
 
     // Chooses format
@@ -82,7 +85,7 @@ static void CreateSwapChain(const SwapChainDescription&        description,
         Uint32 formatCount = 0;
         vkGetPhysicalDeviceSurfaceFormatsKHR(vulkanPhysicalDevice.GetVkPhysicalDeviceHandle(), surfaceOut, &formatCount, nullptr);
 
-        List<VkSurfaceFormatKHR> surfaceFormats(formatCount);
+        System::List<VkSurfaceFormatKHR> surfaceFormats(formatCount);
         vkGetPhysicalDeviceSurfaceFormatsKHR(vulkanPhysicalDevice.GetVkPhysicalDeviceHandle(), surfaceOut, &formatCount, surfaceFormats.GetData());
 
         for (const auto& surfaceForamt : surfaceFormats)
@@ -100,10 +103,10 @@ static void CreateSwapChain(const SwapChainDescription&        description,
         Uint32 presentModeCount = 0;
         vkGetPhysicalDeviceSurfacePresentModesKHR(vulkanPhysicalDevice.GetVkPhysicalDeviceHandle(), surfaceOut, &presentModeCount, nullptr);
 
-        List<VkPresentModeKHR> presentModes(presentModeCount);
+        System::List<VkPresentModeKHR> presentModes(presentModeCount);
         vkGetPhysicalDeviceSurfacePresentModesKHR(vulkanPhysicalDevice.GetVkPhysicalDeviceHandle(), surfaceOut, &presentModeCount, presentModes.GetData());
 
-        List<VkPresentModeKHR> preferredPresentModes;
+        System::List<VkPresentModeKHR> preferredPresentModes;
 
         if (vSync)
         {
@@ -161,7 +164,7 @@ static void CreateSwapChain(const SwapChainDescription&        description,
         VkResult result = vkCreateSwapchainKHR(vulkanGraphicsDevice.GetVkDeviceHandle(), &swapchainCreateInfo, nullptr, &vkSwapchainKHR);
 
         if (result != VK_SUCCESS)
-            throw ExternalException("Failed to create VkSwapchainKHR!");
+            throw System::ExternalException("Failed to create VkSwapchainKHR!");
 
         return vkSwapchainKHR;
     };
@@ -176,14 +179,14 @@ static void CreateSwapChain(const SwapChainDescription&        description,
     vkGetSwapchainImagesKHR(vulkanGraphicsDevice.GetVkDeviceHandle(), createdSwapchain, &imageCount, nullptr);
 
     if (imageCount == 0)
-        throw ExternalException("Failed to get vkSwapChainKHR's images!");
+        throw System::ExternalException("Failed to get vkSwapChainKHR's images!");
 
-    List<VkImage> swapchainImages(imageCount);
+    System::List<VkImage> swapchainImages(imageCount);
     vkGetSwapchainImagesKHR(vulkanGraphicsDevice.GetVkDeviceHandle(), createdSwapchain, &imageCount, swapchainImages.GetData());
 
     Uint64 deviceQueueFamilyMask = 0;
 
-    deviceQueueFamilyMask = Math::AssignBitToPosition(deviceQueueFamilyMask, description.ImmediateGraphicsContext->DeviceQueueFamilyIndex, true);
+    deviceQueueFamilyMask = System::Math::AssignBitToPosition(deviceQueueFamilyMask, description.ImmediateGraphicsContext->DeviceQueueFamilyIndex, true);
 
     // Swapchain image's description
     TextureDescription swapchainImageDescription    = {};
@@ -197,17 +200,17 @@ static void CreateSwapChain(const SwapChainDescription&        description,
     swapchainImageDescription.DeviceQueueFamilyMask = deviceQueueFamilyMask;
 
     // Clears all existing texture view.
-    auto newRenderTargetViews = List<SharedPointer<ITextureView>>(preferredBackBufferCount, nullptr);
-    auto newDepthStencilViews = List<SharedPointer<ITextureView>>(preferredBackBufferCount, nullptr);
+    auto newRenderTargetViews = System::List<System::SharedPointer<ITextureView>>(preferredBackBufferCount, nullptr);
+    auto newDepthStencilViews = System::List<System::SharedPointer<ITextureView>>(preferredBackBufferCount, nullptr);
 
     Size index = 0;
 
     for (const auto& image : swapchainImages)
     {
         // VulkanTexture with no memory backed to it. (Created from swap chain)
-        SharedPointer<VulkanTexture> vulkanTexture = Axis::MakeShared<VulkanTexture>(swapchainImageDescription,
-                                                                                     image,
-                                                                                     vulkanGraphicsDevice);
+        System::SharedPointer<VulkanTexture> vulkanTexture = Axis::System::MakeShared<VulkanTexture>(swapchainImageDescription,
+                                                                                                     image,
+                                                                                                     vulkanGraphicsDevice);
 
         // Render target (color attachment) description
         TextureViewDescription swapchainTextureViewDescription = {};
@@ -238,13 +241,13 @@ static void CreateSwapChain(const SwapChainDescription&        description,
         depthStencilTextureDescription.ArraySize      = 1;
         depthStencilTextureDescription.Usage          = ResourceUsage::Immutable;
 
-        depthStencilTextureDescription.DeviceQueueFamilyMask = Math::AssignBitToPosition(depthStencilTextureDescription.DeviceQueueFamilyMask, description.ImmediateGraphicsContext->DeviceQueueFamilyIndex, true);
+        depthStencilTextureDescription.DeviceQueueFamilyMask = System::Math::AssignBitToPosition(depthStencilTextureDescription.DeviceQueueFamilyMask, description.ImmediateGraphicsContext->DeviceQueueFamilyIndex, true);
 
         index = 0;
 
         for (Size i = 0; i < preferredBackBufferCount; i++)
         {
-            SharedPointer<ITexture> depthStencilTexture = vulkanGraphicsDevice.CreateTexture(depthStencilTextureDescription);
+            System::SharedPointer<ITexture> depthStencilTexture = vulkanGraphicsDevice.CreateTexture(depthStencilTextureDescription);
 
             // Depth stencil description
             TextureViewDescription swapChainDepthStencilView = {};
@@ -268,12 +271,12 @@ static void CreateSwapChain(const SwapChainDescription&        description,
     depthStencilViewsOut = std::move(newDepthStencilViews);
 }
 
-static void CreateSynchronizationObjects(VulkanGraphicsDevice&        vulkanGraphicsDevice,
-                                         List<VkPtr<VkSemaphore>>&    imageAvailableSemaphoresOut,
-                                         List<SharedPointer<IFence>>& inFlightFencesOut) noexcept
+static void CreateSynchronizationObjects(VulkanGraphicsDevice&                        vulkanGraphicsDevice,
+                                         System::List<VkPtr<VkSemaphore>>&            imageAvailableSemaphoresOut,
+                                         System::List<System::SharedPointer<IFence>>& inFlightFencesOut) noexcept
 {
-    auto newImageAvailableSemaphores = List<VkPtr<VkSemaphore>>(VulkanSwapChain::MaxFrameInFlight);
-    auto newInFlightFences           = List<SharedPointer<IFence>>(VulkanSwapChain::MaxFrameInFlight);
+    auto newImageAvailableSemaphores = System::List<VkPtr<VkSemaphore>>(VulkanSwapChain::MaxFrameInFlight);
+    auto newInFlightFences           = System::List<System::SharedPointer<IFence>>(VulkanSwapChain::MaxFrameInFlight);
 
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType                 = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -284,7 +287,7 @@ static void CreateSynchronizationObjects(VulkanGraphicsDevice&        vulkanGrap
             VkSemaphore vkSemaphore = {};
 
             if (vkCreateSemaphore(vulkanGraphicsDevice.GetVkDeviceHandle(), &semaphoreInfo, nullptr, &vkSemaphore) != VK_SUCCESS)
-                throw ExternalException("Failed to create VkSemaphore!");
+                throw System::ExternalException("Failed to create VkSemaphore!");
             return vkSemaphore;
         };
 
@@ -320,8 +323,8 @@ VulkanSwapChain::VulkanSwapChain(const SwapChainDescription& description,
                                  _inFlightFences);
 
 
-    _imagesInFlight      = List<SharedPointer<IFence>>(_renderTargetViews.GetLength(), nullptr);
-    _inFlightFenceValues = List<Uint64>(_renderTargetViews.GetLength(), 0);
+    _imagesInFlight      = System::List<System::SharedPointer<IFence>>(_renderTargetViews.GetLength(), nullptr);
+    _inFlightFenceValues = System::List<Uint64>(_renderTargetViews.GetLength(), 0);
 
     StartFrame();
 }
@@ -331,12 +334,12 @@ VulkanSwapChain::~VulkanSwapChain() noexcept
     GetCreatorDevice()->WaitDeviceIdle();
 }
 
-SharedPointer<ITextureView> VulkanSwapChain::GetCurrentRenderTargetView()
+System::SharedPointer<ITextureView> VulkanSwapChain::GetCurrentRenderTargetView()
 {
     return _renderTargetViews[_frameIndex];
 }
 
-SharedPointer<ITextureView> VulkanSwapChain::GetCurrentDepthStencilView()
+System::SharedPointer<ITextureView> VulkanSwapChain::GetCurrentDepthStencilView()
 {
     return _depthStencilViews[_frameIndex];
 }
@@ -347,7 +350,7 @@ void VulkanSwapChain::Present(Uint8 syncIntervals)
 
     if (vSync != _vSyncEnabled)
     {
-        _vSyncEnabled = vSync; 
+        _vSyncEnabled = vSync;
 
         // Ends the current frame
         EndFrame();
@@ -366,8 +369,8 @@ void VulkanSwapChain::Present(Uint8 syncIntervals)
 
 void VulkanSwapChain::RecreateSwapChain(Bool vsync)
 {
-    List<VkPtr<VkSemaphore>>    newImageAvailableSemaphores;
-    List<SharedPointer<IFence>> newInFlightFences;
+    System::List<VkPtr<VkSemaphore>>            newImageAvailableSemaphores;
+    System::List<System::SharedPointer<IFence>> newInFlightFences;
 
     CreateSynchronizationObjects(*((VulkanGraphicsDevice*)GetCreatorDevice()),
                                  newImageAvailableSemaphores,
@@ -381,13 +384,13 @@ void VulkanSwapChain::RecreateSwapChain(Bool vsync)
                     _depthStencilViews);
 
     _imagesInFlight.Reset();
-    _inFlightFenceValues.Reset();
+    _inFlightFenceValues.Reset(0);
 
     _imageAvailableSemaphores = std::move(newImageAvailableSemaphores);
     _inFlightFences           = std::move(newInFlightFences);
 }
 
-void VulkanSwapChain::OnWindowSizeChanged(const Vector2UI& newSize) noexcept { _windowResized = true; }
+void VulkanSwapChain::OnWindowSizeChanged(const System::Vector2UI& newSize) noexcept { _windowResized = true; }
 
 void VulkanSwapChain::StartFrame()
 {
@@ -421,13 +424,13 @@ void VulkanSwapChain::StartFrame()
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
     {
-        throw ExternalException("Failed to acquire next swap chain image!");
+        throw System::ExternalException("Failed to acquire next swap chain image!");
     }
 }
 
 void VulkanSwapChain::EndFrame()
 {
-    SharedPointer<VulkanDeviceContext> vulkanDeviceContext = (SharedPointer<VulkanDeviceContext>)Description.ImmediateGraphicsContext;
+    System::SharedPointer<VulkanDeviceContext> vulkanDeviceContext = (System::SharedPointer<VulkanDeviceContext>)Description.ImmediateGraphicsContext;
 
     if (_imagesInFlight[_frameIndex])
         _imagesInFlight[_frameIndex]->WaitForValue(_currentImageInFlightValue);
@@ -476,10 +479,12 @@ void VulkanSwapChain::EndFrame()
     }
     else if (result != VK_SUCCESS)
     {
-        throw ExternalException("Failed to present swap chain image!");
+        throw System::ExternalException("Failed to present swap chain image!");
     }
 
     _currentInFlightFrame = (_currentInFlightFrame + 1) % MaxFrameInFlight;
 }
+
+} // namespace Graphics
 
 } // namespace Axis

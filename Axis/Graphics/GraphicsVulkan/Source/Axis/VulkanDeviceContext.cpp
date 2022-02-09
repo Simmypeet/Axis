@@ -25,6 +25,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanDeviceContext::VulkanDeviceContext(Uint32                deviceQueueFamilyIndex,
                                          Uint32                deviceQueueIndex,
                                          QueueOperationFlags   supportedQueueOperations,
@@ -44,13 +47,13 @@ VulkanDeviceContext::VulkanDeviceContext(Uint32                deviceQueueFamily
     bufferDescription.BufferBinding     = BufferBinding::Vertex | BufferBinding::Index | BufferBinding::Uniform;
     bufferDescription.BufferSize        = 1;
 
-    bufferDescription.DeviceQueueFamilyMask = Math::AssignBitToPosition(bufferDescription.DeviceQueueFamilyMask, _deviceQueueFamilyIndex, true);
+    bufferDescription.DeviceQueueFamilyMask = System::Math::AssignBitToPosition(bufferDescription.DeviceQueueFamilyMask, _deviceQueueFamilyIndex, true);
 
-    _nullVulkanBuffer = (SharedPointer<VulkanBuffer>)GetCreatorDevice()->CreateBuffer(bufferDescription, nullptr);
+    _nullVulkanBuffer = (System::SharedPointer<VulkanBuffer>)GetCreatorDevice()->CreateBuffer(bufferDescription, nullptr);
 
-    _vulkanCommandPool = UniquePointer<VulkanCommandPool>(Axis::New<VulkanCommandPool>(vulkanGraphicsDevice.GetVulkanDeviceQueueFamily(deviceQueueFamilyIndex),
-                                                                                       vulkanGraphicsDevice,
-                                                                                       VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+    _vulkanCommandPool = System::UniquePointer<VulkanCommandPool>(Axis::System::New<VulkanCommandPool>(vulkanGraphicsDevice.GetVulkanDeviceQueueFamily(deviceQueueFamilyIndex),
+                                                                                                       vulkanGraphicsDevice,
+                                                                                                       VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
     _currentVulkanCommandBuffer = _vulkanCommandPool->GetCommandBuffer();
 
@@ -69,15 +72,15 @@ void VulkanDeviceContext::WaitQueueIdle() const noexcept
     GetVulkanDeviceQueue().WaitQueueIdle();
 }
 
-void VulkanDeviceContext::TransitTextureState(const SharedPointer<ITexture>& textureResource,
-                                              ResourceState                  initialState,
-                                              ResourceState                  finalState,
-                                              Uint32                         baseArrayIndex,
-                                              Uint32                         arrayLevelCount,
-                                              Uint32                         baseMipLevel,
-                                              Uint32                         mipLevelCount,
-                                              Bool                           discardContent,
-                                              Bool                           recordState)
+void VulkanDeviceContext::TransitTextureState(const System::SharedPointer<ITexture>& textureResource,
+                                              ResourceState                          initialState,
+                                              ResourceState                          finalState,
+                                              Uint32                                 baseArrayIndex,
+                                              Uint32                                 arrayLevelCount,
+                                              Uint32                                 baseMipLevel,
+                                              Uint32                                 mipLevelCount,
+                                              Bool                                   discardContent,
+                                              Bool                                   recordState)
 {
     // Validates the arguments
     IDeviceContext::TransitTextureState(textureResource,
@@ -137,11 +140,11 @@ void VulkanDeviceContext::TransitTextureState(const SharedPointer<ITexture>& tex
         textureResource->SetResourceState(finalState);
 }
 
-void VulkanDeviceContext::TransitBufferState(const SharedPointer<IBuffer>& bufferResource,
-                                             ResourceState                 initialState,
-                                             ResourceState                 finalState,
-                                             Bool                          discardContent,
-                                             Bool                          recordState)
+void VulkanDeviceContext::TransitBufferState(const System::SharedPointer<IBuffer>& bufferResource,
+                                             ResourceState                         initialState,
+                                             ResourceState                         finalState,
+                                             Bool                                  discardContent,
+                                             Bool                                  recordState)
 {
     // Validates the arguments
     IDeviceContext::TransitBufferState(bufferResource,
@@ -195,13 +198,13 @@ void VulkanDeviceContext::TransitBufferState(const SharedPointer<IBuffer>& buffe
         bufferResource->SetResourceState(finalState);
 }
 
-void VulkanDeviceContext::CopyBuffer(const SharedPointer<IBuffer>& sourceBuffer,
-                                     Size                          sourceOffset,
-                                     const SharedPointer<IBuffer>& destBuffer,
-                                     Size                          destOffset,
-                                     Size                          copySize,
-                                     StateTransition               sourceBufferStateTransition,
-                                     StateTransition               destBufferStateTransition)
+void VulkanDeviceContext::CopyBuffer(const System::SharedPointer<IBuffer>& sourceBuffer,
+                                     Size                                  sourceOffset,
+                                     const System::SharedPointer<IBuffer>& destBuffer,
+                                     Size                                  destOffset,
+                                     Size                                  copySize,
+                                     StateTransition                       sourceBufferStateTransition,
+                                     StateTransition                       destBufferStateTransition)
 {
     // Validates the arguments
     IDeviceContext::CopyBuffer(sourceBuffer,
@@ -251,7 +254,7 @@ void VulkanDeviceContext::CopyBuffer(const SharedPointer<IBuffer>& sourceBuffer,
                     &bufferCopy);
 }
 
-void VulkanDeviceContext::BindPipeline(const SharedPointer<IPipeline>& pipeline)
+void VulkanDeviceContext::BindPipeline(const System::SharedPointer<IPipeline>& pipeline)
 {
     // Validates the arguments
     IDeviceContext::BindPipeline(pipeline);
@@ -259,9 +262,9 @@ void VulkanDeviceContext::BindPipeline(const SharedPointer<IPipeline>& pipeline)
     _pipelineBindingUpToDate = false;
 }
 
-void VulkanDeviceContext::SetViewport(const RectangleF& viewportArea,
-                                      Float32           minDepth,
-                                      Float32           maxDepth)
+void VulkanDeviceContext::SetViewport(const System::RectangleF& viewportArea,
+                                      Float32                   minDepth,
+                                      Float32                   maxDepth)
 {
     // Validates the arguments
     IDeviceContext::SetViewport(viewportArea,
@@ -282,7 +285,7 @@ void VulkanDeviceContext::SetViewport(const RectangleF& viewportArea,
                      &viewport);
 }
 
-void VulkanDeviceContext::SetScissorRectangle(const RectangleI& rectangle)
+void VulkanDeviceContext::SetScissorRectangle(const System::RectangleI& rectangle)
 {
     // Validates the arguments
     IDeviceContext::SetScissorRectangle(rectangle);
@@ -294,11 +297,11 @@ void VulkanDeviceContext::SetScissorRectangle(const RectangleI& rectangle)
     vkCmdSetScissor(_currentVulkanCommandBuffer->GetVkCommandBufferHandle(), 0, 1, &scissor);
 }
 
-void VulkanDeviceContext::ClearDepthStencilView(const SharedPointer<ITextureView>& depthStencilView,
-                                                Uint8                              stencilClearValue,
-                                                Float32                            depthClearValue,
-                                                ClearDepthStencilFlags             clearDepthStencilFlags,
-                                                StateTransition                    stateTransition)
+void VulkanDeviceContext::ClearDepthStencilView(const System::SharedPointer<ITextureView>& depthStencilView,
+                                                Uint8                                      stencilClearValue,
+                                                Float32                                    depthClearValue,
+                                                ClearDepthStencilFlags                     clearDepthStencilFlags,
+                                                StateTransition                            stateTransition)
 {
     // Validates the arguments
     IDeviceContext::ClearDepthStencilView(depthStencilView,
@@ -376,9 +379,9 @@ void VulkanDeviceContext::ClearDepthStencilView(const SharedPointer<ITextureView
     }
 }
 
-void VulkanDeviceContext::ClearRenderTarget(const SharedPointer<ITextureView>& renderTargetView,
-                                            const ColorF&                      clearColor,
-                                            StateTransition                    stateTransition)
+void VulkanDeviceContext::ClearRenderTarget(const System::SharedPointer<ITextureView>& renderTargetView,
+                                            const ColorF&                              clearColor,
+                                            StateTransition                            stateTransition)
 
 {
     // Validates the arguments
@@ -500,7 +503,7 @@ void VulkanDeviceContext::SetRenderTarget(const RenderTargetBinding& renderTarge
 
     // Creates framebuffer out of render target views
     VulkanFramebufferCacheKey framebufferCacheKey = {};
-    framebufferCacheKey.RenderTargetViews         = List<WeakPointer<ITextureView>>(GetCurrentRenderTargetBinding().RenderTargetViews.GetLength());
+    framebufferCacheKey.RenderTargetViews         = System::List<System::WeakPointer<ITextureView>>(GetCurrentRenderTargetBinding().RenderTargetViews.GetLength());
 
     for (Size i = 0; i < GetCurrentRenderTargetBinding().RenderTargetViews.GetLength(); i++)
     {
@@ -553,10 +556,10 @@ void VulkanDeviceContext::SetRenderTarget(const RenderTargetBinding& renderTarge
     _renderPassUpToDate = false;
 }
 
-void VulkanDeviceContext::BindVertexBuffers(Uint32                              firstBinding,
-                                            const Span<SharedPointer<IBuffer>>& vertexBuffers,
-                                            const Span<Size>&                   offsets,
-                                            StateTransition                     stateTransition)
+void VulkanDeviceContext::BindVertexBuffers(Uint32                                              firstBinding,
+                                            const System::Span<System::SharedPointer<IBuffer>>& vertexBuffers,
+                                            const System::Span<Size>&                           offsets,
+                                            StateTransition                                     stateTransition)
 {
     // Validates the arguments
     IDeviceContext::BindVertexBuffers(firstBinding,
@@ -588,10 +591,10 @@ void VulkanDeviceContext::BindVertexBuffers(Uint32                              
     _vertexBufferBindingUpToDate = false;
 }
 
-void VulkanDeviceContext::BindIndexBuffer(const SharedPointer<IBuffer>& indexBuffer,
-                                          Size                          offset,
-                                          IndexType                     indexType,
-                                          StateTransition               stateTransition)
+void VulkanDeviceContext::BindIndexBuffer(const System::SharedPointer<IBuffer>& indexBuffer,
+                                          Size                                  offset,
+                                          IndexType                             indexType,
+                                          StateTransition                       stateTransition)
 {
     // Validates the arguments
     IDeviceContext::BindIndexBuffer(indexBuffer,
@@ -618,7 +621,7 @@ void VulkanDeviceContext::BindIndexBuffer(const SharedPointer<IBuffer>& indexBuf
     _indexBufferBindingUpToDate = false;
 }
 
-void VulkanDeviceContext::BindResourceHeap(const SharedPointer<IResourceHeap>& resourceHeap)
+void VulkanDeviceContext::BindResourceHeap(const System::SharedPointer<IResourceHeap>& resourceHeap)
 {
     // Validates the arguments
     IDeviceContext::BindResourceHeap(resourceHeap);
@@ -672,16 +675,16 @@ void VulkanDeviceContext::DrawIndexed(Uint32          indexCount,
                      firstInstance);
 }
 
-void VulkanDeviceContext::CopyBufferToTexture(const SharedPointer<IBuffer>&  sourceBuffer,
-                                              Size                           bufferOffset,
-                                              const SharedPointer<ITexture>& destTexture,
-                                              Uint32                         baseArrayIndex,
-                                              Uint32                         arrayLevelCount,
-                                              Uint32                         mipLevel,
-                                              Vector3UI                      textureOffset,
-                                              Vector3UI                      textureSize,
-                                              StateTransition                bufferStateTransition,
-                                              StateTransition                textureStateTransition)
+void VulkanDeviceContext::CopyBufferToTexture(const System::SharedPointer<IBuffer>&  sourceBuffer,
+                                              Size                                   bufferOffset,
+                                              const System::SharedPointer<ITexture>& destTexture,
+                                              Uint32                                 baseArrayIndex,
+                                              Uint32                                 arrayLevelCount,
+                                              Uint32                                 mipLevel,
+                                              System::Vector3UI                      textureOffset,
+                                              System::Vector3UI                      textureSize,
+                                              StateTransition                        bufferStateTransition,
+                                              StateTransition                        textureStateTransition)
 {
     // Validates the arguments
     IDeviceContext::CopyBufferToTexture(sourceBuffer,
@@ -752,8 +755,8 @@ void VulkanDeviceContext::CopyBufferToTexture(const SharedPointer<IBuffer>&  sou
                            &bufferImageCopy);
 }
 
-void VulkanDeviceContext::GenerateMips(const SharedPointer<ITextureView>& textureView,
-                                       StateTransition                    stateTransition)
+void VulkanDeviceContext::GenerateMips(const System::SharedPointer<ITextureView>& textureView,
+                                       StateTransition                            stateTransition)
 {
     IDeviceContext::GenerateMips(textureView,
                                  stateTransition);
@@ -834,22 +837,22 @@ void VulkanDeviceContext::GenerateMips(const SharedPointer<ITextureView>& textur
     textureView->Description.ViewTexture->SetResourceState(ResourceState::TransferSource);
 }
 
-PVoid VulkanDeviceContext::MapBuffer(const SharedPointer<IBuffer>& buffer,
-                                     MapAccess                     mapAccess,
-                                     MapType                       mapType)
+PVoid VulkanDeviceContext::MapBuffer(const System::SharedPointer<IBuffer>& buffer,
+                                     MapAccess                             mapAccess,
+                                     MapType                               mapType)
 {
     if (!Graphics::IsResourceUsageMappable(buffer->Description.Usage))
-        throw InvalidArgumentException("`buffer` couldn't be mapped!");
+        throw System::InvalidArgumentException("`buffer` couldn't be mapped!");
 
     if (((VulkanBuffer*)buffer)->BufferMapped)
-        throw InvalidOperationException("`buffer` has been mapped already!");
+        throw System::InvalidOperationException("`buffer` has been mapped already!");
 
     VulkanBuffer* vkBuffer = ((VulkanBuffer*)buffer);
 
     if (mapAccess == MapAccess::Read)
     {
         if (mapType != MapType::Overwrite)
-            throw InvalidArgumentException("Failed to map buffer!");
+            throw System::InvalidArgumentException("Failed to map buffer!");
 
         PVoid pData = {};
 
@@ -858,7 +861,7 @@ PVoid VulkanDeviceContext::MapBuffer(const SharedPointer<IBuffer>& buffer,
                                      &pData);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to map buffer memory!");
+            throw System::ExternalException("Failed to map buffer memory!");
 
         VkMemoryPropertyFlags memoryPropertyFlag = {};
 
@@ -892,7 +895,7 @@ PVoid VulkanDeviceContext::MapBuffer(const SharedPointer<IBuffer>& buffer,
                                          &pData);
 
             if (vkResult != VK_SUCCESS)
-                throw ExternalException("Failed to map buffer memory!");
+                throw System::ExternalException("Failed to map buffer memory!");
 
             vkBuffer->BufferMapped = true;
             vkBuffer->MappedAccess = mapAccess;
@@ -906,9 +909,9 @@ PVoid VulkanDeviceContext::MapBuffer(const SharedPointer<IBuffer>& buffer,
                 .BufferSize            = buffer->Description.BufferSize,
                 .BufferBinding         = BufferBinding::TransferSource,
                 .Usage                 = ResourceUsage::StagingSource,
-                .DeviceQueueFamilyMask = (Size)Math::AssignBitToPosition(0, DeviceQueueFamilyIndex, true)};
+                .DeviceQueueFamilyMask = (Size)System::Math::AssignBitToPosition(0, DeviceQueueFamilyIndex, true)};
 
-            vkBuffer->StagingBuffer = (SharedPointer<VulkanBuffer>)GetCreatorDevice()->CreateBuffer(stagingBufferDescription, nullptr);
+            vkBuffer->StagingBuffer = (System::SharedPointer<VulkanBuffer>)GetCreatorDevice()->CreateBuffer(stagingBufferDescription, nullptr);
 
             PVoid pData = {};
 
@@ -917,7 +920,7 @@ PVoid VulkanDeviceContext::MapBuffer(const SharedPointer<IBuffer>& buffer,
                                          &pData);
 
             if (vkResult != VK_SUCCESS)
-                throw ExternalException("Failed to map buffer memory!");
+                throw System::ExternalException("Failed to map buffer memory!");
 
             vkBuffer->BufferMapped = true;
             vkBuffer->MappedAccess = mapAccess;
@@ -926,19 +929,19 @@ PVoid VulkanDeviceContext::MapBuffer(const SharedPointer<IBuffer>& buffer,
             return pData;
         }
         else
-            throw InvalidArgumentException("`mapType` was invalid!");
+            throw System::InvalidArgumentException("`mapType` was invalid!");
     }
     else
-        throw InvalidArgumentException("`mapAccess` was invalid!");
+        throw System::InvalidArgumentException("`mapAccess` was invalid!");
 }
 
-void VulkanDeviceContext::UnmapBuffer(const SharedPointer<IBuffer>& buffer)
+void VulkanDeviceContext::UnmapBuffer(const System::SharedPointer<IBuffer>& buffer)
 {
     if (!Graphics::IsResourceUsageMappable(buffer->Description.Usage))
-        throw InvalidArgumentException("`buffer` couldn't be mapped!");
+        throw System::InvalidArgumentException("`buffer` couldn't be mapped!");
 
     if (!((VulkanBuffer*)buffer)->BufferMapped)
-        throw InvalidOperationException("`buffer` hasn't been mapped yet!");
+        throw System::InvalidOperationException("`buffer` hasn't been mapped yet!");
 
     VulkanBuffer* vkBuffer = ((VulkanBuffer*)buffer);
 
@@ -983,8 +986,8 @@ void VulkanDeviceContext::UnmapBuffer(const SharedPointer<IBuffer>& buffer)
     vkBuffer->BufferMapped  = false;
 }
 
-void VulkanDeviceContext::AppendSignalFence(const SharedPointer<IFence>& fence,
-                                            Uint64                       fenceValue)
+void VulkanDeviceContext::AppendSignalFence(const System::SharedPointer<IFence>& fence,
+                                            Uint64                               fenceValue)
 {
     // Validates the arguments
     IDeviceContext::AppendSignalFence(fence, fenceValue);
@@ -997,8 +1000,8 @@ void VulkanDeviceContext::AppendSignalFence(const SharedPointer<IFence>& fence,
     GetVulkanDeviceQueue().AppendSignalSeamphore(vulkanFence->GetVkSemaphoreHandle(), fenceValue);
 }
 
-void VulkanDeviceContext::AppendWaitFence(const SharedPointer<IFence>& fence,
-                                          Uint64                       fenceValue)
+void VulkanDeviceContext::AppendWaitFence(const System::SharedPointer<IFence>& fence,
+                                          Uint64                               fenceValue)
 {
     // Validates the argument
     IDeviceContext::AppendSignalFence(fence, fenceValue);
@@ -1083,7 +1086,7 @@ void VulkanDeviceContext::CommitRenderPass()
 
         _currentVulkanCommandBuffer->BeginRenderPass(_pendingRenderPass.RenderPass, _pendingRenderPass.Framebuffer, nullptr);
 
-        RectangleF frameSize = {
+        System::RectangleF frameSize = {
             0,
             0,
             (Float32)_pendingRenderPass.Framebuffer->Description.Attachments[0]->Description.ViewTexture->Description.Size.X,
@@ -1130,9 +1133,9 @@ void VulkanDeviceContext::CommitVertexBufferBinding()
 {
     if (!_vertexBufferBindingUpToDate)
     {
-        List<VkBuffer>        bufferBinding;
-        List<Uint64>          bufferBindingOffset;
-        List<GraphicsAdapter> graphicsAdapters = GetCreatorDevice()->GraphicsSystem->GetGraphicsAdapters();
+        System::List<VkBuffer>        bufferBinding;
+        System::List<Uint64>          bufferBindingOffset;
+        System::List<GraphicsAdapter> graphicsAdapters = GetCreatorDevice()->GraphicsSystem->GetGraphicsAdapters();
 
         bufferBinding.ReserveFor(GetCurrentBindingVertexBuffers().GetLength());
         bufferBindingOffset.ReserveFor(GetCurrentBindingVertexBuffers().GetLength());
@@ -1244,5 +1247,7 @@ void VulkanDeviceContext::PreDrawIndexed(StateTransition stateTransition) noexce
 
     CommitIndexBufferBinding();
 }
+
+} // namespace Graphics
 
 } // namespace Axis

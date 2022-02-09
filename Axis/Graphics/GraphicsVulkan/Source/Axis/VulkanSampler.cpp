@@ -11,6 +11,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanSampler::VulkanSampler(const SamplerDescription& description,
                              VulkanGraphicsDevice&     vulkanGraphicsDevice) :
     ISampler(description)
@@ -53,7 +56,7 @@ VulkanSampler::VulkanSampler(const SamplerDescription& description,
                                         &vkSampler);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to create VkSampler!");
+            throw System::ExternalException("Failed to create VkSampler!");
         return vkSampler;
     };
 
@@ -63,5 +66,7 @@ VulkanSampler::VulkanSampler(const SamplerDescription& description,
 
     _vulkanSampler = VkPtr<VkSampler>(CreateVkSampler, std::move(DestroyVkSampler));
 }
+
+} // namespace Graphics
 
 } // namespace Axis

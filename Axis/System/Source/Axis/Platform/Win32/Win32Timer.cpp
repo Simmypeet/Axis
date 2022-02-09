@@ -31,17 +31,23 @@ static Axis::Bool IsWindowXpOrOlder()
 #if defined(__clang__)
 #    pragma clang diagnostic push
 #    pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(_MSC_VER)
+#    pragma warning(push)
+#    pragma warning(disable : 4996)
 #endif
+
 
     // Windows XP was the last 5.x version of Windows
     return static_cast<DWORD>(LOBYTE(LOWORD(GetVersion()))) < 6;
 
 #if defined(__clang__)
 #    pragma clang diagnostic pop
+#elif defined(_MSC_VER)
+#    pragma warning(pop)
 #endif
 }
 
-static Axis::TimePeriod GetCurrentTimePeriod()
+static Axis::System::TimePeriod GetCurrentTimePeriod()
 {
     // Calculate inverse of frequency multiplied by 1000000 to prevent overflow in final calculation
     // Frequency is constant across the program lifetime
@@ -95,10 +101,13 @@ static Axis::TimePeriod GetCurrentTimePeriod()
         QueryPerformanceCounter(&time);
     }
 
-    return Axis::TimePeriod((Axis::Uint64)(time.QuadPart * inverse));
+    return Axis::System::TimePeriod((Axis::Uint64)(time.QuadPart * inverse));
 }
 
 namespace Axis
+{
+
+namespace System
 {
 
 // Default constructor
@@ -121,5 +130,7 @@ TimePeriod Timer::Reset() noexcept
 
     return elapsed;
 }
+
+} // namespace System
 
 } // namespace Axis

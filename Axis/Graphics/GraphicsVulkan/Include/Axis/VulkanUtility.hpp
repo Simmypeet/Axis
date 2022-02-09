@@ -1,7 +1,6 @@
 /// \copyright Simmypeet - Copyright (C)
 ///            This file is subject to the terms and conditions defined in
 ///            file `LICENSE`, which is part of this source code package.
-///
 
 #ifndef AXIS_VULKANUTILITY_HPP
 #define AXIS_VULKANUTILITY_HPP
@@ -24,6 +23,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 namespace VulkanUtility
 {
 
@@ -31,19 +33,19 @@ constexpr VkPipelineStageFlags AllShaderStages =
     VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 
-inline List<Uint32> ExtractDeviceQueueFamilyIndices(Uint64 deviceQueueFamilyMask) noexcept
+inline System::List<Uint32> ExtractDeviceQueueFamilyIndices(Uint64 deviceQueueFamilyMask) noexcept
 {
     if ((deviceQueueFamilyMask & (deviceQueueFamilyMask - 1)) == 0)
         return nullptr;
 
     // Device queue family indices
-    List<Uint32> indices = {};
+    System::List<Uint32> indices = {};
 
     Uint64 currentDeviceQueueFamilyMask = deviceQueueFamilyMask;
 
     while (currentDeviceQueueFamilyMask)
     {
-        Uint64 extractedDeviceQueueFamilyMask = Math::GetLeastSignificantBit(currentDeviceQueueFamilyMask);
+        Uint64 extractedDeviceQueueFamilyMask = System::Math::GetLeastSignificantBit(currentDeviceQueueFamilyMask);
 
         Uint32 index = (Uint32)std::log2(extractedDeviceQueueFamilyMask);
         indices.Append(index);
@@ -94,7 +96,7 @@ constexpr VkAccessFlagBits GetVkAccessFlagBitsFromAccessMode(AccessMode accessMo
     case AccessMode::RenderTargetRead:  return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
     case AccessMode::RenderTargetWrite: return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     case AccessMode::MemoryReadWrite:   return VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
-    default: throw InvalidArgumentException("`accessMode` was invalid!");
+    default: throw System::InvalidArgumentException("`accessMode` was invalid!");
     }
 
     // clang-format on
@@ -115,7 +117,7 @@ constexpr VkPipelineStageFlagBits GetVkPipelineStageFlagBitsFromPipelineStage(Pi
     case PipelineStage::LateFragmentTest:  return VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
     case PipelineStage::RenderTarget:      return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     case PipelineStage::BottomOfPipeline:  return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    default: throw InvalidArgumentException("`pipelineStage` was invalid!");
+    default: throw System::InvalidArgumentException("`pipelineStage` was invalid!");
     }
 
     // clang-format on
@@ -129,7 +131,7 @@ constexpr VkAttachmentStoreOp GetVkAttachmentStoreOpFromStoreOperation(StoreOper
 	{
 	case StoreOperation::Store:    return VK_ATTACHMENT_STORE_OP_STORE;
     case StoreOperation::DontCare: return VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    default: throw InvalidArgumentException("`operation` was invalid!");
+    default: throw System::InvalidArgumentException("`operation` was invalid!");
 	}
 
     // clang-format on
@@ -144,7 +146,7 @@ constexpr VkAttachmentLoadOp GetVkAttachmentLoadOpFromLoadOperation(LoadOperatio
     case LoadOperation::Load:     return VK_ATTACHMENT_LOAD_OP_LOAD;
     case LoadOperation::DontCare: return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     case LoadOperation::Clear:    return VK_ATTACHMENT_LOAD_OP_CLEAR;
-    default: throw InvalidArgumentException("`operation` was invalid!");
+    default: throw System::InvalidArgumentException("`operation` was invalid!");
     }
 
     // clang-format on
@@ -164,7 +166,7 @@ constexpr VkImageLayout GetVkImageLayoutFromResourceState(ResourceState resource
     case ResourceState::TransferSource:      return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     case ResourceState::Undefined:           return VK_IMAGE_LAYOUT_UNDEFINED;
     case ResourceState::ShaderReadOnly:      return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    default: throw InvalidArgumentException("`resourceState` was invalid!");
+    default: throw System::InvalidArgumentException("`resourceState` was invalid!");
     }
 
     // clang-format on
@@ -180,7 +182,7 @@ constexpr GraphicsAdapterType GetGraphicsAdapterTypeFromVkPhysicalDeviceType(VkP
     case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:   return GraphicsAdapterType::Dedicated;
     case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: return GraphicsAdapterType::Integrated;
     case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:    return GraphicsAdapterType::Virtual;
-    default: throw InvalidArgumentException("`deviceType` was invalid!");
+    default: throw System::InvalidArgumentException("`deviceType` was invalid!");
     }
 
     // clang-format on
@@ -196,7 +198,7 @@ constexpr QueueOperation GetQueueOperationFromVkQueueFlagBits(VkQueueFlagBits qu
     case VK_QUEUE_TRANSFER_BIT:       return QueueOperation::Transfer;
     case VK_QUEUE_COMPUTE_BIT:        return QueueOperation::Compute;
     case VK_QUEUE_SPARSE_BINDING_BIT: return (QueueOperation)0;
-    default: throw InvalidArgumentException("`queueFlag` was invalid!");
+    default: throw System::InvalidArgumentException("`queueFlag` was invalid!");
     }
 
     // clang-format on
@@ -231,7 +233,7 @@ constexpr VkFormat GetVkFormatFromTextureFormat(TextureFormat textureFormat)
     case TextureFormat::UnormDepth16Stencil8:   return VK_FORMAT_D16_UNORM_S8_UINT;
     case TextureFormat::UnormDepth24Stencil8:   return VK_FORMAT_D24_UNORM_S8_UINT;
     case TextureFormat::FloatDepth32:           return VK_FORMAT_D32_SFLOAT;
-    default: throw InvalidArgumentException("`textureFormat` was invalid!");
+    default: throw System::InvalidArgumentException("`textureFormat` was invalid!");
     }
 
     // clang-format on
@@ -266,7 +268,7 @@ constexpr TextureFormat GetTextureFormatFromVkFormat(VkFormat format)
     case VK_FORMAT_D16_UNORM_S8_UINT:        return TextureFormat::UnormDepth16Stencil8;
     case VK_FORMAT_D24_UNORM_S8_UINT:        return TextureFormat::UnormDepth24Stencil8;
     case VK_FORMAT_D32_SFLOAT:               return TextureFormat::FloatDepth32;
-    default: throw InvalidArgumentException("`format` was invalid!");
+    default: throw System::InvalidArgumentException("`format` was invalid!");
 	}
 
     // clang-format on
@@ -282,7 +284,7 @@ constexpr VkImageViewType GetVkImageViewTypeFromTextureViewDimension(TextureView
     case TextureViewDimension::Texture1DArray: return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
     case TextureViewDimension::Texture2D:      return VK_IMAGE_VIEW_TYPE_2D;
     case TextureViewDimension::Texture2DArray: return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-    default: throw InvalidArgumentException("`textureViewDimension` was invalid!");
+    default: throw System::InvalidArgumentException("`textureViewDimension` was invalid!");
     }
 
     // clang-format on
@@ -297,7 +299,7 @@ constexpr VkImageAspectFlagBits GetVkImageAspectFlagBitsFromTextureViewUsage(Tex
     case TextureViewUsage::RenderTarget: return VK_IMAGE_ASPECT_COLOR_BIT;
     case TextureViewUsage::Depth:        return VK_IMAGE_ASPECT_DEPTH_BIT;
     case TextureViewUsage::Stencil:      return VK_IMAGE_ASPECT_STENCIL_BIT;
-    default: throw InvalidArgumentException("`textureViewUsageFlag` was invalid!");
+    default: throw System::InvalidArgumentException("`textureViewUsageFlag` was invalid!");
     }
 
     // clang-format on
@@ -320,7 +322,7 @@ constexpr VkAccessFlags GetVkAccessFlagsFromResourceState(ResourceState resource
     case ResourceState::RenderTarget:        return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     case ResourceState::Undefined:           return (VkAccessFlagBits)0;
     case ResourceState::ShaderReadOnly:      return VK_ACCESS_SHADER_READ_BIT;
-    default: throw InvalidArgumentException("`resourceState` was invalid!");
+    default: throw System::InvalidArgumentException("`resourceState` was invalid!");
     }
 
     // clang-format on
@@ -359,7 +361,7 @@ constexpr VkImageAspectFlags GetVkImageAspectFlagsFromTextureFormat(TextureForma
     case TextureFormat::UnormDepth16Stencil8:
     case TextureFormat::UnormDepth24Stencil8:
         return VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-    default: throw InvalidArgumentException("`textureFormat` was invalid!");
+    default: throw System::InvalidArgumentException("`textureFormat` was invalid!");
     }
 
     // clang-format on
@@ -382,7 +384,7 @@ constexpr VkPipelineStageFlags GetVkPipelineStageFlagsFromResourceState(Resource
     case ResourceState::Present:             return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
     case ResourceState::Undefined:           return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     case ResourceState::ShaderReadOnly:      return AllShaderStages;
-    default: throw InvalidArgumentException("`resourceState` was invalid!");
+    default: throw System::InvalidArgumentException("`resourceState` was invalid!");
     }
 
     // clang-format on
@@ -396,7 +398,7 @@ constexpr VkDescriptorType GetVkDescriptorTypeFromResourceBinding(ResourceBindin
     {
     case ResourceBinding::UniformBuffer: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     case ResourceBinding::Sampler:       return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    default: throw InvalidArgumentException("`resourceBinding` was invalid!");
+    default: throw System::InvalidArgumentException("`resourceBinding` was invalid!");
     }
 
     // clang-format on
@@ -410,7 +412,7 @@ constexpr VkShaderStageFlagBits GetVkShaderStageFlagBitsFromShaderStage(ShaderSt
     {
     case ShaderStage::Fragment: return VK_SHADER_STAGE_FRAGMENT_BIT;
     case ShaderStage::Vertex:   return VK_SHADER_STAGE_VERTEX_BIT;
-    default: throw InvalidArgumentException("`stage` was invalid!");
+    default: throw System::InvalidArgumentException("`stage` was invalid!");
     }
 
     // clang-format on
@@ -426,7 +428,7 @@ constexpr VkFormat GetVkFormatFromShaderDataType(ShaderDataType stage)
     case ShaderDataType::Float2: return VK_FORMAT_R32G32_SFLOAT;
     case ShaderDataType::Float3: return VK_FORMAT_R32G32B32_SFLOAT;
     case ShaderDataType::Float4: return VK_FORMAT_R32G32B32A32_SFLOAT;
-    default: throw InvalidArgumentException("`stage` was invalid!");
+    default: throw System::InvalidArgumentException("`stage` was invalid!");
 	}
 
     // clang-format on
@@ -439,7 +441,7 @@ constexpr VkPipelineBindPoint GetVkPipelineBindPointFromPipelineBinding(Pipeline
     switch (pipelineBinding)
 	{
 	case PipelineBinding::Graphics: return VK_PIPELINE_BIND_POINT_GRAPHICS;
-    default: throw InvalidArgumentException("`pipelineBinding` was invalid!");
+    default: throw System::InvalidArgumentException("`pipelineBinding` was invalid!");
 	}
 
     // clang-format on
@@ -453,7 +455,7 @@ constexpr VkIndexType GetVkIndexTypeFromIndexType(IndexType indexType)
 	{
 	case IndexType::Uint16: return VK_INDEX_TYPE_UINT16;
 	case IndexType::Uint32: return VK_INDEX_TYPE_UINT32;
-    default: throw InvalidArgumentException("`indexType` was invalid!");
+    default: throw System::InvalidArgumentException("`indexType` was invalid!");
 	}
 
     // clang-format on
@@ -468,7 +470,7 @@ constexpr VkImageType GetVkImageTypeFromTextureDimension(TextureDimension dimens
     case TextureDimension::Texture1D: return VK_IMAGE_TYPE_1D;
     case TextureDimension::Texture2D: return VK_IMAGE_TYPE_2D;
     case TextureDimension::Texture3D: return VK_IMAGE_TYPE_3D;
-    default: throw InvalidArgumentException("`dimension` was invalid!");
+    default: throw System::InvalidArgumentException("`dimension` was invalid!");
     }
 
     // clang-format on
@@ -485,7 +487,7 @@ constexpr VkImageUsageFlagBits GetVkImageUsageFlagBitsFromTextureBinding(Texture
     case TextureBinding::Sampled:                return VK_IMAGE_USAGE_SAMPLED_BIT;
     case TextureBinding::RenderTarget:           return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     case TextureBinding::DepthStencilAttachment: return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    default: throw InvalidArgumentException("`binding` was invalid!");
+    default: throw System::InvalidArgumentException("`binding` was invalid!");
     }
 
     // clang-format on
@@ -505,7 +507,7 @@ constexpr VkCompareOp GetVkCompareOpFromCompareFunction(CompareFunction function
     case CompareFunction::LesserEqual:  return VK_COMPARE_OP_LESS_OR_EQUAL;
     case CompareFunction::Equal:        return VK_COMPARE_OP_EQUAL;
     case CompareFunction::NotEqual:     return VK_COMPARE_OP_NOT_EQUAL;
-    default: throw InvalidArgumentException("`function` was invalid!");
+    default: throw System::InvalidArgumentException("`function` was invalid!");
 	}
 
     // clang-format on
@@ -525,7 +527,7 @@ constexpr VkStencilOp GetVkStencilOpFromStencilOperation(StencilOperation operat
     case StencilOperation::Zero:          return VK_STENCIL_OP_ZERO;
     case StencilOperation::Replace:       return VK_STENCIL_OP_REPLACE;
     case StencilOperation::Invert:        return VK_STENCIL_OP_INVERT;
-    default: throw InvalidArgumentException("`operation` was invalid!");
+    default: throw System::InvalidArgumentException("`operation` was invalid!");
 	}
 
     // clang-format on
@@ -539,7 +541,7 @@ constexpr VkPolygonMode GetVkPolygonModeFromFillMode(FillMode fillMode)
     {
     case FillMode::Solid:      return VK_POLYGON_MODE_FILL;
     case FillMode::WiredFrame: return VK_POLYGON_MODE_LINE;
-    default: throw InvalidArgumentException("`fillMode` was invalid!");
+    default: throw System::InvalidArgumentException("`fillMode` was invalid!");
     }
 
     // clang-format on
@@ -553,7 +555,7 @@ constexpr VkFrontFace GetVkFrontFaceFromFrontFace(FrontFace frontFace)
     {
     case FrontFace::Clockwise:        return VK_FRONT_FACE_CLOCKWISE;
     case FrontFace::CounterClockwise: return VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    default: throw InvalidArgumentException("`frontFace` was invalid!");
+    default: throw System::InvalidArgumentException("`frontFace` was invalid!");
     }
 
     // clang-format on
@@ -568,7 +570,7 @@ constexpr VkCullModeFlagBits GetVkCullModeFlagBitsFromCullMode(CullMode cullMode
     case CullMode::None:      return VK_CULL_MODE_NONE;
     case CullMode::BackFace:  return VK_CULL_MODE_BACK_BIT;
     case CullMode::FrontFace: return VK_CULL_MODE_FRONT_BIT;
-    default: throw InvalidArgumentException("`cullMode` was invalid!");
+    default: throw System::InvalidArgumentException("`cullMode` was invalid!");
     }
 
     // clang-format on
@@ -585,7 +587,7 @@ constexpr VkBlendOp GetVkBlendOpFromBlendOperation(BlendOperation operation)
     case BlendOperation::SubtractReverse:  return VK_BLEND_OP_REVERSE_SUBTRACT;
     case BlendOperation::Min:              return VK_BLEND_OP_MIN;
     case BlendOperation::Max:              return VK_BLEND_OP_MAX;
-    default: throw InvalidArgumentException("`operation` was invalid!");
+    default: throw System::InvalidArgumentException("`operation` was invalid!");
 	}
 
     // clang-format on
@@ -601,7 +603,7 @@ constexpr VkColorComponentFlagBits GetVkColorComponentFlagBitsFromColorChannel(C
     case ColorChannel::Green: return VK_COLOR_COMPONENT_G_BIT;
     case ColorChannel::Blue:  return VK_COLOR_COMPONENT_B_BIT;
     case ColorChannel::Alpha: return VK_COLOR_COMPONENT_A_BIT;
-    default: throw InvalidArgumentException("`channel` was invalid!");
+    default: throw System::InvalidArgumentException("`channel` was invalid!");
 	}
 
     // clang-format on
@@ -631,7 +633,7 @@ constexpr VkBlendFactor GetVkBlendFactorFromBlendFactor(BlendFactor factor)
     case BlendFactor::Source1Alpha:          return VK_BLEND_FACTOR_SRC1_ALPHA;
     case BlendFactor::OneMinusSource1Color:  return VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
     case BlendFactor::OneMinusSource1Alpha:  return VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA;
-    default: throw InvalidArgumentException("`factor` was invalid!");
+    default: throw System::InvalidArgumentException("`factor` was invalid!");
 	}
 
     // clang-format on
@@ -659,7 +661,7 @@ constexpr VkLogicOp GetVkLogicOpFromLogicOperation(LogicOperation operation)
     case LogicOperation::OrInverted:   return VK_LOGIC_OP_OR_INVERTED;
     case LogicOperation::NAND:         return VK_LOGIC_OP_NAND;
     case LogicOperation::Set:          return VK_LOGIC_OP_SET;
-    default: throw InvalidArgumentException("`operation` was invalid!");
+    default: throw System::InvalidArgumentException("`operation` was invalid!");
 	}
 
     // clang-format on
@@ -673,7 +675,7 @@ constexpr VkFilter GetVkFilterFromSamplerFilter(SamplerFilter samplerFilter)
     {
     case SamplerFilter::Linear:  return VK_FILTER_LINEAR;
     case SamplerFilter::Nearest: return VK_FILTER_NEAREST;
-    default: throw InvalidArgumentException("`samplerFilter` was invalid!");
+    default: throw System::InvalidArgumentException("`samplerFilter` was invalid!");
     }
 
     // clang-format on
@@ -687,7 +689,7 @@ constexpr VkSamplerMipmapMode GetVkSamplerMipmapModeFromSamplerFilter(SamplerFil
     {
     case SamplerFilter::Linear:  return VK_SAMPLER_MIPMAP_MODE_LINEAR;
     case SamplerFilter::Nearest: return VK_SAMPLER_MIPMAP_MODE_NEAREST;
-    default: throw InvalidArgumentException("`samplerFilter` was invalid!");
+    default: throw System::InvalidArgumentException("`samplerFilter` was invalid!");
     }
 
     // clang-format on
@@ -703,7 +705,7 @@ constexpr VkSamplerAddressMode GetVkSamplerAddressModeFromSamplerAddressMode(Sam
     case SamplerAddressMode::ClampToEdge:    return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     case SamplerAddressMode::Repeat:         return VK_SAMPLER_ADDRESS_MODE_REPEAT;
     case SamplerAddressMode::MirroredRepeat: return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-    default: throw InvalidArgumentException("`addressMode` was invalid!");
+    default: throw System::InvalidArgumentException("`addressMode` was invalid!");
     }
 
     // clang-format on
@@ -714,7 +716,7 @@ constexpr VkColorComponentFlags GetVkColorComponentFlagsColorChannelFlags(ColorC
     VkColorComponentFlags flagToReturn = {};
     while ((Bool)channels)
     {
-        ColorChannelFlags currentType = (ColorChannelFlags)Math::GetLeastSignificantBit(Enum::GetUnderlyingValue(channels));
+        ColorChannelFlags currentType = (ColorChannelFlags)System::Math::GetLeastSignificantBit(System::Enum::GetUnderlyingValue(channels));
 
         flagToReturn |= GetVkColorComponentFlagBitsFromColorChannel(currentType);
 
@@ -728,7 +730,7 @@ constexpr VkCullModeFlags GetVkCullModeFlagsFromCullModeFlags(CullModeFlags cull
     VkCullModeFlags flagToReturn = {};
     while ((Bool)cullModes)
     {
-        CullMode currentType = (CullMode)Math::GetLeastSignificantBit(Enum::GetUnderlyingValue(cullModes));
+        CullMode currentType = (CullMode)System::Math::GetLeastSignificantBit(System::Enum::GetUnderlyingValue(cullModes));
 
         flagToReturn |= GetVkCullModeFlagBitsFromCullMode(currentType);
 
@@ -742,7 +744,7 @@ constexpr VkImageUsageFlags GetVkImageUsageFlagsFromTextureBindingFlags(TextureB
     VkImageUsageFlags flagToReturn = {};
     while ((Bool)binding)
     {
-        TextureBinding currentType = (TextureBinding)Math::GetLeastSignificantBit(Enum::GetUnderlyingValue(binding));
+        TextureBinding currentType = (TextureBinding)System::Math::GetLeastSignificantBit(System::Enum::GetUnderlyingValue(binding));
 
         flagToReturn |= GetVkImageUsageFlagBitsFromTextureBinding(currentType);
 
@@ -756,7 +758,7 @@ constexpr VkShaderStageFlags GetVkShaderStageFlagsFromShaderStageFlags(ShaderSta
     VkShaderStageFlags flagToReturn = {};
     while ((Bool)stages)
     {
-        ShaderStage currentType = (ShaderStageFlags)Math::GetLeastSignificantBit(Enum::GetUnderlyingValue(stages));
+        ShaderStage currentType = (ShaderStageFlags)System::Math::GetLeastSignificantBit(System::Enum::GetUnderlyingValue(stages));
 
         flagToReturn |= GetVkShaderStageFlagBitsFromShaderStage(currentType);
 
@@ -770,7 +772,7 @@ constexpr QueueOperationFlags GetQueueOperationFlagsFromVkQueueFlags(VkQueueFlag
     QueueOperationFlags flagToReturn = {};
     while (type)
     {
-        VkQueueFlagBits currentType = (VkQueueFlagBits)Math::GetLeastSignificantBit(type);
+        VkQueueFlagBits currentType = (VkQueueFlagBits)System::Math::GetLeastSignificantBit(type);
 
         flagToReturn |= GetQueueOperationFromVkQueueFlagBits(currentType);
 
@@ -784,7 +786,7 @@ constexpr VkImageAspectFlags GetVkImageAspectFlagsFromTextureViewUsageFlags(Text
     VkImageAspectFlags flagToReturn = {};
     while ((Bool)type)
     {
-        TextureViewUsage currentType = (TextureViewUsage)Math::GetLeastSignificantBit(Enum::GetUnderlyingValue(type));
+        TextureViewUsage currentType = (TextureViewUsage)System::Math::GetLeastSignificantBit(System::Enum::GetUnderlyingValue(type));
 
         flagToReturn |= GetVkImageAspectFlagBitsFromTextureViewUsage(currentType);
 
@@ -798,7 +800,7 @@ constexpr VkPipelineStageFlags GetVkPipelineStageFlagsFromPipelineStageFlags(Pip
     VkPipelineStageFlags flagToReturn = {};
     while ((Bool)type)
     {
-        PipelineStageFlags currentType = (PipelineStageFlags)Math::GetLeastSignificantBit(Enum::GetUnderlyingValue(type));
+        PipelineStageFlags currentType = (PipelineStageFlags)System::Math::GetLeastSignificantBit(System::Enum::GetUnderlyingValue(type));
 
         flagToReturn |= GetVkPipelineStageFlagBitsFromPipelineStage(type);
 
@@ -808,6 +810,8 @@ constexpr VkPipelineStageFlags GetVkPipelineStageFlagsFromPipelineStageFlags(Pip
 }
 
 } // namespace VulkanUtility
+
+} // namespace Graphics
 
 } // namespace Axis
 

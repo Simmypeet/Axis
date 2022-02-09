@@ -8,8 +8,10 @@
 #include <Axis/GraphicsDevice.hpp>
 #include <Axis/Texture.hpp>
 
-
 namespace Axis
+{
+
+namespace Graphics
 {
 
 ITexture::ITexture(const TextureDescription& description) :
@@ -65,12 +67,14 @@ TextureViewDescription ITexture::GetDefaultTextureViewDescription() noexcept
     return textureViewDescription;
 }
 
-SharedPointer<ITextureView> ITexture::CreateDefaultTextureView()
+System::SharedPointer<ITextureView> ITexture::CreateDefaultTextureView()
 {
     return GetCreatorDevice()->CreateTextureView(GetDefaultTextureViewDescription());
 }
 
 ITextureView::ITextureView(const TextureViewDescription& description) :
     Description(description) {}
+
+} // namespace Graphics
 
 } // namespace Axis

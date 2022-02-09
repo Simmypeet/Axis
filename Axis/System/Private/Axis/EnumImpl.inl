@@ -7,8 +7,11 @@
 #pragma once
 
 #include "../../Include/Axis/Enum.hpp"
-    
+
 namespace Axis
+{
+
+namespace System
 {
 
 namespace Enum
@@ -60,6 +63,8 @@ inline constexpr T operator~(T val) noexcept
 } // namespace Operator
 
 } // namespace Enum
+
+} // namespace System
 
 } // namespace Axis
 

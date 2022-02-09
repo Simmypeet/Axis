@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Rectangle.hpp
-///
-/// \brief Contains `Axis::Rectangle` template class.
-
 #ifndef AXIS_MATH_RECTANGLE_HPP
 #define AXIS_MATH_RECTANGLE_HPP
 #pragma once
@@ -13,6 +9,9 @@
 #include "Math.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief 2D Rectangle area data structure template for all numeric types.
@@ -37,6 +36,9 @@ struct Rectangle final
     /// \brief Not equal operator
     AXIS_NODISCARD constexpr Bool operator!=(const Rectangle& other) const noexcept;
 
+    /// \brief Checks if the Rectangle collides with another Rectangle.
+    AXIS_NODISCARD constexpr Bool Collides(const Rectangle& other) const noexcept;
+
     /// \brief X Position of the rectangle.
     T X = {};
 
@@ -58,6 +60,8 @@ typedef Rectangle<Uint32> RectangleUI;
 
 /// \brief Rectangle data structure using 32-Bit floating point number as template parameter.
 typedef Rectangle<Float32> RectangleF;
+
+} // namespace System
 
 } // namespace Axis
 

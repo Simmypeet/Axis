@@ -2,23 +2,19 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Utility.hpp
-///
-/// \brief Contains utility functions, data structures and template function
-///        helpers.
-
 #ifndef AXIS_SYSTEM_UTILITY_HPP
 #define AXIS_SYSTEM_UTILITY_HPP
 #pragma once
 
 #include "Config.hpp"
-#include <cassert>
 #include <type_traits>
 #include <utility>
 
 namespace Axis
 {
 
+namespace System
+{
 
 /// \brief Pair data structure, consists of 2 data members.
 template <class TFirst, class TSecond>
@@ -67,29 +63,6 @@ struct IgnoreImpl
 
 /// \brief Objects which ignores assignment
 inline constexpr IgnoreImpl Ignore = {};
-
-/// \brief Iterating throught variadic template arguments.
-///
-/// \note Reference: https://gist.github.com/nabijaczleweli/37cdd8c28039ea41a999
-template <class T>
-struct VariadicIterate<T>
-{
-    static const constexpr Uint64 Size = 1;
-
-    template <class C>
-    inline constexpr static C ForEach(C cbk, T&& currentArg)
-    {
-        cbk(std::forward<T>(currentArg));
-        return cbk;
-    }
-
-    template <class C>
-    inline constexpr C operator()(C cbk, T&& currentArg) const
-    {
-        return ForEach(cbk, std::forward<T>(currentArg));
-    }
-};
-
 
 /// \private These tuple implementations are taken from: https://stackoverflow.com/a/52208842
 ///
@@ -142,9 +115,11 @@ private:
     alignas(StorageAlign) Uint8 _staticStorage[StorageSize];
 };
 
-/// \brief bit mask for the specified number of bits.
-#define AXIS_BIT(x) (1 << (x - 1))
+} // namespace System
 
 } // namespace Axis
+
+/// \brief bit mask for the specified number of bits.
+#define AXIS_BIT(x) (1 << (x - 1))
 
 #endif // AXIS_SYSTEM_UTILITY_HPP

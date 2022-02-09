@@ -13,6 +13,9 @@
 namespace Axis
 {
 
+namespace Window
+{
+
 KeyboardState::KeyboardState(Uint64 keyStates1,
                              Uint64 keyStates2) noexcept :
     _keyStates1(keyStates1),
@@ -20,58 +23,58 @@ KeyboardState::KeyboardState(Uint64 keyStates1,
 
 Bool KeyboardState::IsKeyDown(Key key) const
 {
-    if (Enum::GetUnderlyingValue(key) > Enum::GetUnderlyingValue(Key::Slash))
-        throw InvalidArgumentException("The given `key` was invalid!");
+    if (System::Enum::GetUnderlyingValue(key) > System::Enum::GetUnderlyingValue(Key::Slash))
+        throw System::InvalidArgumentException("The given `key` was invalid!");
 
-    if (Enum::GetUnderlyingValue(key) < 64)
-        return Math::ReadBitPosition(_keyStates1, Enum::GetUnderlyingValue(key));
+    if (System::Enum::GetUnderlyingValue(key) < 64)
+        return System::Math::ReadBitPosition(_keyStates1, System::Enum::GetUnderlyingValue(key));
     else
-        return Math::ReadBitPosition(_keyStates2, Enum::GetUnderlyingValue(key) - 64);
+        return System::Math::ReadBitPosition(_keyStates2, System::Enum::GetUnderlyingValue(key) - 64);
 }
 
 Bool KeyboardState::IsKeyUp(Key key) const
 {
-    if (Enum::GetUnderlyingValue(key) > Enum::GetUnderlyingValue(Key::Slash))
-        throw InvalidArgumentException("The given `key` was invalid!");
+    if (System::Enum::GetUnderlyingValue(key) > System::Enum::GetUnderlyingValue(Key::Slash))
+        throw System::InvalidArgumentException("The given `key` was invalid!");
 
-    if (Enum::GetUnderlyingValue(key) < 64)
-        return !Math::ReadBitPosition(_keyStates1, Enum::GetUnderlyingValue(key));
+    if (System::Enum::GetUnderlyingValue(key) < 64)
+        return !System::Math::ReadBitPosition(_keyStates1, System::Enum::GetUnderlyingValue(key));
     else
-        return !Math::ReadBitPosition(_keyStates2, Enum::GetUnderlyingValue(key) - 64);
+        return !System::Math::ReadBitPosition(_keyStates2, System::Enum::GetUnderlyingValue(key) - 64);
 }
 
-List<Key> KeyboardState::GetPressedKeys() const noexcept
+System::List<Key> KeyboardState::GetPressedKeys() const noexcept
 {
-    List<Key> pressedKeys;
+    System::List<Key> pressedKeys;
 
     for (Uint8 i = 0; i < 64; ++i)
     {
-        if (Math::ReadBitPosition(_keyStates1, i))
+        if (System::Math::ReadBitPosition(_keyStates1, i))
             pressedKeys.Append(static_cast<Key>(i));
     }
 
     for (Uint8 i = 0; i < 64; ++i)
     {
-        if (Math::ReadBitPosition(_keyStates2, i))
+        if (System::Math::ReadBitPosition(_keyStates2, i))
             pressedKeys.Append(static_cast<Key>(i + 64));
     }
 
     return pressedKeys;
 }
 
-List<Key> KeyboardState::GetReleasedKeys() const noexcept
+System::List<Key> KeyboardState::GetReleasedKeys() const noexcept
 {
-    List<Key> releasedKeys;
+    System::List<Key> releasedKeys;
 
     for (Uint8 i = 0; i < 64; ++i)
     {
-        if (!Math::ReadBitPosition(_keyStates1, i))
+        if (!System::Math::ReadBitPosition(_keyStates1, i))
             releasedKeys.Append(static_cast<Key>(i));
     }
 
     for (Uint8 i = 0; i < 64; ++i)
     {
-        if (!Math::ReadBitPosition(_keyStates2, i))
+        if (!System::Math::ReadBitPosition(_keyStates2, i))
             releasedKeys.Append(static_cast<Key>(i + 64));
     }
 
@@ -84,13 +87,13 @@ Uint32 KeyboardState::GetPressedKeyCount() const noexcept
 
     for (Uint8 i = 0; i < 64; ++i)
     {
-        if (Math::ReadBitPosition(_keyStates1, i))
+        if (System::Math::ReadBitPosition(_keyStates1, i))
             ++pressedKeyCount;
     }
 
     for (Uint8 i = 0; i < 64; ++i)
     {
-        if (Math::ReadBitPosition(_keyStates2, i))
+        if (System::Math::ReadBitPosition(_keyStates2, i))
             ++pressedKeyCount;
     }
 
@@ -103,17 +106,19 @@ Uint32 KeyboardState::GetReleasedKeyCount() const noexcept
 
     for (Uint8 i = 0; i < 64; ++i)
     {
-        if (!Math::ReadBitPosition(_keyStates1, i))
+        if (!System::Math::ReadBitPosition(_keyStates1, i))
             ++releasedKeyCount;
     }
 
     for (Uint8 i = 0; i < 64; ++i)
     {
-        if (!Math::ReadBitPosition(_keyStates2, i))
+        if (!System::Math::ReadBitPosition(_keyStates2, i))
             ++releasedKeyCount;
     }
 
     return releasedKeyCount;
 }
+
+} // namespace Window
 
 } // namespace Axis

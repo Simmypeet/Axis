@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file `LICENSE`, which is part of this source code package.
 
-/// \file Stream.hpp
-///
-/// \brief Contains `Axis::Stream` abstract class.
-
 #ifndef AXIS_SYSTEM_STREAM
 #define AXIS_SYSTEM_STREAM
 #pragma once
@@ -13,6 +9,12 @@
 #include "SmartPointer.hpp"
 #include "SystemExport.hpp"
 
+
+namespace Axis
+{
+
+namespace System
+{
 
 /// \brief Specifies the position in a stream to use for seeking.
 enum class SeekOrigin
@@ -27,8 +29,6 @@ enum class SeekOrigin
     End
 };
 
-namespace Axis
-{
 
 /// \brief Provides a generic view of a sequence of bytes. This is an abstract class.
 class AXIS_SYSTEM_API Stream : public ISharedFromThis
@@ -87,6 +87,8 @@ public:
     virtual Size Seek(Int64      offset,
                       SeekOrigin origin) = 0;
 };
+
+} // namespace System
 
 } // namespace Axis
 

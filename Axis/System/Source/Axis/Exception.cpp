@@ -10,9 +10,12 @@
 namespace Axis
 {
 
+namespace System
+{
+
 inline const Char* CopyMessageValue(const Char* message) noexcept
 {
-    auto length = ::Axis::String<Char>::GetStringLength(message);
+    auto length = String<Char>::GetStringLength(message);
 
     auto pointer = (Char*)std::malloc(((length + 1) * sizeof(Char)));
 
@@ -76,5 +79,7 @@ Exception& Exception::operator=(Exception&& other) noexcept
 
     return *this;
 }
+
+} // namespace System
 
 } // namespace Axis

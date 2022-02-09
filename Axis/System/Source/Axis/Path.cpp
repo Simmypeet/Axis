@@ -9,6 +9,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 namespace Path
 {
 
@@ -100,5 +103,7 @@ WString CombinePath(const Span<WString>& paths)
 }
 
 } // namespace Path
+
+} // namespace System
 
 } // namespace Axis

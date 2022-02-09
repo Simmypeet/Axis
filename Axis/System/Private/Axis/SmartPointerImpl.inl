@@ -12,15 +12,18 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <SmartPointerType T>
 struct DefaultDeleter
 {
     inline void operator()(std::remove_all_extents_t<T>* objectPointer) const noexcept
     {
         if constexpr (std::is_unbounded_array_v<T>)
-            Axis::DeleteArray<std::remove_all_extents_t<T>>(objectPointer);
+            Axis::System::DeleteArray<std::remove_all_extents_t<T>>(objectPointer);
         else
-            Axis::Delete<std::remove_all_extents_t<T>>(objectPointer);
+            Axis::System::Delete<std::remove_all_extents_t<T>>(objectPointer);
     }
 };
 
@@ -72,7 +75,7 @@ inline UniquePointer<T, Deleter>& UniquePointer<T, Deleter>::operator=(UniquePoi
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
-inline UniquePointer<T, Deleter>& Axis::UniquePointer<T, Deleter>::operator=(NullptrType) noexcept
+inline UniquePointer<T, Deleter>& UniquePointer<T, Deleter>::operator=(NullptrType) noexcept
 {
     Reset();
     return *this;
@@ -104,7 +107,7 @@ inline std::add_lvalue_reference_t<std::remove_all_extents_t<T>> UniquePointer<T
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 template <SmartPointerType U, typename>
-inline typename UniquePointer<T, Deleter>::PointerType Axis::UniquePointer<T, Deleter>::operator->() const noexcept
+inline typename UniquePointer<T, Deleter>::PointerType UniquePointer<T, Deleter>::operator->() const noexcept
 {
     return _objectPointer;
 }
@@ -215,7 +218,7 @@ public:
     inline void DeleteObject() noexcept override final { _deleter(_objectPointer); }
 
     // Using Axis::Delete to delete this reference counter
-    inline void DeleteThisCounter() noexcept override final { Axis::Delete(this); }
+    inline void DeleteThisCounter() noexcept override final { Axis::System::Delete(this); }
 
 private:
     std::remove_all_extents_t<T>* _objectPointer = nullptr; // pointer to the original object
@@ -281,7 +284,7 @@ template <SmartPointerDeleterType<T> Deleter>
 inline SharedPointer<T>::SharedPointer(PointerType ptr,
                                        Deleter     deleter) noexcept :
     _objectPointer(ptr),
-    _referenceCounter(Axis::New<Detail::ReferenceCounterConstructor<T, DefaultDeleter<T>>>(ptr, std::move(deleter)))
+    _referenceCounter(Axis::System::New<Detail::ReferenceCounterConstructor<T, DefaultDeleter<T>>>(ptr, std::move(deleter)))
 {
     if constexpr (!std::is_array_v<T> && std::is_base_of_v<ISharedFromThis, T> && std::is_convertible_v<T*, ISharedFromThis*>)
     {
@@ -924,6 +927,8 @@ WeakPointer<T> ISharedFromThis::CreateWeakPointerFromThis(T& object) noexcept re
 
     return weakPointer;
 }
+
+} // namespace System
 
 } // namespace Axis
 

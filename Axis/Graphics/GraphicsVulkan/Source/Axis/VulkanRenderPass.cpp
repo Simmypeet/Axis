@@ -11,6 +11,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanRenderPass::VulkanRenderPass(const RenderPassDescription& description,
                                    VulkanGraphicsDevice&        vulkanGraphicsDevice) :
     IRenderPass(description)
@@ -21,7 +24,7 @@ VulkanRenderPass::VulkanRenderPass(const RenderPassDescription& description,
         VkRenderPass vkRenderPass = {};
 
         // Parse the Axis's AttachmentReference to Vulkan's VkAttachmentReference
-        constexpr auto ConvertAttachmentsReferences = [](List<VkAttachmentReference>& output, const List<AttachmentReference>& input) {
+        constexpr auto ConvertAttachmentsReferences = [](System::List<VkAttachmentReference>& output, const System::List<AttachmentReference>& input) {
             auto i = 0;
 
             for (auto& attachment : output)
@@ -39,30 +42,30 @@ VulkanRenderPass::VulkanRenderPass(const RenderPassDescription& description,
             }
         };
 
-        List<VkAttachmentDescription> attachmentDescriptions          = {};
-        List<VkSubpassDescription>    subpassDescriptions             = {};
-        List<VkSubpassDependency>     subpassDependenciesDescriptions = {};
+        System::List<VkAttachmentDescription> attachmentDescriptions          = {};
+        System::List<VkSubpassDescription>    subpassDescriptions             = {};
+        System::List<VkSubpassDependency>     subpassDependenciesDescriptions = {};
 
         attachmentDescriptions.ReserveFor(description.Attachments.GetLength());
         subpassDescriptions.ReserveFor(description.Subpasses.GetLength());
         subpassDependenciesDescriptions.ReserveFor(description.Dependencies.GetLength());
 
-        List<List<VkAttachmentReference>> allColorAttachmentReferences(description.Subpasses.GetLength());
-        List<List<VkAttachmentReference>> allInputAttachmentReferences(description.Subpasses.GetLength());
-        List<VkAttachmentReference>       allDepthStencilAttachmentReferences(description.Subpasses.GetLength());
+        System::List<System::List<VkAttachmentReference>> allColorAttachmentReferences(description.Subpasses.GetLength());
+        System::List<System::List<VkAttachmentReference>> allInputAttachmentReferences(description.Subpasses.GetLength());
+        System::List<VkAttachmentReference>               allDepthStencilAttachmentReferences(description.Subpasses.GetLength());
 
         for (Size i = 0; i < description.Subpasses.GetLength(); i++)
         {
             if (description.Subpasses[i].RenderTargetReferences)
             {
-                allColorAttachmentReferences[i] = List<VkAttachmentReference>(description.Subpasses[i].RenderTargetReferences.GetLength());
+                allColorAttachmentReferences[i] = System::List<VkAttachmentReference>(description.Subpasses[i].RenderTargetReferences.GetLength());
 
                 ConvertAttachmentsReferences(allColorAttachmentReferences[i], description.Subpasses[i].RenderTargetReferences);
             }
 
             if (description.Subpasses[i].InputReferences)
             {
-                allInputAttachmentReferences[i] = List<VkAttachmentReference>(description.Subpasses[i].InputReferences.GetLength());
+                allInputAttachmentReferences[i] = System::List<VkAttachmentReference>(description.Subpasses[i].InputReferences.GetLength());
 
                 ConvertAttachmentsReferences(allInputAttachmentReferences[i], description.Subpasses[i].InputReferences);
             }
@@ -140,7 +143,7 @@ VulkanRenderPass::VulkanRenderPass(const RenderPassDescription& description,
         auto vkResult = vkCreateRenderPass(vulkanGraphicsDevice.GetVkDeviceHandle(), &renderPassCreateInfo, nullptr, &vkRenderPass);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to create vkRenderPass!");
+            throw System::ExternalException("Failed to create vkRenderPass!");
         else
             return vkRenderPass;
     };
@@ -151,5 +154,7 @@ VulkanRenderPass::VulkanRenderPass(const RenderPassDescription& description,
 
     _vulkanRenderPass = VkPtr<VkRenderPass>(CreateVkRenderPass, std::move(DestroyVkRenderPass));
 }
+
+} // namespace Graphics
 
 } // namespace Axis

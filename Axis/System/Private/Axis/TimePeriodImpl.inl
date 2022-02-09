@@ -11,6 +11,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 inline constexpr TimePeriod::TimePeriod(Size microseconds) noexcept :
     Microseconds(microseconds) {}
 
@@ -105,6 +108,8 @@ inline constexpr TimePeriod& TimePeriod::operator-=(const TimePeriod& other) noe
 
     return *this;
 }
+
+} // namespace System
 
 } // namespace Axis
 

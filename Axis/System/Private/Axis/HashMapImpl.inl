@@ -11,6 +11,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, AllocatorType Allocator>
 inline typename HashMap<TKey, TValue, Hasher, Comparer, Allocator>::HashSetBase::iterator HashMap<TKey, TValue, Hasher, Comparer, Allocator>::Find(const TKey& key) noexcept
 {
@@ -40,6 +43,8 @@ inline typename HashMap<TKey, TValue, Hasher, Comparer, Allocator>::HashSetBase:
 {
     return HashSetBase::NonConstEnd();
 }
+
+} // namespace System
 
 } // namespace Axis
 

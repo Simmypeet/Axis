@@ -46,6 +46,11 @@ macro(axis_add_library target)
     # Adds include directories
     target_include_directories(${target} PUBLIC ${THIS_INCLUDE_DIRECTORIES})
     
+    # Adds _CRT_SECURE_NO_WARNINGS for Win32
+    if (MSVC)
+        set_target_properties(${target} PROPERTIES COMPILE_FLAGS "/D_CRT_SECURE_NO_WARNINGS")
+    endif()
+
     # Adds source files to the source group
     axis_assign_source_group("${THIS_SOURCES}" "${THIS_RELATIVE_PATH}")
 

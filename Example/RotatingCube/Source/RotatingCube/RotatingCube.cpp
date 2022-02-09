@@ -7,6 +7,12 @@
 #include <Axis/System>
 #include <Axis/Window>
 
+using namespace Axis;
+using namespace Axis::System;
+using namespace Axis::Window;
+using namespace Axis::Graphics;
+using namespace Axis::Core;
+
 // GLSL vertex shader code
 constexpr const char* VertexShaderCode = R"""(
 #version 450
@@ -36,9 +42,6 @@ void main()
 
 int main(int argc, char** argv)
 {
-    // using namespace Axis
-    using namespace Axis;
-
     // Derived application
     class RotatingCube : public Application
     {

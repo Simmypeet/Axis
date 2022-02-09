@@ -3,11 +3,6 @@
 ///            file 'LICENSE', which is part of this source code package.
 ///
 
-/// \file Win32DisplayWindow.hpp
-///
-/// \brief Contains definition of `Axis::Window::DisplayWindow` class in Win32
-///        platform.
-
 #ifndef AXIS_WINDOW_WIN32DISPLAYWINDOW_HPP
 #define AXIS_WINDOW_WIN32DISPLAYWINDOW_HPP
 #pragma once
@@ -24,80 +19,83 @@
 namespace Axis
 {
 
+namespace Window
+{
+
 /// \brief Represents the window displaying on the screen.
-class AXIS_WINDOW_API DisplayWindow final : public ISharedFromThis
+class AXIS_WINDOW_API DisplayWindow final : public System::ISharedFromThis
 {
 public:
     /// \brief Raised when the window client size is changed.
     ///
-    /// - Argument \a `Axis::Window::DisplayWindow&` specifies the window which
+    /// - Argument \a `DisplayWindow&` specifies the window which
     /// raised the event.
-    /// - Argument \a `Axis::Vector2UI` specifies the new client size (in pixels
+    /// - Argument \a `Vector2UI` specifies the new client size (in pixels
     /// for width and height).
-    using ClientSizeChangedEvent = Event<void(DisplayWindow&, Vector2UI)>;
+    using ClientSizeChangedEvent = System::Event<void(DisplayWindow&, System::Vector2UI)>;
 
     /// \brief Raised when the window client position is changed.
     ///
-    /// - Argument \a `Axis::Window::DisplayWindow&` specifies the window which
+    /// - Argument \a `DisplayWindow&` specifies the window which
     /// raised the event.
-    /// - Argument \a `Axis::Vector2I` specifies the new client position (in
+    /// - Argument \a `Vector2I` specifies the new client position (in
     /// pixels for X and Y).
-    using ClientPositionChangedEvent = Event<void(DisplayWindow&, Vector2I)>;
+    using ClientPositionChangedEvent = System::Event<void(DisplayWindow&, System::Vector2I)>;
 
     /// \brief Raised when the cursor position is changed.
     ///
     /// \note In \a `Windows` platform the event doesn't raise if the cursor is
     /// not in the client bound.
     ///
-    /// - Argument \a `Axis::Window::DisplayWindow&` specifies the window which
+    /// - Argument \a `DisplayWindow&` specifies the window which
     /// raised the event.
-    /// - Argument \a `Axis::Vector2I` specifies the new cursor position relative
+    /// - Argument \a `Vector2I` specifies the new cursor position relative
     /// to the client bound (in pixels for X and Y).
-    using CursorPositionChangedEvent = Event<void(DisplayWindow&, Vector2I)>;
+    using CursorPositionChangedEvent = System::Event<void(DisplayWindow&, System::Vector2I)>;
 
     /// \brief Raised when the mouse buttons changed their state.
     ///
-    /// - Argument \a `Axis::Window::DisplayWindow&` specifies the window which
+    /// - Argument \a `DisplayWindow&` specifies the window which
     /// raised the event.
-    /// - Argument \a `Axis::Window::MouseButton` specifies which mouse button has
+    /// - Argument \a `MouseButton` specifies which mouse button has
     /// changed their state.
-    /// - Argument \a `Axis::Window::ButtonState` specifies the new button state
+    /// - Argument \a `ButtonState` specifies the new button state
     /// of the mouse button.
-    using MouseButtonStateChangedEvent = Event<void(DisplayWindow&, MouseButton, ButtonState)>;
+    using MouseButtonStateChangedEvent = System::Event<void(DisplayWindow&, MouseButton, ButtonState)>;
 
     /// \brief Raised when the mouse cursor leaved or entered the client bound.
     ///
-    /// - Argument \a `Axis::Window::DisplayWindow&` specifies the window which
+    /// - Argument \a `DisplayWindow&` specifies the window which
     /// raised the event.
-    /// - Argument \a `Axis::Bool` Specifies whether if the mouse has entered or
+    /// - Argument \a `Bool` Specifies whether if the mouse has entered or
     /// entered the window. (true for enter / false for leave)
-    using CursorEnteredEvent = Event<void(DisplayWindow&, Bool)>;
+    using CursorEnteredEvent = System::Event<void(DisplayWindow&, Bool)>;
 
     /// \brief Raised when the window gained or lost the focus.
     ///
-    /// - Argument \a `Axis::Window::DisplayWindow&` specifies the window which
+    /// - Argument \a `DisplayWindow&` specifies the window which
     /// raised the event.
-    /// - Argument \a `Axis::Bool` Specifies whether if the window has gained or
+    /// - Argument \a `Bool` Specifies whether if the window has gained or
     /// lost the focus. (true for gain / false for lose)
-    using WindowFocusEvent = Event<void(DisplayWindow&, Bool)>;
+    using WindowFocusEvent = System::Event<void(DisplayWindow&, Bool)>;
 
     /// \brief Raised when the mouse wheel is scrolled, either \a
     /// `Axis::Window::MouseWheel::Horizontal` or \a
     /// `Axis::Window::MouseWheel::Vertical`.
     ///
-    /// - Argument \a `Axis::Window::DisplayWindow&` specifies the window which
+    /// - Argument \a `DisplayWindow&` specifies the window which
     /// raised the event.
-    /// - Argument \a `Axis::Window::MouseWheel` specifies which mouse wheel has
+    /// - Argument \a `MouseWheel` specifies which mouse wheel has
     /// scrolled.
-    /// - Argument \a `Axis::Float32` specifies the delta value of mouse wheel.
+    /// - Argument \a `Float32` specifies the delta value of mouse wheel.
     /// (Positive for up and left, negative for down and right).
-    using MouseWheelScrollEvent = Event<void(DisplayWindow&, MouseWheel, Float32)>;
+    using MouseWheelScrollEvent = System::Event<void(DisplayWindow&, MouseWheel, Float32)>;
 
     /// \brief The event is raised when user requested to close the window.
     ///
-    /// - Argument \a `Axis::Window::DisplayWindow&` specifies the window which
+    /// - Argument \a `DisplayWindow&` specifies the window which
     /// raised the event.
-    using UserClosedWindowEvent = Event<void(DisplayWindow&)>;
+    using UserClosedWindowEvent = System::Event<void(DisplayWindow&)>;
 
     /// \brief Constrcuts new display window.
     ///
@@ -105,7 +103,7 @@ public:
     /// \param[out] resultCode ResultCode for reporting errors
     ///
     /// \remark The window doesn't show after its construction. To show the window
-    ///         calls \a `Axis::Window::DisplayWindow::ShowWindow`.
+    ///         calls \a `DisplayWindow::ShowWindow`.
     DisplayWindow(const WindowDescription& description);
 
     /// \brief Destructor
@@ -117,16 +115,16 @@ public:
     void SetWindowStyle(WindowStyleFlags windowStyleFlags);
 
     /// \brief Sets new window title text.
-    void SetWindowTitle(const StringView<WChar>& windowTitle);
+    void SetWindowTitle(const System::StringView<WChar>& windowTitle);
 
     /// \brief Gets the client rectangle of the window.
-    AXIS_NODISCARD RectangleI GetClientBounds() const;
+    AXIS_NODISCARD System::RectangleI GetClientBounds() const;
 
     /// \brief Gets the position of the window.
-    AXIS_NODISCARD Vector2I GetPosition() const;
+    AXIS_NODISCARD System::Vector2I GetPosition() const;
 
     /// \brief Gets the size of the window
-    AXIS_NODISCARD Vector2UI GetSize() const;
+    AXIS_NODISCARD System::Vector2UI GetSize() const;
 
     /// \brief Gets the system's low level handle to the window.
     ///
@@ -134,10 +132,10 @@ public:
     AXIS_NODISCARD PVoid GetWindowHandle() const noexcept { return _hwnd; }
 
     /// \brief Sets the position of the client window.
-    void SetPosition(const Vector2UI& position);
+    void SetPosition(const System::Vector2UI& position);
 
     /// \brief Gets the name of screen device which window is in.
-    AXIS_NODISCARD String8 GetScreenDeviceName() const;
+    AXIS_NODISCARD System::String8 GetScreenDeviceName() const;
 
     /// \brief Shows the window to the screen.
     void ShowWindow();
@@ -192,7 +190,7 @@ private:
     MouseWheelScrollEvent        _mouseWheelScrollEvent        = {};
     UserClosedWindowEvent        _userClosedWindowEvent        = {};
     PVoid                        _hwnd                         = {};
-    Vector2UI                    _lastSize                     = {};
+    System::Vector2UI            _lastSize                     = {};
     Bool                         _resizing                     = false;
     Bool                         _cursorGrab                   = false;
     Bool                         _mouseInside                  = false;
@@ -200,6 +198,8 @@ private:
     /// Friend declartions
     friend class Win32Implement;
 };
+
+} // namespace Window
 
 } // namespace Axis
 

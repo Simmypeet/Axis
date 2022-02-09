@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Assert.hpp
-///
-/// \brief Contains the assertion macros.
-
 #ifndef AXIS_SYSTEM_ASSERTEXCEPTION_HPP
 #define AXIS_SYSTEM_ASSERTEXCEPTION_HPP
 #pragma once

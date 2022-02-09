@@ -1,9 +1,11 @@
 #include <Axis/System>
 #include <doctest.h>
 
+using namespace Axis;
+using namespace Axis::System;
+
 DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
 {
-    using namespace Axis;
     static Size Instances = 0;
 
     struct TestStruct
@@ -31,7 +33,7 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
 
             {
                 // Constructs unique pointer of array of TestStruct
-                UniquePointer<TestStruct[]> ptr(Axis::NewArray<TestStruct>(10));
+                UniquePointer<TestStruct[]> ptr(Axis::System::NewArray<TestStruct>(10));
 
                 // instance count should be 10
                 DOCTEST_CHECK(Instances == 10);
@@ -48,7 +50,7 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
         {
             // Converts from const qualified unique pointer
             {
-                UniquePointer<TestStruct> ptr(Axis::New<TestStruct>());
+                UniquePointer<TestStruct> ptr(Axis::System::New<TestStruct>());
 
                 // instance count should be 1
                 DOCTEST_CHECK(Instances == 1);
@@ -90,7 +92,7 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
 
             // Constructs shared pointer of TestStruct
             {
-                SharedPointer<TestStruct> ptr(Axis::New<TestStruct>());
+                SharedPointer<TestStruct> ptr(Axis::System::New<TestStruct>());
 
                 // instance count should be 1
                 DOCTEST_CHECK(Instances == 1);
@@ -101,7 +103,7 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
 
             // Constructs shared pointer of array of TestStruct
             {
-                SharedPointer<TestStruct[]> ptr(Axis::NewArray<TestStruct>(10));
+                SharedPointer<TestStruct[]> ptr(Axis::System::NewArray<TestStruct>(10));
 
                 // instance count should be 10
                 DOCTEST_CHECK(Instances == 10);
@@ -112,7 +114,7 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
 
             // Copy constructor
             {
-                SharedPointer<TestStruct> ptr(Axis::New<TestStruct>());
+                SharedPointer<TestStruct> ptr(Axis::System::New<TestStruct>());
 
                 // instance count should be 1
                 DOCTEST_CHECK(Instances == 1);
@@ -138,7 +140,7 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
 
             // Move constructor
             {
-                SharedPointer<TestStruct> ptr(Axis::New<TestStruct>());
+                SharedPointer<TestStruct> ptr(Axis::System::New<TestStruct>());
 
                 // instance count should be 1
                 DOCTEST_CHECK(Instances == 1);
@@ -179,7 +181,7 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
 
                     {
                         // Constructs shared pointer of TestStruct
-                        SharedPointer<TestStruct> ptr(Axis::New<TestStruct>());
+                        SharedPointer<TestStruct> ptr(Axis::System::New<TestStruct>());
 
                         // instance count should be 1
                         DOCTEST_CHECK(Instances == 1);
@@ -213,7 +215,7 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
 
             // Nullptr assignment should reduce the reference count
             {
-                SharedPointer<TestStruct> testStruct(Axis::New<TestStruct>());
+                SharedPointer<TestStruct> testStruct(Axis::System::New<TestStruct>());
 
                 // instance count should be 1
                 DOCTEST_CHECK(Instances == 1);
@@ -234,9 +236,9 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
 
         DOCTEST_SUBCASE("MakeShared")
         {
-            // Uses `SharedPtr<T>::MakeShared` instead of `Axis::New`
+            // Uses `SharedPtr<T>::MakeShared` instead of `Axis::System::New`
             {
-                SharedPointer<TestStruct> ptr = Axis::MakeShared<TestStruct>();
+                SharedPointer<TestStruct> ptr = Axis::System::MakeShared<TestStruct>();
 
                 // instance count should be 1
                 DOCTEST_CHECK(Instances == 1);
@@ -245,9 +247,9 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
                 DOCTEST_CHECK(ptr);
             }
 
-            // Uses `SharedPtr<T>::MakeShared` instead of `Axis::New` to create array of instances
+            // Uses `SharedPtr<T>::MakeShared` instead of `Axis::System::New` to create array of instances
             {
-                SharedPointer<TestStruct[]> ptr = Axis::MakeShared<TestStruct[]>(10);
+                SharedPointer<TestStruct[]> ptr = Axis::System::MakeShared<TestStruct[]>(10);
 
                 // instance count should be 10
                 DOCTEST_CHECK(Instances == 10);
@@ -262,7 +264,7 @@ DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
             struct SharedFromThisDerived : public ISharedFromThis
             {};
 
-            SharedPointer<SharedFromThisDerived> ptr = Axis::MakeShared<SharedFromThisDerived>();
+            SharedPointer<SharedFromThisDerived> ptr = Axis::System::MakeShared<SharedFromThisDerived>();
 
             auto anotherPtr = ISharedFromThis::CreateSharedPointerFromThis(*ptr);
 

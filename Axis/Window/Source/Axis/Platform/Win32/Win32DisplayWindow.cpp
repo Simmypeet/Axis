@@ -23,6 +23,9 @@
 namespace Axis
 {
 
+namespace Window
+{
+
 static std::atomic<Bool> s_ClassCreated = false;
 static WNDCLASSEXW       s_WindowClass  = {0};
 static std::mutex        s_Mutex        = {};
@@ -83,7 +86,7 @@ private:
                     This._lastSize = This.GetSize();
 
                     This._clientSizeChangedEvent.Invoke(
-                        This, Vector2UI(This._lastSize.X, This._lastSize.Y));
+                        This, System::Vector2UI(This._lastSize.X, This._lastSize.Y));
 
                     This.GrabCursor(This._cursorGrab);
                 }
@@ -110,7 +113,7 @@ private:
                     This._lastSize = This.GetSize();
 
                     This._clientSizeChangedEvent.Invoke(
-                        This, Vector2UI(This._lastSize.X, This._lastSize.Y));
+                        This, System::Vector2UI(This._lastSize.X, This._lastSize.Y));
                 }
 
                 // Restore/update cursor grabbing
@@ -124,7 +127,7 @@ private:
                 auto expectedClientBound = This.GetClientBounds();
 
                 This._clientPositionChangedEvent.Invoke(
-                    This, Vector2I(expectedClientBound.X, expectedClientBound.Y));
+                    This, System::Vector2I(expectedClientBound.X, expectedClientBound.Y));
 
                 break;
             }
@@ -365,7 +368,7 @@ DisplayWindow::DisplayWindow(const WindowDescription& description)
             s_WindowClass.hIconSm       = ::LoadIcon(GetModuleHandle(NULL), NULL);
 
             if (!RegisterClassExW(&s_WindowClass))
-                throw ExternalException("Failed to register Win32 window class!");
+                throw System::ExternalException("Failed to register Win32 window class!");
 
             else
                 s_ClassCreated = true;
@@ -396,7 +399,7 @@ DisplayWindow::DisplayWindow(const WindowDescription& description)
 
     // Checks for errors
     if (!_hwnd)
-        throw ExternalException("Failed to create Win32 window!");
+        throw System::ExternalException("Failed to create Win32 window!");
 
     // Adjust the window size to the real size (At first the window was created
     // with the size which included the tilebar size).
@@ -446,61 +449,61 @@ void DisplayWindow::SetWindowStyle(WindowStyleFlags windowStyleFlags)
 
     if (!AdjustWindowRect(&rectangle, GetWindowLongPtr((HWND)_hwnd, GWL_STYLE),
                           false))
-        throw ExternalException("Failed to adjust window rect!");
+        throw System::ExternalException("Failed to adjust window rect!");
 
     if (!SetWindowPos((HWND)_hwnd, NULL, rectangle.top, rectangle.left,
                       rectangle.right - rectangle.left,
                       rectangle.bottom - rectangle.top, SWP_NOZORDER))
-        throw ExternalException("Failed to adjust window position!");
+        throw System::ExternalException("Failed to adjust window position!");
 }
 
-void DisplayWindow::SetWindowTitle(const StringView<WChar>& windowTitle)
+void DisplayWindow::SetWindowTitle(const System::StringView<WChar>& windowTitle)
 {
     if (windowTitle.IsNullTerminated())
     {
         if (!SetWindowTextW((HWND)_hwnd, windowTitle.GetCString()))
-            throw ExternalException("Failed to set window text!");
+            throw System::ExternalException("Failed to set window text!");
     }
     else
     {
-        WString windowTitleCopy = windowTitle;
+        System::WString windowTitleCopy = windowTitle;
 
         if (!SetWindowTextW((HWND)_hwnd, windowTitleCopy.GetCString()))
-            throw ExternalException("Failed to set window text!");
+            throw System::ExternalException("Failed to set window text!");
     }
 }
 
-RectangleI DisplayWindow::GetClientBounds() const
+System::RectangleI DisplayWindow::GetClientBounds() const
 {
     RECT rect;
 
     if (!GetClientRect((HWND)_hwnd, &rect))
-        throw ExternalException("Failed to GetClientRect!");
+        throw System::ExternalException("Failed to GetClientRect!");
 
     POINT topLeft  = {rect.top, rect.left};
     POINT botRight = {rect.bottom, rect.right};
 
     if (!ClientToScreen((HWND)_hwnd, &topLeft))
-        throw ExternalException("Failed to ClientToScreen!");
+        throw System::ExternalException("Failed to ClientToScreen!");
 
     if (!ClientToScreen((HWND)_hwnd, &botRight))
-        throw ExternalException("Failed to ClientToScreen!");
+        throw System::ExternalException("Failed to ClientToScreen!");
 
     return {topLeft.x, topLeft.y, botRight.y - topLeft.y, botRight.x - topLeft.x};
 }
 
-void DisplayWindow::SetPosition(const Vector2UI& position)
+void DisplayWindow::SetPosition(const System::Vector2UI& position)
 {
     RECT rectangle = {(long)position.X, (long)position.Y, 0, 0};
 
     if (!AdjustWindowRect(&rectangle, GetWindowLongPtr((HWND)_hwnd, GWL_STYLE), false))
-        throw ExternalException("Failed to AdjustWindowRect!");
+        throw System::ExternalException("Failed to AdjustWindowRect!");
 
     if (!SetWindowPos((HWND)_hwnd, NULL, rectangle.top, rectangle.left, 0, 0, SWP_NOSIZE | SWP_NOZORDER))
-        throw ExternalException("Failed to SetWindowPos!");
+        throw System::ExternalException("Failed to SetWindowPos!");
 }
 
-String8 DisplayWindow::GetScreenDeviceName() const
+System::String8 DisplayWindow::GetScreenDeviceName() const
 {
     return {};
 }
@@ -532,7 +535,7 @@ void DisplayWindow::WaitEvent()
     }
 }
 
-Vector2UI DisplayWindow::GetSize() const
+System::Vector2UI DisplayWindow::GetSize() const
 {
     RECT rect;
     GetClientRect((HWND)_hwnd, &rect);
@@ -552,6 +555,8 @@ void DisplayWindow::GrabCursor(Bool grabbed) const noexcept
     else
         ClipCursor(NULL);
 }
+
+} // namespace Window
 
 } // namespace Axis
 

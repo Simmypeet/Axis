@@ -13,18 +13,21 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 IResourceHeap::IResourceHeap(const ResourceHeapDescription& description) :
     Description(description) {}
 
 // Default constructor
-void IResourceHeap::BindBuffers(Uint32                              bindingIndex,
-                                const Span<SharedPointer<IBuffer>>& buffers,
-                                const Span<Size>&                   offsets,
-                                const Span<Size>&                   sizes,
-                                Uint32                              startingArrayIndex)
+void IResourceHeap::BindBuffers(Uint32                                              bindingIndex,
+                                const System::Span<System::SharedPointer<IBuffer>>& buffers,
+                                const System::Span<Size>&                           offsets,
+                                const System::Span<Size>&                           sizes,
+                                Uint32                                              startingArrayIndex)
 {
     if (!buffers)
-        throw InvalidArgumentException("`buffers` was nullptr!");
+        throw System::InvalidArgumentException("`buffers` was nullptr!");
 
     Size arrayIndex = SIZE_MAX;
     Size currIndex  = 0;
@@ -37,22 +40,22 @@ void IResourceHeap::BindBuffers(Uint32                              bindingIndex
     }
 
     if (arrayIndex == SIZE_MAX)
-        throw InvalidArgumentException("`bindingIndex` was not found in the resource heap layout!");
+        throw System::InvalidArgumentException("`bindingIndex` was not found in the resource heap layout!");
 
     if (Description.ResourceHeapLayout->Description.ResourceBindings[arrayIndex].Binding != ResourceBinding::UniformBuffer)
-        throw InvalidArgumentException("`bindingIndex` was not a buffer binding!");
+        throw System::InvalidArgumentException("`bindingIndex` was not a buffer binding!");
 
     if (startingArrayIndex >= Description.ResourceHeapLayout->Description.ResourceBindings[arrayIndex].ArraySize)
-        throw ArgumentOutOfRangeException("`startingArrayIndex` was out of range!");
+        throw System::ArgumentOutOfRangeException("`startingArrayIndex` was out of range!");
 
     Size index = 0;
     for (const auto& buffer : buffers)
     {
         if (!buffer)
-            throw InvalidArgumentException("`buffers` contained a nullptr!");
+            throw System::InvalidArgumentException("`buffers` contained a nullptr!");
 
         if (!(Bool)(buffer->Description.BufferBinding & BufferBinding::Uniform))
-            throw InvalidArgumentException("`buffers` were not uniform buffers!");
+            throw System::InvalidArgumentException("`buffers` were not uniform buffers!");
 
         index++;
     }
@@ -60,13 +63,13 @@ void IResourceHeap::BindBuffers(Uint32                              bindingIndex
     if (offsets)
     {
         if (offsets.GetLength() != buffers.GetLength())
-            throw InvalidArgumentException("`offsets` was not the same size as `buffers`!");
+            throw System::InvalidArgumentException("`offsets` was not the same size as `buffers`!");
 
         index = 0;
         for (const auto& offset : offsets)
         {
             if (offset >= buffers[index]->Description.BufferSize)
-                throw ArgumentOutOfRangeException("`offset` was out of range!");
+                throw System::ArgumentOutOfRangeException("`offset` was out of range!");
 
             index++;
         }
@@ -75,18 +78,18 @@ void IResourceHeap::BindBuffers(Uint32                              bindingIndex
     if (sizes)
     {
         if (sizes.GetLength() != buffers.GetLength())
-            throw InvalidArgumentException("`sizes` was not the same size as `buffers`!");
+            throw System::InvalidArgumentException("`sizes` was not the same size as `buffers`!");
 
         index = 0;
         for (const auto& size : sizes)
         {
             if (size > buffers[index]->Description.BufferSize)
-                throw ArgumentOutOfRangeException("`size` was out of range!");
+                throw System::ArgumentOutOfRangeException("`size` was out of range!");
 
             if (offsets)
             {
                 if (offsets[index] + size > buffers[index]->Description.BufferSize)
-                    throw ArgumentOutOfRangeException("`size` was out of range!");
+                    throw System::ArgumentOutOfRangeException("`size` was out of range!");
             }
 
             index++;
@@ -94,10 +97,10 @@ void IResourceHeap::BindBuffers(Uint32                              bindingIndex
     }
 }
 
-void IResourceHeap::BindSamplers(Uint32                                   bindingIndex,
-                                 const Span<SharedPointer<ISampler>>&     samplers,
-                                 const Span<SharedPointer<ITextureView>>& textureViews,
-                                 Uint32                                   startingArrayIndex)
+void IResourceHeap::BindSamplers(Uint32                                                   bindingIndex,
+                                 const System::Span<System::SharedPointer<ISampler>>&     samplers,
+                                 const System::Span<System::SharedPointer<ITextureView>>& textureViews,
+                                 Uint32                                                   startingArrayIndex)
 {
     Size arrayIndex = SIZE_MAX;
     Size currIndex  = 0;
@@ -110,34 +113,36 @@ void IResourceHeap::BindSamplers(Uint32                                   bindin
     }
 
     if (arrayIndex == SIZE_MAX)
-        throw InvalidArgumentException("`bindingIndex` was not found in the resource heap layout!");
+        throw System::InvalidArgumentException("`bindingIndex` was not found in the resource heap layout!");
 
     if (Description.ResourceHeapLayout->Description.ResourceBindings[arrayIndex].Binding != ResourceBinding::Sampler)
-        throw InvalidArgumentException("`bindingIndex` was not a sampler binding!");
+        throw System::InvalidArgumentException("`bindingIndex` was not a sampler binding!");
 
     if (!samplers)
-        throw InvalidArgumentException("`samplers` was nullptr!");
+        throw System::InvalidArgumentException("`samplers` was nullptr!");
 
     if (!textureViews)
-        throw InvalidArgumentException("`textureViews` was nullptr!");
+        throw System::InvalidArgumentException("`textureViews` was nullptr!");
 
     if (samplers.GetLength() != textureViews.GetLength())
-        throw InvalidArgumentException("`samplers` and `textureViews` were not the same size!");
+        throw System::InvalidArgumentException("`samplers` and `textureViews` were not the same size!");
 
     if (startingArrayIndex >= Description.ResourceHeapLayout->Description.ResourceBindings[arrayIndex].ArraySize)
-        throw ArgumentOutOfRangeException("`startingArrayIndex` was out of range!");
+        throw System::ArgumentOutOfRangeException("`startingArrayIndex` was out of range!");
 
     for (Size i = 0; i < samplers.GetLength(); i++)
     {
         if (!samplers[i])
-            throw InvalidArgumentException("`samplers` contained a nullptr!");
+            throw System::InvalidArgumentException("`samplers` contained a nullptr!");
 
         if (!textureViews[i])
-            throw InvalidArgumentException("`textureViews` contained a nullptr!");
+            throw System::InvalidArgumentException("`textureViews` contained a nullptr!");
 
         if (!(Bool)(textureViews[i]->Description.ViewTexture->Description.TextureBinding & TextureBinding::Sampled))
-            throw InvalidArgumentException("`textureViews` contained a texture that was not a sampled texture!");
+            throw System::InvalidArgumentException("`textureViews` contained a texture that was not a sampled texture!");
     }
 }
+
+} // namespace Graphics
 
 } // namespace Axis

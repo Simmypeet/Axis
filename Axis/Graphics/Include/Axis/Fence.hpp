@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Fence.hpp
-///
-/// \brief Contains `Axis::IFence` interface class.
-
 #ifndef AXIS_GRAPHICS_FENCE_HPP
 #define AXIS_GRAPHICS_FENCE_HPP
 #pragma once
@@ -13,6 +9,9 @@
 #include "DeviceChild.hpp"
 
 namespace Axis
+{
+
+namespace Graphics
 {
 
 /// \brief Synchronization primitives which can be used to insert dependencies between queues and CPUs or multiples queues.
@@ -33,6 +32,8 @@ protected:
     /// \brief Default constructor
     IFence() noexcept;
 };
+
+} // namespace Graphics
 
 } // namespace Axis
 

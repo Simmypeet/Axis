@@ -9,6 +9,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 // Default constructor
 StatedGraphicsResource::StatedGraphicsResource() noexcept = default;
 
@@ -16,5 +19,7 @@ void StatedGraphicsResource::SetResourceState(ResourceState state) noexcept
 {
     _resourceState = state;
 }
+
+} // namespace Graphics
 
 } // namespace Axis

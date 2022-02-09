@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Vector3.hpp
-///
-/// \brief Contains \a `Axis::Vector3` mathematical vector template struct.
-
 #ifndef AXIS_SYSTEM_VECTOR3_HPP
 #define AXIS_SYSTEM_VECTOR3_HPP
 #pragma once
@@ -13,6 +9,9 @@
 #include "Math.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief 3D mathematical vector template definition. Contains 3 components
@@ -117,14 +116,16 @@ struct Vector3 final
     T Z = T{};
 };
 
-/// \brief Vector3 using \a `Axis::Float32` as template argument.
+/// \brief Vector3 using \a `Float32` as template argument.
 typedef Vector3<Float32> Vector3F;
 
-/// \brief Vector3 using \a `Axis::Int32` as template argument.
+/// \brief Vector3 using \a `Int32` as template argument.
 typedef Vector3<Int32> Vector3I;
 
-/// \brief Vector3 using \a `Axis::Uint32` as template argument.
+/// \brief Vector3 using \a `Uint32` as template argument.
 typedef Vector3<Uint32> Vector3UI;
+
+} // namespace System
 
 } // namespace Axis
 

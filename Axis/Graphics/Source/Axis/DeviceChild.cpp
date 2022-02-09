@@ -9,7 +9,12 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 // Default constructor
 DeviceChild::DeviceChild() noexcept = default;
+
+} // namespace Graphics
 
 } // namespace Axis

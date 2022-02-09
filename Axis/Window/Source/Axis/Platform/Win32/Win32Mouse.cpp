@@ -13,10 +13,13 @@
 namespace Axis
 {
 
-Mouse::Mouse(const SharedPointer<DisplayWindow>& window)
+namespace Window
+{
+
+Mouse::Mouse(const System::SharedPointer<DisplayWindow>& window)
 {
     if (!window)
-        throw InvalidArgumentException("window was nullptr!");
+        throw System::InvalidArgumentException("window was nullptr!");
 
     _window = window;
 
@@ -64,23 +67,25 @@ MouseState Mouse::GetMouseState() const
     };
 
     Uint8 buttons = 0;
-    buttons       = Math::AssignBitToPosition(buttons, Enum::GetUnderlyingValue(MouseButton::Left), GetButtonState(MouseButton::Left));
-    buttons       = Math::AssignBitToPosition(buttons, Enum::GetUnderlyingValue(MouseButton::Right), GetButtonState(MouseButton::Right));
-    buttons       = Math::AssignBitToPosition(buttons, Enum::GetUnderlyingValue(MouseButton::Middle), GetButtonState(MouseButton::Middle));
-    buttons       = Math::AssignBitToPosition(buttons, Enum::GetUnderlyingValue(MouseButton::ExtraButton1), GetButtonState(MouseButton::ExtraButton1));
-    buttons       = Math::AssignBitToPosition(buttons, Enum::GetUnderlyingValue(MouseButton::ExtraButton2), GetButtonState(MouseButton::ExtraButton2));
+    buttons       = System::Math::AssignBitToPosition(buttons, System::Enum::GetUnderlyingValue(MouseButton::Left), GetButtonState(MouseButton::Left));
+    buttons       = System::Math::AssignBitToPosition(buttons, System::Enum::GetUnderlyingValue(MouseButton::Right), GetButtonState(MouseButton::Right));
+    buttons       = System::Math::AssignBitToPosition(buttons, System::Enum::GetUnderlyingValue(MouseButton::Middle), GetButtonState(MouseButton::Middle));
+    buttons       = System::Math::AssignBitToPosition(buttons, System::Enum::GetUnderlyingValue(MouseButton::ExtraButton1), GetButtonState(MouseButton::ExtraButton1));
+    buttons       = System::Math::AssignBitToPosition(buttons, System::Enum::GetUnderlyingValue(MouseButton::ExtraButton2), GetButtonState(MouseButton::ExtraButton2));
 
     HWND hwnd = (HWND)_window->GetWindowHandle();
 
     POINT mouseCursorPosition;
 
     if (!GetCursorPos(&mouseCursorPosition))
-        throw ExternalException("Failed to GetCursorPos!");
+        throw System::ExternalException("Failed to GetCursorPos!");
 
     if (!ScreenToClient(hwnd, &mouseCursorPosition))
-        throw ExternalException("Failed to ScreenToClient!");
+        throw System::ExternalException("Failed to ScreenToClient!");
 
-    return MouseState(buttons, Vector2I(mouseCursorPosition.x, mouseCursorPosition.y), _verticalScrollWheelValue, _horizontalScrollWheelValue);
+    return MouseState(buttons, System::Vector2I(mouseCursorPosition.x, mouseCursorPosition.y), _verticalScrollWheelValue, _horizontalScrollWheelValue);
 }
+
+} // namespace Window
 
 } // namespace Axis

@@ -19,6 +19,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanResourceHeap::VulkanResourceHeap(const ResourceHeapDescription& description,
                                        VulkanGraphicsDevice&          vulkanGraphicsDevice) :
     IResourceHeap(description),
@@ -29,11 +32,11 @@ VulkanResourceHeap::VulkanResourceHeap(const ResourceHeapDescription& descriptio
     _currentDescriptorSetGroup = _descriptorPool.GetDescriptorSetGroup();
 }
 
-void VulkanResourceHeap::BindBuffers(Uint32                              bindingIndex,
-                                     const Span<SharedPointer<IBuffer>>& buffers,
-                                     const Span<Size>&                   offsets,
-                                     const Span<Size>&                   sizes,
-                                     Uint32                              startingArrayIndex)
+void VulkanResourceHeap::BindBuffers(Uint32                                              bindingIndex,
+                                     const System::Span<System::SharedPointer<IBuffer>>& buffers,
+                                     const System::Span<Size>&                           offsets,
+                                     const System::Span<Size>&                           sizes,
+                                     Uint32                                              startingArrayIndex)
 {
     // Validates the arguments.
     IResourceHeap::BindBuffers(bindingIndex,
@@ -50,7 +53,7 @@ void VulkanResourceHeap::BindBuffers(Uint32                              binding
     for (Size i = 0; i < resourceCount; i++)
     {
         VulkanBufferBinding vulkanBufferBinding = {
-            .VulkanBuffer = (SharedPointer<VulkanBuffer>)buffers[i],
+            .VulkanBuffer = (System::SharedPointer<VulkanBuffer>)buffers[i],
             .Offset       = offsets == nullptr ? 0 : offsets[i],
             .BufferSize   = sizes == nullptr ? buffers[i]->Description.BufferSize - (offsets == nullptr ? 0 : offsets[i]) : 0};
 
@@ -71,10 +74,10 @@ void VulkanResourceHeap::BindBuffers(Uint32                              binding
     _descriptorPool.MarkAllAsNotUpToDate();
 }
 
-void VulkanResourceHeap::BindSamplers(Uint32                                   bindingIndex,
-                                      const Span<SharedPointer<ISampler>>&     samplers,
-                                      const Span<SharedPointer<ITextureView>>& textureViews,
-                                      Uint32                                   startingArrayIndex)
+void VulkanResourceHeap::BindSamplers(Uint32                                                   bindingIndex,
+                                      const System::Span<System::SharedPointer<ISampler>>&     samplers,
+                                      const System::Span<System::SharedPointer<ITextureView>>& textureViews,
+                                      Uint32                                                   startingArrayIndex)
 {
     // Validates the arguments
     IResourceHeap::BindSamplers(bindingIndex,
@@ -90,8 +93,8 @@ void VulkanResourceHeap::BindSamplers(Uint32                                   b
     for (Size i = 0; i < resourceCount; i++)
     {
         VulkanSamplerBinding vulkanSamplerBinding = {
-            .VulkanTextureView = (SharedPointer<VulkanTextureView>)textureViews[i],
-            .VulkanSampler     = (SharedPointer<VulkanSampler>)samplers[i],
+            .VulkanTextureView = (System::SharedPointer<VulkanTextureView>)textureViews[i],
+            .VulkanSampler     = (System::SharedPointer<VulkanSampler>)samplers[i],
         };
 
         ResourceLocation resourceLocation = {.BindingIndex = bindingIndex,
@@ -149,9 +152,9 @@ void VulkanResourceHeap::InternalBindResources(VulkanDeviceContext&      vulkanD
                                                StateTransition           stateTransition,
                                                VulkanDescriptorSetGroup& descriptorSetGroup)
 {
-    List<VkWriteDescriptorSet>   writeDescriptorSets   = {};
-    List<VkDescriptorBufferInfo> descriptorBufferInfos = {};
-    List<VkDescriptorImageInfo>  descriptorImageInfos  = {};
+    System::List<VkWriteDescriptorSet>   writeDescriptorSets   = {};
+    System::List<VkDescriptorBufferInfo> descriptorBufferInfos = {};
+    System::List<VkDescriptorImageInfo>  descriptorImageInfos  = {};
 
     if (!descriptorSetGroup.UpToDate)
     {
@@ -274,5 +277,7 @@ void VulkanResourceHeap::InternalBindResources(VulkanDeviceContext&      vulkanD
         descriptorSetGroup.UpToDate = true;
     }
 }
+
+} // namespace Graphics
 
 } // namespace Axis

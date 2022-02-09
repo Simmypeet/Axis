@@ -7,10 +7,11 @@
 #include <Axis/Assert.hpp>
 #include <Axis/Exception.hpp>
 #include <Axis/Memory.hpp>
-#include <functional>
-
 
 namespace Axis
+{
+
+namespace System
 {
 
 PVoid MallocAllocator::Allocate(Size size, Size alignment)
@@ -231,5 +232,7 @@ void PoolAllocator::Deallocate(PVoid ptr) noexcept
     // Returns the memory block to the pool
     allocator->Return(ptr);
 }
+
+} // namespace System
 
 } // namespace Axis

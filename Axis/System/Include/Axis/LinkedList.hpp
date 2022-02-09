@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file LinkedList.hpp
-///
-/// \brief Contains \a `Axis::LinkedList` class template.
-
 #ifndef AXIS_SYSTEM_LINKEDLIST_HPP
 #define AXIS_SYSTEM_LINKEDLIST_HPP
 #pragma once
@@ -15,6 +11,9 @@
 #include "Utility.hpp"
 
 namespace Axis
+{
+
+namespace System
 {
 
 /// \brief Container for storing objects in a linked list data structure.
@@ -172,6 +171,8 @@ private:
     Node* _head = nullptr; ///< Pointer to the first node in the list.
     Node* _tail = nullptr; ///< Pointer to the last node in the list.
 };
+
+} // namespace System
 
 } // namespace Axis
 

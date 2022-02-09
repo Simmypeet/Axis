@@ -11,7 +11,10 @@
 namespace Axis
 {
 
-inline Tuple<List<Uint32>, VkImageCreateInfo> GetTextureCreationInfosFromTextureDescription(const TextureDescription& description)
+namespace Graphics
+{
+
+inline System::Tuple<System::List<Uint32>, VkImageCreateInfo> GetTextureCreationInfosFromTextureDescription(const TextureDescription& description)
 {
     auto indices = VulkanUtility::ExtractDeviceQueueFamilyIndices(description.DeviceQueueFamilyMask);
 
@@ -73,7 +76,7 @@ VulkanTexture::VulkanTexture(const TextureDescription& description,
                                        &_vmaAllocationInfo);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to create VkImage!");
+            throw System::ExternalException("Failed to create VkImage!");
 
         return vkImage;
     };
@@ -132,7 +135,7 @@ VulkanTextureView::VulkanTextureView(const TextureViewDescription& description,
         auto vkResult = vkCreateImageView(vulkanGraphicsDevice.GetVkDeviceHandle(), &imageViewCreateInfo, nullptr, &vkImageView);
 
         if (vkResult != VK_SUCCESS)
-            throw ExternalException("Failed to create vkImageView!");
+            throw System::ExternalException("Failed to create vkImageView!");
         return vkImageView;
     };
 
@@ -142,5 +145,7 @@ VulkanTextureView::VulkanTextureView(const TextureViewDescription& description,
 
     _vulkanImageView = VkPtr<VkImageView>(CreateVkImageView, std::move(DestroyVkImageView));
 }
+
+} // namespace Graphics
 
 } // namespace Axis

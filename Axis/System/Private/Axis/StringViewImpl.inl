@@ -12,6 +12,9 @@
 namespace Axis
 {
 
+namespace System
+{
+
 template <CharType T>
 inline constexpr StringView<T>::StringView(NullptrType) noexcept :
     _stringBuffer(nullptr),
@@ -120,10 +123,12 @@ inline constexpr StringView<T>::operator String<T, Allocator>() const
     return String<T, Allocator>(_stringBuffer, _stringBuffer + GetLength());
 }
 
+} // namespace System
+
 } // namespace Axis
 
-template <Axis::CharType T, Axis::CharType U, Axis::AllocatorType Allocator>
-Axis::String<T, Allocator>& operator+=(Axis::String<T, Allocator>& LHS, const Axis::StringView<U>& RHS)
+template <Axis::System::CharType T, Axis::System::CharType U, Axis::System::AllocatorType Allocator>
+Axis::System::String<T, Allocator>& operator+=(Axis::System::String<T, Allocator>& LHS, const Axis::System::StringView<U>& RHS)
 {
     LHS.Insert(RHS.begin(),
                RHS.end(),
@@ -133,7 +138,7 @@ Axis::String<T, Allocator>& operator+=(Axis::String<T, Allocator>& LHS, const Ax
 
 /// StringView ostream overloading.
 template <class OStream, class T>
-OStream& operator<<(OStream& stream, const Axis::StringView<T>& stringView)
+OStream& operator<<(OStream& stream, const Axis::System::StringView<T>& stringView)
 {
     for (Axis::Size i = 0; i < stringView.GetLength(); i++)
     {

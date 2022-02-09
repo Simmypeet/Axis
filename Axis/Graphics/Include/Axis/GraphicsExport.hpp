@@ -1,13 +1,6 @@
 /// \copyright Simmypeet - Copyright (C)
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
-///
-
-/// \file GraphicsExport.hpp
-///
-/// \brief Contains portable export/import macro for \a `Graphics` module.
-///
-
 
 #ifndef AXIS_GRAPHICS_GRAPHICSEXPORT_HPP
 #define AXIS_GRAPHICS_GRAPHICSEXPORT_HPP

@@ -18,6 +18,9 @@
 namespace Axis
 {
 
+namespace Graphics
+{
+
 VulkanDescriptorSetGroup::VulkanDescriptorSetGroup(VkDescriptorSet       descriptorSet,
                                                    VulkanGraphicsDevice& vulkanGraphicsDevice) :
     DescriptorSet(descriptorSet),
@@ -53,9 +56,9 @@ VulkanDescriptorPool::VulkanDescriptorPool(const ResourceHeapDescription& descri
     vulkanGraphicsDevice.AddDeviceChild(*this);
 }
 
-UniquePointer<VulkanDescriptorSetGroup> VulkanDescriptorPool::GetDescriptorSetGroup()
+System::UniquePointer<VulkanDescriptorSetGroup> VulkanDescriptorPool::GetDescriptorSetGroup()
 {
-    UniquePointer<VulkanDescriptorSetGroup> descriptorSetGroupToReturn;
+    System::UniquePointer<VulkanDescriptorSetGroup> descriptorSetGroupToReturn;
 
     if (_descriptorSetGroups.GetLength())
     {
@@ -96,17 +99,17 @@ UniquePointer<VulkanDescriptorSetGroup> VulkanDescriptorPool::GetDescriptorSetGr
     auto vkResult = vkAllocateDescriptorSets(((VulkanGraphicsDevice*)GetCreatorDevice())->GetVkDeviceHandle(), &descriptorSetAllocationInfo, &vkDescriptorSet);
 
     if (vkResult != VK_SUCCESS)
-        throw ExternalException("Failed to allocate VkDescriptorSet!");
+        throw System::ExternalException("Failed to allocate VkDescriptorSet!");
 
-    descriptorSetGroupToReturn = UniquePointer<VulkanDescriptorSetGroup>(Axis::New<VulkanDescriptorSetGroup>(vkDescriptorSet,
-                                                                                                             *(VulkanGraphicsDevice*)GetCreatorDevice()));
+    descriptorSetGroupToReturn = System::UniquePointer<VulkanDescriptorSetGroup>(Axis::System::New<VulkanDescriptorSetGroup>(vkDescriptorSet,
+                                                                                                                             *(VulkanGraphicsDevice*)GetCreatorDevice()));
 
     _currentAllocation++;
 
     return descriptorSetGroupToReturn;
 }
 
-void VulkanDescriptorPool::ReturnDescriptorSetGroup(UniquePointer<VulkanDescriptorSetGroup>&& descriptorSetGroup) noexcept
+void VulkanDescriptorPool::ReturnDescriptorSetGroup(System::UniquePointer<VulkanDescriptorSetGroup>&& descriptorSetGroup) noexcept
 {
     std::scoped_lock lockGuard(_vectorMutex);
 
@@ -130,7 +133,7 @@ void VulkanDescriptorPool::AddPool()
     AXIS_ASSERT(_resourceHeapDesc.ResourceHeapLayout, "_resourceDesc.PipelineLayout shouldn't be nullptr!");
 
     auto CreateVkDescriptorPool = [&]() -> VkDescriptorPool {
-        List<VkDescriptorPoolSize> descriptorPoolSizes = {};
+        System::List<VkDescriptorPoolSize> descriptorPoolSizes = {};
         descriptorPoolSizes.ReserveFor(_resourceHeapDesc.ResourceHeapLayout->Description.ResourceBindings.GetLength());
 
         for (const auto& resourceBinding : _resourceHeapDesc.ResourceHeapLayout->Description.ResourceBindings)
@@ -155,7 +158,7 @@ void VulkanDescriptorPool::AddPool()
         auto result = vkCreateDescriptorPool(((VulkanGraphicsDevice*)GetCreatorDevice())->GetVkDeviceHandle(), &descriptorPoolCreateInfo, nullptr, &descriptorPool);
 
         if (result != VK_SUCCESS)
-            throw ExternalException("Failed to create VkDescriptorPool!");
+            throw System::ExternalException("Failed to create VkDescriptorPool!");
 
         return descriptorPool;
     };
@@ -170,5 +173,7 @@ void VulkanDescriptorPool::AddPool()
 
     _currentAllocation = 0;
 }
+
+} // namespace Graphics
 
 } // namespace Axis
