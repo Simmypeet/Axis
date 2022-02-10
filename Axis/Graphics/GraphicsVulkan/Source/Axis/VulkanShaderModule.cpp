@@ -11,6 +11,7 @@
 #include <StandAlone/DirStackFileIncluder.h>
 #include <iostream>
 #include <spirv-tools/libspirv.h>
+#include <spirv_cross/spirv_cross.hpp>
 
 
 namespace Axis

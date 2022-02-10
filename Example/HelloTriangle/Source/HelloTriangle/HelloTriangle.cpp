@@ -14,33 +14,45 @@ using namespace Axis::Window;
 using namespace Axis::Graphics;
 using namespace Axis::Core;
 
-// GLSL vertex shader code
+// HLSL vertex shader code
 constexpr const char* VertexShaderCode = R"""(
-#version 450
-
-layout(location = 0) in vec3 VertPositionIn;
-layout(location = 1) in vec4 VertColorIn;
-
-layout(location = 0) out vec4 FragColor;
-
-void main() 
+struct VSInput
 {
-    gl_Position = vec4(VertPositionIn, 1.0);
-    FragColor = VertColorIn;
+    float3 Pos   : ATTRIB0;
+    float4 Color : ATTRIB1;
+};
+
+struct PSInput 
+{ 
+    float4 Pos   : SV_POSITION; 
+    float4 Color : COLOR0; 
+};
+
+void main(in  VSInput VSIn,
+          out PSInput PSIn) 
+{
+    PSIn.Pos   = float4(VSIn.Pos,1.0);
+    PSIn.Color = VSIn.Color;
 }
 )""";
 
-// GLSL vertex shader code
+// HLSL fragment shader code
 constexpr const char* FragmentShaderCode = R"""(
-#version 450
+struct PSInput 
+{ 
+    float4 Pos   : SV_POSITION; 
+    float4 Color : COLOR0; 
+};
 
-layout(location = 0) in vec4 FragColorIn;
+struct PSOutput
+{ 
+    float4 Color : SV_TARGET; 
+};
 
-layout(location = 0) out vec4 OutColor;
-
-void main() 
+void main(in  PSInput  PSIn,
+          out PSOutput PSOut)
 {
-    OutColor = FragColorIn;
+    PSOut.Color = PSIn.Color; 
 }
 )""";
 
@@ -59,7 +71,7 @@ int main()
             // Compiles vertex shader source code.
             ShaderModuleDescription vertexShaderDescription = {};
             vertexShaderDescription.EntryPoint              = "main";
-            vertexShaderDescription.Language                = ShaderLanguage::GLSL;
+            vertexShaderDescription.Language                = ShaderLanguage::HLSL;
             vertexShaderDescription.Stage                   = ShaderStage::Vertex;
 
             _vertexShader = GetGraphicsDevice()->CompileShaderModule(vertexShaderDescription, VertexShaderCode);
@@ -67,7 +79,7 @@ int main()
             // Compiles fragment shader source code.
             ShaderModuleDescription fragmentShaderDescription = {};
             fragmentShaderDescription.EntryPoint              = "main";
-            fragmentShaderDescription.Language                = ShaderLanguage::GLSL;
+            fragmentShaderDescription.Language                = ShaderLanguage::HLSL;
             fragmentShaderDescription.Stage                   = ShaderStage::Fragment;
 
             _fragmentShader = GetGraphicsDevice()->CompileShaderModule(fragmentShaderDescription, FragmentShaderCode);

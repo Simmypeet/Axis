@@ -180,11 +180,10 @@ public:
 
     /// \brief Submits a text string of sprites to this batch group.
     ///
-    /// \param[in] font Font to use for the text.
+    /// \param[in] spriteFont Font to use for the text.
     /// \param[in] text Text to draw.
     /// \param[in] position Position on the screen to draw the text.
     /// \param[in] colorMask A color mask to apply to the text.
-    ///
     void DrawString(const System::SharedPointer<SpriteFont>& spriteFont,
                     System::StringView<WChar>                text,
                     const System::Vector2F&                  position,

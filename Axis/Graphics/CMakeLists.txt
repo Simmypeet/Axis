@@ -50,7 +50,11 @@ set(AXIS_GRAPHICS_SOURCE_FILES
 
 # Collects all private implementation files
 set(AXIS_GRAPHICS_PRIVATE_FILES
-    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/ColorImpl.hpp")
+    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/ColorImpl.inl"
+    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/GraphicsPipelineImpl.inl"
+    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/SamplerImpl.inl"
+    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/GraphicsCommonImpl.inl"
+    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/TextureImpl.inl")
 
 # All source files in the project
 set(AXIS_GRAPHICS_ALL_SOURCE_FILES ${AXIS_GRAPHICS_HEADER_FILES} ${AXIS_GRAPHICS_SOURCE_FILES} ${AXIS_GRAPHICS_PRIVATE_FILES})

@@ -1,4 +1,4 @@
-/// \copyright Simmypeet - Copyright (C)
+﻿/// \copyright Simmypeet - Copyright (C)
 ///            This file is subject to the terms and conditions defined in
 ///            file `LICENSE`, which is part of this source code package.
 
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
         // Draws the sprite
         void Draw(SpriteBatch& spriteBatch) noexcept
         {
-            constexpr Size ScalingSize = 3;
+            constexpr Float32 ScalingSize = 3;
 
             // Draws the sprite to the screen
             spriteBatch.Draw(_texture,
@@ -173,7 +173,7 @@ int main(int argc, char** argv)
             {
                 Random random = {};
 
-                for (Size i = 0; i < 5000; i++)
+                for (Size i = 0; i < 2500; i++)
                 {
                     Vector2F direction = {_random.Next(-100, 100), _random.Next(-100, 100)};
                     direction.Normalize();
@@ -191,16 +191,6 @@ int main(int argc, char** argv)
             for (auto& sprite : _sprites)
                 sprite.Update(deltaTime);
 
-            WString title = L"FPS: ";
-
-            title += WString::ToString((Size)(_framePassed / _timeElapsed.GetTotalSeconds()));
-
-            title += L", Sprite Count: ";
-
-            title += WString::ToString(_sprites.GetLength());
-
-            GetWindow()->SetWindowTitle(title);
-
             _framePassed = 0;
             _timeElapsed = {};
         }
@@ -210,23 +200,22 @@ int main(int argc, char** argv)
         {
             auto currentColorView = GetSwapChain()->GetCurrentRenderTargetView();
 
-            // The window clear color value (XNA cornflower blue, good old days.....)
-            const ColorF clearColor = ColorF(100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f);
-
-            GetImmediateGraphicsContext()->ClearRenderTarget(currentColorView, clearColor);
+            GetImmediateGraphicsContext()->ClearRenderTarget(currentColorView, ColorF::GetCornflowerBlue());
 
             _spriteBatch->Begin();
 
             for (auto& sprite : _sprites)
                 sprite.Draw(*_spriteBatch);
 
-            constexpr auto stringLine1 = L"the quick brown fox jumps over the lazy dog";
-            constexpr auto stringLine2 = L"THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG";
-            constexpr auto stringLine3 = L"1234567890";
+            WString fpsString = L"FPS: ";
+            fpsString += WString::ToString((Size)(1.0 / deltaTime.GetTotalSeconds()));
 
-            _spriteBatch->DrawString(_spriteFont, stringLine1, Vector2F(10.0f, 10.0f), {1.0f, 0.5f, 0.5f, 1.0f});
-            _spriteBatch->DrawString(_spriteFont, stringLine2, Vector2F(10.0f, 10.0f + _spriteFont->GetLineHeight()), {0.5f, 1.0f, 0.5f, 1.0f});
-            _spriteBatch->DrawString(_spriteFont, stringLine3, Vector2F(10.0f, 10.0f + _spriteFont->GetLineHeight() * 2), {1.0f, 1.0f, 1.0f, 1.0f}); 
+            _spriteBatch->DrawString(_spriteFont, fpsString, Vector2F(0, 0), ColorF::GetBlack());
+
+            WString spriteCountString = L"Sprite: ";
+            spriteCountString += WString::ToString(_sprites.GetLength());
+
+            _spriteBatch->DrawString(_spriteFont, spriteCountString, Vector2F(0, _spriteFont->GetLineHeight()), ColorF::GetBlack());
 
             _spriteBatch->End();
         }

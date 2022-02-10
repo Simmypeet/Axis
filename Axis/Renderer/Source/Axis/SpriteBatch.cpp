@@ -180,11 +180,11 @@ SpriteBatch::SpriteBatch(const System::SharedPointer<Graphics::IGraphicsDevice>&
 
     auto stagingWhiteTextureBuffer = graphicsDevice->CreateBuffer(stagingWhiteTextureBufferDescription, nullptr);
 
-    Graphics::ColorUI8 whiteColor = {255, 255, 255, 255};
+    Graphics::Color32 whiteColor = Graphics::Color32::GetWhite();
 
     auto mappedMemory = _immediateGraphicsDeviceContext->MapBuffer(stagingWhiteTextureBuffer, Graphics::MapAccess::Write, Graphics::MapType::Overwrite);
 
-    std::memcpy(mappedMemory, &whiteColor, sizeof(Graphics::ColorUI8));
+    std::memcpy(mappedMemory, &whiteColor, sizeof(Graphics::Color32));
 
     _immediateGraphicsDeviceContext->UnmapBuffer(stagingWhiteTextureBuffer);
 
@@ -473,7 +473,7 @@ void SpriteBatch::DrawString(const System::SharedPointer<SpriteFont>& spriteFont
                         texCoordTL,
                         texCoordBR,
                         colorMask);
-        } 
+        }
 
         firstGlyphOfLine = false;
     }

@@ -392,7 +392,6 @@ public:
     ///
     /// \param[in] fence Fence to be signaled.
     /// \param[in] fenceValue Value to set to the fence.
-    ///
     virtual void AppendSignalFence(const System::SharedPointer<IFence>& fence,
                                    Uint64                               fenceValue) = 0;
 
@@ -401,17 +400,14 @@ public:
     ///
     /// \param[in] fence Fence to wait.
     /// \param[in] fenceValue Value to wait for the fence.
-    ///
     virtual void AppendWaitFence(const System::SharedPointer<IFence>& fence,
                                  Uint64                               fenceValue) = 0;
 
     /// \brief Flushes all pending commands to execute.
-    ///
     virtual void Flush() = 0;
 
 protected:
     /// \brief Constructor
-    ///
     IDeviceContext(IGraphicsDevice&    graphicsDevice,
                    Uint32              deviceQueueFamilyIndex,
                    Uint32              deviceIndex,
@@ -420,7 +416,6 @@ protected:
     /// \brief Current activating render pass scope
     ///
     /// \private
-    ///
     struct RenderPassScope final
     {
         /// \brief Current render pass instance
@@ -435,7 +430,6 @@ protected:
     /// \brief Viewport binding info.
     ///
     /// \private
-    ///
     struct Viewport
     {
         /// \brief Rendering area in the 2D TextureView
@@ -454,7 +448,6 @@ protected:
     /// \brief Represents the vertex buffer binding
     ///
     /// \private
-    ///
     struct VertexBufferBinding
     {
         /// \brief Binding vertex buffer.
@@ -468,19 +461,15 @@ protected:
     /// \brief Current binding index buffer
     ///
     /// \private
-    ///
     struct IndexBufferBinding
     {
         /// \brief Strong reference to index buffer.
-        ///
         System::SharedPointer<IBuffer> IndexBuffer = nullptr;
 
         /// \brief Index buffer offset.
-        ///
         Size Offset = 0;
 
         /// \brief Index type.
-        ///
         IndexType Type = IndexType::Uint16;
     };
 
@@ -503,7 +492,6 @@ protected:
 
 private:
     /// Private members
-    ///
     RenderTargetBinding                                _currentRenderTargetBinding = {};
     IDeviceContext::Viewport                           _currentViewport            = {};
     System::RectangleI                                 _currentScissorRectangle    = {};

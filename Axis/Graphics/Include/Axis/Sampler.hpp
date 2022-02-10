@@ -105,79 +105,19 @@ struct SamplerDescription
 
     /// \brief Gets \a `SamplerDescription` for linear filtering
     ///        and texture coordinate clamping.
-    inline static SamplerDescription GetLinearClamp() noexcept
-    {
-        return {
-            SamplerFilter::Linear,
-            SamplerFilter::Linear,
-            SamplerFilter::Linear,
-            SamplerAddressMode::ClampToEdge,
-            SamplerAddressMode::ClampToEdge,
-            SamplerAddressMode::ClampToEdge,
-            0,
-            false,
-            0,
-            0,
-            NoLODClamp,
-            {0.0f, 0.0f, 0.0f, 0.0f}};
-    }
+    constexpr static SamplerDescription GetLinearClamp() noexcept;
 
     /// \brief Gets \a `SamplerDescription` for linear filtering
     ///        and texture coordinate wraping.
-    inline static SamplerDescription GetLinearWrap() noexcept
-    {
-        return {
-            SamplerFilter::Linear,
-            SamplerFilter::Linear,
-            SamplerFilter::Linear,
-            SamplerAddressMode::Repeat,
-            SamplerAddressMode::Repeat,
-            SamplerAddressMode::Repeat,
-            0,
-            false,
-            0,
-            0,
-            NoLODClamp,
-            {0.0f, 0.0f, 0.0f, 0.0f}};
-    }
+    constexpr static SamplerDescription GetLinearWrap() noexcept;
 
     /// \brief Gets \a `SamplerDescription` for nearest filtering
     ///        and texture coordinate clamping.
-    inline static SamplerDescription GetPointClamp() noexcept
-    {
-        return {
-            SamplerFilter::Nearest,
-            SamplerFilter::Nearest,
-            SamplerFilter::Nearest,
-            SamplerAddressMode::ClampToEdge,
-            SamplerAddressMode::ClampToEdge,
-            SamplerAddressMode::ClampToEdge,
-            0,
-            false,
-            0,
-            0,
-            NoLODClamp,
-            {0.0f, 0.0f, 0.0f, 0.0f}};
-    }
+    constexpr static SamplerDescription GetPointClamp() noexcept;
 
     /// \brief Gets \a `SamplerDescription` for nearest filtering
     ///        and texture coordinate wraping.
-    inline static SamplerDescription GetPointWrap() noexcept
-    {
-        return {
-            SamplerFilter::Nearest,
-            SamplerFilter::Nearest,
-            SamplerFilter::Nearest,
-            SamplerAddressMode::Repeat,
-            SamplerAddressMode::Repeat,
-            SamplerAddressMode::Repeat,
-            0,
-            false,
-            0,
-            0,
-            NoLODClamp,
-            {0.0f, 0.0f, 0.0f, 0.0f}};
-    }
+    constexpr static SamplerDescription GetPointWrap() noexcept;
 };
 
 /// \brief Represents the texture sampler object which can be sampled
@@ -196,5 +136,7 @@ protected:
 } // namespace Graphics
 
 } // namespace Axis
+
+#include "../../Private/Axis/SamplerImpl.inl"
 
 #endif // AXIS_GRAPHICS_SAMPLER_HPP

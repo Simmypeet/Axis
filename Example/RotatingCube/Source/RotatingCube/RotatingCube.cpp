@@ -245,11 +245,8 @@ int main(int argc, char** argv)
             // Gets the current swap chain's back buffer. (Depth stencil view)
             auto currentDepthStencilBackBuffer = GetSwapChain()->GetCurrentDepthStencilView();
 
-            // The window clear color value (XNA cornflower blue, good old days.....)
-            const ColorF clearColor = ColorF(100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f);
-
             // Clears the swapChain's back buffer to the specified color.
-            GetImmediateGraphicsContext()->ClearRenderTarget(currentRenderTargetBackBuffer, clearColor);
+            GetImmediateGraphicsContext()->ClearRenderTarget(currentRenderTargetBackBuffer, ColorF::GetCornflowerBlue());
 
             // Clears the swapChain's back buffer depth stencil value.
             GetImmediateGraphicsContext()->ClearDepthStencilView(currentDepthStencilBackBuffer, 1, 1.0f, ClearDepthStencil::Depth);

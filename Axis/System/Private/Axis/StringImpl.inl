@@ -552,7 +552,7 @@ inline String<T, Allocator> String<T, Allocator>::ToString(const U& value)
 
     if (value == 0)
     {
-        T* buffer = stringToReturn.Reserve(1);
+        stringToReturn.Reserve(1);
 
         T zero = T('0');
 

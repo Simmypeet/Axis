@@ -118,67 +118,13 @@ struct DepthStencilState final
     StencilOperationDescription BackFaceStencilOperation = {};
 
     /// \brief Gets \a `DepthStencilState` for not using a depth stencil buffer.
-    inline static DepthStencilState GetNone() noexcept
-    {
-        return {
-            false,
-            false,
-            CompareFunction::AlwaysTrue,
-            false,
-            0,
-            0,
-            {StencilOperation::Keep,
-             StencilOperation::Keep,
-             StencilOperation::Keep,
-             CompareFunction::AlwaysTrue},
-            {StencilOperation::Keep,
-             StencilOperation::Keep,
-             StencilOperation::Keep,
-             CompareFunction::AlwaysTrue},
-        };
-    }
+    constexpr static DepthStencilState GetNone() noexcept;
 
     /// \brief Gets \a `DepthStencilState` for using a depth stencil buffer.
-    inline static DepthStencilState GetDefault() noexcept
-    {
-        return {
-            true,
-            true,
-            CompareFunction::LesserEqual,
-            false,
-            0,
-            0,
-            {StencilOperation::Keep,
-             StencilOperation::Keep,
-             StencilOperation::Keep,
-             CompareFunction::AlwaysTrue},
-            {StencilOperation::Keep,
-             StencilOperation::Keep,
-             StencilOperation::Keep,
-             CompareFunction::AlwaysTrue},
-        };
-    }
+    constexpr static DepthStencilState GetDefault() noexcept;
 
     /// \brief Gets \a `DepthStencilState` for enabling a read-only depth stencil buffer.
-    inline static DepthStencilState GetDepthRead() noexcept
-    {
-        return {
-            true,
-            false,
-            CompareFunction::LesserEqual,
-            false,
-            0,
-            0,
-            {StencilOperation::Keep,
-             StencilOperation::Keep,
-             StencilOperation::Keep,
-             CompareFunction::AlwaysTrue},
-            {StencilOperation::Keep,
-             StencilOperation::Keep,
-             StencilOperation::Keep,
-             CompareFunction::AlwaysTrue},
-        };
-    }
+    constexpr static DepthStencilState GetDepthRead() noexcept;
 };
 
 /// \brief Describes the options for filling the vertrices and lines that define a primitive.
@@ -246,46 +192,13 @@ struct RasterizerState final
     Bool DepthClipEnable = {};
 
     /// \brief Gets \a `RasterizerState` with settings for culling primitives with clockwise winding order.
-    inline static RasterizerState GetCullClockwise() noexcept
-    {
-        return {
-            FillMode::Solid,
-            FrontFace::Clockwise,
-            CullMode::FrontFace,
-            false,
-            0,
-            0,
-            0,
-            true};
-    }
+    constexpr static RasterizerState GetCullClockwise() noexcept;
 
-    /// \brief AGets \a `RasterizerState` with settings for culling primitives with counter-clockwise winding order.
-    inline static RasterizerState GetCullCounterClockwise() noexcept
-    {
-        return {
-            FillMode::Solid,
-            FrontFace::Clockwise,
-            CullMode::BackFace,
-            false,
-            0,
-            0,
-            0,
-            true};
-    }
+    /// \brief Gets \a `RasterizerState` with settings for culling primitives with counter-clockwise winding order.
+    constexpr static RasterizerState GetCullCounterClockwise() noexcept;
 
     /// \brief Gets \a `RasterizerState` with settings for not culling any primitives.
-    inline static RasterizerState GetCullNone() noexcept
-    {
-        return {
-            FillMode::Solid,
-            FrontFace::Clockwise,
-            CullMode::None,
-            false,
-            0,
-            0,
-            0,
-            true};
-    }
+    constexpr static RasterizerState GetCullNone() noexcept;
 };
 
 /// \brief Specifies the blending factor in the blending formulars.
@@ -468,67 +381,19 @@ struct AttachmentBlendState
 
     /// \brief Gets \a `AttachmentBlendState` for alpha blend,
     ///        that is blending the source and destination data using alpha.
-    inline static AttachmentBlendState GetAlphaBlend() noexcept
-    {
-        return {
-            true,
-            BlendFactor::SourceAlpha,
-            BlendFactor::OneMinusSourceAlpha,
-            BlendFactor::SourceAlpha,
-            BlendFactor::OneMinusSourceAlpha,
-            BlendOperation::Add,
-            BlendOperation::Add,
-            ColorChannel::Red | ColorChannel::Green | ColorChannel::Blue | ColorChannel::Alpha,
-        };
-    }
+    constexpr static AttachmentBlendState GetAlphaBlend() noexcept;
 
     /// \brief Gets \a `AttachmentBlendState` for additive blend,
     ///        which is adding the destination data to the source data without using alpha.
-    inline static AttachmentBlendState GetAdditiveBlend() noexcept
-    {
-        return {
-            true,
-            BlendFactor::SourceAlpha,
-            BlendFactor::One,
-            BlendFactor::SourceAlpha,
-            BlendFactor::One,
-            BlendOperation::Add,
-            BlendOperation::Add,
-            ColorChannel::Red | ColorChannel::Green | ColorChannel::Blue | ColorChannel::Alpha,
-        };
-    }
+    constexpr static AttachmentBlendState GetAdditiveBlend() noexcept;
 
     /// \brief Gets \a `AttachmentBlendState` with non-premultipled alpha,
     ///        that is blending source and destination data using alpha while assuming the color data contains no alpha information.
-    inline static AttachmentBlendState GetNonPremultiplied() noexcept
-    {
-        return {
-            true,
-            BlendFactor::SourceAlpha,
-            BlendFactor::OneMinusSourceAlpha,
-            BlendFactor::SourceAlpha,
-            BlendFactor::OneMinusSourceAlpha,
-            BlendOperation::Add,
-            BlendOperation::Add,
-            ColorChannel::Red | ColorChannel::Green | ColorChannel::Blue | ColorChannel::Alpha,
-        };
-    }
+    constexpr static AttachmentBlendState GetNonPremultiplied() noexcept;
 
     /// \brief Gets \a `AttachmentBlendState` for opaque blend,
     ///        that is overwriting the source with the destination data.
-    inline static AttachmentBlendState GetOpaque() noexcept
-    {
-        return {
-            true,
-            BlendFactor::One,
-            BlendFactor::Zero,
-            BlendFactor::One,
-            BlendFactor::Zero,
-            BlendOperation::Add,
-            BlendOperation::Add,
-            ColorChannel::Red | ColorChannel::Green | ColorChannel::Blue | ColorChannel::Alpha,
-        };
-    }
+    constexpr static AttachmentBlendState GetOpaque() noexcept;
 };
 
 /// \brief Specifies the blending operations for all render targets.
@@ -605,5 +470,7 @@ protected:
 } // namespace Graphics
 
 } // namespace Axis
+
+#include "../../Private/Axis/GraphicsPipelineImpl.inl"
 
 #endif // AXIS_GRAPHICS_GRAPHICSPIPELINE_HPP

@@ -73,8 +73,8 @@ SpriteFont::SpriteFont(CPVoid                        fontData,
                        Size                          fontDataSize,
                        Uint32                        fontSize,
                        const FontAtlasConfiguration& atlasConfiguration) :
-    _atlasConfig(atlasConfiguration),
-    _fontSize(fontSize)
+    _fontSize(fontSize),
+    _atlasConfig(atlasConfiguration)
 {
     if (!fontData)
         throw System::InvalidArgumentException("fontData was nullptr!");
@@ -243,8 +243,6 @@ void SpriteFont::Initialize()
             // Gets the glyph
             if (FT_Load_Char(_fontFace, character, FT_LOAD_RENDER))
                 return;
-
-            auto& bbox = (_fontFace)->bbox;
 
             auto width  = _fontFace->glyph->bitmap.width;
             auto height = _fontFace->glyph->bitmap.rows;

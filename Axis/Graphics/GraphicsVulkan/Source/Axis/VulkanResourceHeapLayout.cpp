@@ -19,6 +19,8 @@ VulkanResourceHeapLayout::VulkanResourceHeapLayout(const ResourceHeapLayoutDescr
                                                    VulkanGraphicsDevice&                vulkanGraphicsDevice) :
     IResourceHeapLayout(description)
 {
+
+
     vulkanGraphicsDevice.AddDeviceChild(*this);
 
     auto CreateVkDescriptorSetLayout = [&]() -> VkDescriptorSetLayout {
