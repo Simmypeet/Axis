@@ -7,7 +7,6 @@
 #include <Axis/Renderer>
 #include <Axis/System>
 #include <Axis/Window>
-#include <iostream>
 
 using namespace Axis;
 using namespace Axis::System;
