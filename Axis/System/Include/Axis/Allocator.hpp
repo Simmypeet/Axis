@@ -328,6 +328,16 @@ inline constexpr bool GetNoThrowSelectOnContainerCopyConstruction()
         IsNoThrowCopyConstructible<Allocator>;
 }
 
+// Checks if the allocator provides `GetMaxSize` method
+template <class Allocator>
+concept AllocatorHasGetMaxSize = requires(const Allocator alloc)
+{
+    {
+        alloc.GetMaxSize()
+        } -> IsConvertible<typename AllocatorSizeTypeImpl<Allocator>::Type>;
+}
+&&noexcept(::Axis::System::MakeValue<Allocator>().GetMaxSize());
+
 }; // namespace Detail
 
 /// \brief Provides a mechanism for accessing allocator functions for a given type;
@@ -458,6 +468,13 @@ public:
     ///
     /// \param[in] allocator The allocator to copy.
     static constexpr T SelectOnContainerCopyConstruction(const T& allocator) noexcept(NoThrowSelectOnContainerCopyConstruction);
+
+    /// \brief Gets the maximum number of elements that can be allocated once.
+    ///
+    /// \param[in] allocator The allocator to use.
+    ///
+    /// \return The maximum number of elements that can be allocated once.
+    static constexpr SizeType GetMaxSize(const T& allocator) noexcept;
 };
 
 // clang-format off

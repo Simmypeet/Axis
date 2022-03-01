@@ -462,7 +462,7 @@ inline T& List<T, Alloc, IteratorDebugging>::EmplaceBack(Args&&... args)
 
     Reserve(Detail::RoundToNextPowerOfTwo(data.InitializedSize + 1));
 
-    AllocTraits::Construct(alloc, data.Begin, Forward<Args>(args)...);
+    AllocTraits::Construct(alloc, data.Begin + data.InitializedSize, Forward<Args>(args)...);
 
     ++data.InitializedSize;
 

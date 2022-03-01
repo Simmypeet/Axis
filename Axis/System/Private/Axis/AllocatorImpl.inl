@@ -4,6 +4,7 @@
 
 #ifndef AXIS_SYSTEM_ALLOCATORIMPL_INL
 #define AXIS_SYSTEM_ALLOCATORIMPL_INL
+#include <limits>
 #pragma once
 
 #include "../../Include/Axis/Allocator.hpp"
@@ -73,6 +74,17 @@ inline constexpr T AllocatorTraits<T>::SelectOnContainerCopyConstruction(const T
     {
         return allocator;
     }
+}
+
+template <DefaultType T>
+inline constexpr typename AllocatorTraits<T>::SizeType AllocatorTraits<T>::GetMaxSize(const T& allocator) noexcept
+{
+    if constexpr (Detail::AllocatorHasGetMaxSize<T>)
+    {
+        return allocator.GetMaxSize();
+    }
+    else
+        return std::numeric_limits<SizeType>::max() / sizeof(ValueType);
 }
 
 template <RawType T, MemoryResourceType MemoryResource>

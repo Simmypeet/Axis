@@ -214,8 +214,6 @@ DOCTEST_TEST_CASE("Axis list : [Axis::System]")
                 DOCTEST_CHECK(list[3].Instance == 3);
                 DOCTEST_CHECK(list[4].Instance == 4);
                 DOCTEST_CHECK(list[5].Instance == 5);
-
-                AXIS_DEBUG_TRAP();
             };
 
             // Reserves for 0 elements
@@ -226,9 +224,22 @@ DOCTEST_TEST_CASE("Axis list : [Axis::System]")
 
             // Reserves for more than the current size
             CheckReserve(10);
+        }
 
-            // Reserves for the maximum size (probably throws an exception)
-            CheckReserve(10000000000);
+        DOCTEST_SUBCASE("Append")
+        {
+            List<LeakTesterType> list = {0, 1, 2, 3, 4};
+
+            list.Append(5);
+
+            DOCTEST_CHECK(list.GetSize() == 6);
+
+            DOCTEST_CHECK(list[0].Instance == 0);
+            DOCTEST_CHECK(list[1].Instance == 1);
+            DOCTEST_CHECK(list[2].Instance == 2);
+            DOCTEST_CHECK(list[3].Instance == 3);
+            DOCTEST_CHECK(list[4].Instance == 4);
+            DOCTEST_CHECK(list[5].Instance == 5);
         }
     }
 }
