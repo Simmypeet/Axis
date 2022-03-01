@@ -45,7 +45,7 @@ void VulkanResourceHeap::BindBuffers(Uint32                                     
                                sizes,
                                startingArrayIndex);
 
-    Size resourceCount = buffers.GetLength();
+    Size resourceCount = buffers.GetSize();
 
     // Creates a copy of current binding (in case of exceptions)
     auto bufferBindingBackup = _vulkanBufferBindings;
@@ -85,7 +85,7 @@ void VulkanResourceHeap::BindSamplers(Uint32                                    
                                 textureViews,
                                 startingArrayIndex);
 
-    Size resourceCount = samplers.GetLength();
+    Size resourceCount = samplers.GetSize();
 
     // Creates a copy of current binding (in case of exceptions)
     auto vulkanSamplerBindingBackup = _vulkanSamplerBindings;
@@ -205,7 +205,7 @@ void VulkanResourceHeap::InternalBindResources(VulkanDeviceContext&      vulkanD
             descriptorWrite.descriptorCount      = 1;
             descriptorWrite.descriptorType       = descriptorType;
             descriptorWrite.pImageInfo           = nullptr;
-            descriptorWrite.pBufferInfo          = &descriptorBufferInfos[descriptorBufferInfos.GetLength() - 1];
+            descriptorWrite.pBufferInfo          = &descriptorBufferInfos[descriptorBufferInfos.GetSize() - 1];
             descriptorWrite.pTexelBufferView     = nullptr;
 
             writeDescriptorSets.Append(descriptorWrite);
@@ -258,7 +258,7 @@ void VulkanResourceHeap::InternalBindResources(VulkanDeviceContext&      vulkanD
             descriptorWrite.dstArrayElement      = resourceBindingInfo.First.ArrayIndex;
             descriptorWrite.descriptorCount      = 1;
             descriptorWrite.descriptorType       = descriptorType;
-            descriptorWrite.pImageInfo           = &descriptorImageInfos[descriptorImageInfos.GetLength() - 1];
+            descriptorWrite.pImageInfo           = &descriptorImageInfos[descriptorImageInfos.GetSize() - 1];
             descriptorWrite.pBufferInfo          = nullptr;
             descriptorWrite.pTexelBufferView     = nullptr;
 
@@ -269,7 +269,7 @@ void VulkanResourceHeap::InternalBindResources(VulkanDeviceContext&      vulkanD
     if (!descriptorSetGroup.UpToDate)
     {
         vkUpdateDescriptorSets(((VulkanGraphicsDevice*)GetCreatorDevice())->GetVkDeviceHandle(),
-                               (Uint32)writeDescriptorSets.GetLength(),
+                               (Uint32)writeDescriptorSets.GetSize(),
                                writeDescriptorSets.GetData(),
                                0,
                                nullptr);

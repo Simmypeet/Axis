@@ -47,7 +47,7 @@ inline System::Tuple<System::List<Uint32>, VkBufferCreateInfo> GetBufferCreation
     bufferCreateInfo.size                  = description.BufferSize;
     bufferCreateInfo.usage                 = bufferUsage;
     bufferCreateInfo.sharingMode           = indices ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
-    bufferCreateInfo.queueFamilyIndexCount = (Uint32)indices.GetLength();
+    bufferCreateInfo.queueFamilyIndexCount = (Uint32)indices.GetSize();
     bufferCreateInfo.pQueueFamilyIndices   = indices.GetData();
 
     return {{std::move(indices)}, {{bufferCreateInfo}}};

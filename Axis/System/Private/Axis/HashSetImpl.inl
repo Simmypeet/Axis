@@ -15,15 +15,15 @@ namespace Axis
 namespace System
 {
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline HashSet<T, Hasher, Comparer, Allocator>::~HashSet() noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline HashSet<T, Hasher, Comparer, MemRes>::~HashSet() noexcept
 {
     if (_pTable)
         ClearInternal<true>(_pTable, _capacity);
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline HashSet<T, Hasher, Comparer, Allocator>::HashSet(const HashSet<T, Hasher, Comparer, Allocator>& other) requires(std::is_copy_constructible_v<T>) :
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline HashSet<T, Hasher, Comparer, MemRes>::HashSet(const HashSet<T, Hasher, Comparer, MemRes>& other) requires(std::is_copy_constructible_v<T>) :
     _maxLoadFactor(other._maxLoadFactor),
     _hasher(other._hasher),
     _comparer(other._comparer)
@@ -72,8 +72,8 @@ inline HashSet<T, Hasher, Comparer, Allocator>::HashSet(const HashSet<T, Hasher,
     }
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline HashSet<T, Hasher, Comparer, Allocator>::HashSet(HashSet<T, Hasher, Comparer, Allocator>&& other) noexcept :
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline HashSet<T, Hasher, Comparer, MemRes>::HashSet(HashSet<T, Hasher, Comparer, MemRes>&& other) noexcept :
     _maxLoadFactor(other._maxLoadFactor),
     _hasher(std::move(other._hasher)),
     _comparer(std::move(other._comparer))
@@ -87,8 +87,8 @@ inline HashSet<T, Hasher, Comparer, Allocator>::HashSet(HashSet<T, Hasher, Compa
     other._nodeCount = 0;
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline HashSet<T, Hasher, Comparer, Allocator>& HashSet<T, Hasher, Comparer, Allocator>::operator=(const HashSet<T, Hasher, Comparer, Allocator>& other) requires(std::is_copy_constructible_v<T>)
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline HashSet<T, Hasher, Comparer, MemRes>& HashSet<T, Hasher, Comparer, MemRes>::operator=(const HashSet<T, Hasher, Comparer, MemRes>& other) requires(std::is_copy_constructible_v<T>)
 {
     if (this == &other)
         return *this;
@@ -181,8 +181,8 @@ inline HashSet<T, Hasher, Comparer, Allocator>& HashSet<T, Hasher, Comparer, All
 }
 
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline HashSet<T, Hasher, Comparer, Allocator>& HashSet<T, Hasher, Comparer, Allocator>::operator=(HashSet<T, Hasher, Comparer, Allocator>&& other) noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline HashSet<T, Hasher, Comparer, MemRes>& HashSet<T, Hasher, Comparer, MemRes>::operator=(HashSet<T, Hasher, Comparer, MemRes>&& other) noexcept
 {
     if (this == &other)
         return *this;
@@ -200,9 +200,9 @@ inline HashSet<T, Hasher, Comparer, Allocator>& HashSet<T, Hasher, Comparer, All
     return *this;
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
 template <class Reference, class Pointer>
-struct HashSet<T, Hasher, Comparer, Allocator>::Iterator
+struct HashSet<T, Hasher, Comparer, MemRes>::Iterator
 {
 public:
     using reference  = Reference; ///< Reference type
@@ -289,26 +289,26 @@ private:
     friend struct Iterator;
 };
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline Size HashSet<T, Hasher, Comparer, Allocator>::GetSize() const noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline Size HashSet<T, Hasher, Comparer, MemRes>::GetSize() const noexcept
 {
     return _nodeCount;
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline Float32 HashSet<T, Hasher, Comparer, Allocator>::GetCurrentLoadFactor() const noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline Float32 HashSet<T, Hasher, Comparer, MemRes>::GetCurrentLoadFactor() const noexcept
 {
     return (Float32)_nodeCount / _capacity;
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline Float32 HashSet<T, Hasher, Comparer, Allocator>::GetMaxLoadFactor() const noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline Float32 HashSet<T, Hasher, Comparer, MemRes>::GetMaxLoadFactor() const noexcept
 {
     return _maxLoadFactor;
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline Bool HashSet<T, Hasher, Comparer, Allocator>::SetMaxLoadFactor(Float32 maxLoadFactor) noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline Bool HashSet<T, Hasher, Comparer, MemRes>::SetMaxLoadFactor(Float32 maxLoadFactor) noexcept
 {
     if (maxLoadFactor <= 0.0f || maxLoadFactor > 1.0f)
     {
@@ -320,26 +320,26 @@ inline Bool HashSet<T, Hasher, Comparer, Allocator>::SetMaxLoadFactor(Float32 ma
     return true;
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline typename HashSet<T, Hasher, Comparer, Allocator>::const_iterator HashSet<T, Hasher, Comparer, Allocator>::Find(const T& value) const noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline typename HashSet<T, Hasher, Comparer, MemRes>::const_iterator HashSet<T, Hasher, Comparer, MemRes>::Find(const T& value) const noexcept
 {
     return FindIndirect<T, const_iterator>(value);
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::iterator> HashSet<T, Hasher, Comparer, Allocator>::Insert(const T& value) requires(std::is_copy_constructible_v<T>)
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline Pair<Bool, typename HashSet<T, Hasher, Comparer, MemRes>::iterator> HashSet<T, Hasher, Comparer, MemRes>::Insert(const T& value) requires(std::is_copy_constructible_v<T>)
 {
     return InsertPerfectForwarding<const T&>(value);
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::iterator> HashSet<T, Hasher, Comparer, Allocator>::Insert(T&& value) requires(std::is_move_constructible_v<T>)
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline Pair<Bool, typename HashSet<T, Hasher, Comparer, MemRes>::iterator> HashSet<T, Hasher, Comparer, MemRes>::Insert(T&& value) requires(std::is_move_constructible_v<T>)
 {
     return InsertPerfectForwarding<T&&>(std::move(value));
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline void HashSet<T, Hasher, Comparer, Allocator>::Reserve(Size newSize)
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline void HashSet<T, Hasher, Comparer, MemRes>::Reserve(Size newSize)
 {
     if (newSize <= _capacity)
         return;
@@ -347,7 +347,7 @@ inline void HashSet<T, Hasher, Comparer, Allocator>::Reserve(Size newSize)
     newSize = Math::RoundToNextPowerOfTwo(newSize);
 
     // Allocate the new memory
-    auto newTable = (Node**)Allocator::Allocate(newSize * Axis::PointerSize, 1);
+    auto newTable = (Node**)MemRes::Allocate(newSize * Axis::PointerSize, 1);
 
     for (Size i = 0; i < newSize; ++i)
         newTable[i] = nullptr;
@@ -393,47 +393,47 @@ inline void HashSet<T, Hasher, Comparer, Allocator>::Reserve(Size newSize)
     _capacity = newSize;
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::const_iterator> HashSet<T, Hasher, Comparer, Allocator>::Remove(const T& element) noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline Pair<Bool, typename HashSet<T, Hasher, Comparer, MemRes>::const_iterator> HashSet<T, Hasher, Comparer, MemRes>::Remove(const T& element) noexcept
 {
     return RemoveIndirect<T, const_iterator>(element);
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline void HashSet<T, Hasher, Comparer, Allocator>::Clear() noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline void HashSet<T, Hasher, Comparer, MemRes>::Clear() noexcept
 {
     ClearInternal<false>(_pTable, _capacity);
 
     _nodeCount = 0;
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline typename HashSet<T, Hasher, Comparer, Allocator>::const_iterator HashSet<T, Hasher, Comparer, Allocator>::begin() const noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline typename HashSet<T, Hasher, Comparer, MemRes>::const_iterator HashSet<T, Hasher, Comparer, MemRes>::begin() const noexcept
 {
     return Begin<const_iterator>();
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline typename HashSet<T, Hasher, Comparer, Allocator>::const_iterator HashSet<T, Hasher, Comparer, Allocator>::end() const noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline typename HashSet<T, Hasher, Comparer, MemRes>::const_iterator HashSet<T, Hasher, Comparer, MemRes>::end() const noexcept
 {
     return End<const_iterator>();
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline typename HashSet<T, Hasher, Comparer, Allocator>::iterator HashSet<T, Hasher, Comparer, Allocator>::NonConstBegin() noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline typename HashSet<T, Hasher, Comparer, MemRes>::iterator HashSet<T, Hasher, Comparer, MemRes>::NonConstBegin() noexcept
 {
     return Begin<iterator>();
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
-inline typename HashSet<T, Hasher, Comparer, Allocator>::iterator HashSet<T, Hasher, Comparer, Allocator>::NonConstEnd() noexcept
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
+inline typename HashSet<T, Hasher, Comparer, MemRes>::iterator HashSet<T, Hasher, Comparer, MemRes>::NonConstEnd() noexcept
 {
     return End<iterator>();
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
 template <class IndirectType, class IteratorVariant>
-inline IteratorVariant HashSet<T, Hasher, Comparer, Allocator>::FindIndirect(const IndirectType& element) const noexcept
+inline IteratorVariant HashSet<T, Hasher, Comparer, MemRes>::FindIndirect(const IndirectType& element) const noexcept
 {
     if (_capacity == 0)
         return End<IteratorVariant>();
@@ -458,9 +458,9 @@ inline IteratorVariant HashSet<T, Hasher, Comparer, Allocator>::FindIndirect(con
     return IteratorVariant(_pTable, _capacity, index, nullptr);
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
 template <class IndirectType, class IteratorVariant>
-inline Pair<Bool, IteratorVariant> HashSet<T, Hasher, Comparer, Allocator>::RemoveIndirect(const IndirectType& element) noexcept
+inline Pair<Bool, IteratorVariant> HashSet<T, Hasher, Comparer, MemRes>::RemoveIndirect(const IndirectType& element) noexcept
 {
     if (_capacity == 0)
         return {false, End<IteratorVariant>()};
@@ -495,7 +495,7 @@ inline Pair<Bool, IteratorVariant> HashSet<T, Hasher, Comparer, Allocator>::Remo
             node->Data.~T();
 
             // Deallocate the node
-            Allocator::Deallocate(node);
+            MemRes::Deallocate(node);
 
             // Checks if the next node is nullptr and if so, looks for the next non-nullptr node
             if (nextNode == nullptr)
@@ -522,9 +522,9 @@ inline Pair<Bool, IteratorVariant> HashSet<T, Hasher, Comparer, Allocator>::Remo
     return {false, IteratorVariant(_pTable, _capacity, _capacity, nullptr)};
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
 template <class IteratorVariant, class... Args>
-inline Pair<Bool, IteratorVariant> HashSet<T, Hasher, Comparer, Allocator>::InsertInternal(Node** pTable, Size tableSize, Args&&... args)
+inline Pair<Bool, IteratorVariant> HashSet<T, Hasher, Comparer, MemRes>::InsertInternal(Node** pTable, Size tableSize, Args&&... args)
 {
     // Calculate the hash
     auto hash = _hasher(args...);
@@ -544,7 +544,7 @@ inline Pair<Bool, IteratorVariant> HashSet<T, Hasher, Comparer, Allocator>::Inse
     }
 
     // Create the node
-    node = (Node*)Allocator::Allocate(sizeof(Node), alignof(Node));
+    node = (Node*)MemRes::Allocate(sizeof(Node), alignof(Node));
 
     if constexpr (std::is_nothrow_constructible_v<T, Args...>)
         new (&node->Data) T(std::forward<Args>(args)...);
@@ -556,7 +556,7 @@ inline Pair<Bool, IteratorVariant> HashSet<T, Hasher, Comparer, Allocator>::Inse
         }
         catch (...)
         {
-            Allocator::Deallocate(node);
+            MemRes::Deallocate(node);
             throw;
         }
     }
@@ -568,9 +568,9 @@ inline Pair<Bool, IteratorVariant> HashSet<T, Hasher, Comparer, Allocator>::Inse
     return {true, IteratorVariant(pTable, tableSize, index, node)};
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
 template <class... Args>
-inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::iterator> HashSet<T, Hasher, Comparer, Allocator>::InsertPerfectForwarding(Args&&... args)
+inline Pair<Bool, typename HashSet<T, Hasher, Comparer, MemRes>::iterator> HashSet<T, Hasher, Comparer, MemRes>::InsertPerfectForwarding(Args&&... args)
 {
     // Load factor after insertion
     auto newLoadFactor = (Float32)_nodeCount / _capacity;
@@ -587,9 +587,9 @@ inline Pair<Bool, typename HashSet<T, Hasher, Comparer, Allocator>::iterator> Ha
     return it;
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
 template <Bool ClearTable>
-inline void HashSet<T, Hasher, Comparer, Allocator>::ClearInternal(Node** pTable, Size tableSize)
+inline void HashSet<T, Hasher, Comparer, MemRes>::ClearInternal(Node** pTable, Size tableSize)
 {
     for (Size i = 0; i < tableSize; ++i)
     {
@@ -602,7 +602,7 @@ inline void HashSet<T, Hasher, Comparer, Allocator>::ClearInternal(Node** pTable
             if constexpr (!PodType<T>)
                 currentNode->Data.~T();
 
-            Allocator::Deallocate(currentNode);
+            MemRes::Deallocate(currentNode);
 
             currentNode = nextNode;
         }
@@ -613,13 +613,13 @@ inline void HashSet<T, Hasher, Comparer, Allocator>::ClearInternal(Node** pTable
     if constexpr (ClearTable)
     {
         if (pTable)
-            Allocator::Deallocate(pTable);
+            MemRes::Deallocate(pTable);
     }
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
 template <class IteratorVariant>
-inline IteratorVariant HashSet<T, Hasher, Comparer, Allocator>::Begin() const requires(std::is_same_v<IteratorVariant, iterator> || std::is_same_v<IteratorVariant, const_iterator>)
+inline IteratorVariant HashSet<T, Hasher, Comparer, MemRes>::Begin() const requires(std::is_same_v<IteratorVariant, iterator> || std::is_same_v<IteratorVariant, const_iterator>)
 {
     // If the table is empty, return an iterator to the end of the table
     if (_nodeCount == 0)
@@ -643,9 +643,9 @@ inline IteratorVariant HashSet<T, Hasher, Comparer, Allocator>::Begin() const re
     return IteratorVariant(_pTable, _capacity, index, currentNode);
 }
 
-template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, AllocatorType Allocator>
+template <RawType T, HasherType<T> Hasher, ComparerType<T> Comparer, MemoryResourceType MemRes>
 template <class IteratorVariant>
-inline IteratorVariant HashSet<T, Hasher, Comparer, Allocator>::End() const requires(std::is_same_v<IteratorVariant, iterator> || std::is_same_v<IteratorVariant, const_iterator>)
+inline IteratorVariant HashSet<T, Hasher, Comparer, MemRes>::End() const requires(std::is_same_v<IteratorVariant, iterator> || std::is_same_v<IteratorVariant, const_iterator>)
 {
     return IteratorVariant(_pTable, _capacity, _capacity, nullptr);
 }

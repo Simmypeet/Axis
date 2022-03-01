@@ -28,7 +28,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
         VkPipelineLayout vkPipelineLayout = VK_NULL_HANDLE;
 
         System::List<VkDescriptorSetLayout> descriptorSetLayouts;
-        descriptorSetLayouts.ReserveFor(description.ResourceHeapLayouts.GetLength());
+        descriptorSetLayouts.ReserveFor(description.ResourceHeapLayouts.GetSize());
 
         for (const auto& resourceHeapLayout : description.ResourceHeapLayouts)
         {
@@ -40,8 +40,8 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
         pipelineLayoutCreateInfo.pNext                      = nullptr;
         pipelineLayoutCreateInfo.pPushConstantRanges        = nullptr;
         pipelineLayoutCreateInfo.pushConstantRangeCount     = 0;
-        pipelineLayoutCreateInfo.setLayoutCount             = (Uint32)descriptorSetLayouts.GetLength();
-        pipelineLayoutCreateInfo.pSetLayouts                = descriptorSetLayouts.GetLength() == 0 ? nullptr : descriptorSetLayouts.GetData();
+        pipelineLayoutCreateInfo.setLayoutCount             = (Uint32)descriptorSetLayouts.GetSize();
+        pipelineLayoutCreateInfo.pSetLayouts                = descriptorSetLayouts.GetSize() == 0 ? nullptr : descriptorSetLayouts.GetData();
 
         auto vkResult = vkCreatePipelineLayout(((VulkanGraphicsDevice*)GetCreatorDevice())->GetVkDeviceHandle(),
                                                &pipelineLayoutCreateInfo,
@@ -64,7 +64,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
     if (!description.RenderPass)
     {
         RenderPassDescription renderPassDesc = {};
-        renderPassDesc.Attachments           = System::List<RenderPassAttachment>(description.DepthStencilViewFormat == TextureFormat::Unknown ? description.RenderTargetViewFormats.GetLength() : description.RenderTargetViewFormats.GetLength() + 1);
+        renderPassDesc.Attachments           = System::List<RenderPassAttachment>(description.DepthStencilViewFormat == TextureFormat::Unknown ? description.RenderTargetViewFormats.GetSize() : description.RenderTargetViewFormats.GetSize() + 1);
         renderPassDesc.Subpasses             = System::List<SubpassDescription>(1);
 
         auto& allAttachments = renderPassDesc.Attachments;
@@ -87,9 +87,9 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
             renderPassDesc.Subpasses[0].DepthStencilReference.SubpassState = ResourceState::DepthStencilWrite;
         }
 
-        renderPassDesc.Subpasses[0].RenderTargetReferences = System::List<AttachmentReference>(description.RenderTargetViewFormats.GetLength());
+        renderPassDesc.Subpasses[0].RenderTargetReferences = System::List<AttachmentReference>(description.RenderTargetViewFormats.GetSize());
 
-        for (Size i = 0; i < description.RenderTargetViewFormats.GetLength(); i++)
+        for (Size i = 0; i < description.RenderTargetViewFormats.GetSize(); i++)
         {
             Size indexNow = description.DepthStencilViewFormat == TextureFormat::Unknown ? i : i + 1;
 
@@ -138,8 +138,8 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
 
         System::List<VkVertexInputBindingDescription>   inputBindingDescriptions;
         System::List<VkVertexInputAttributeDescription> inputAttributesDescriptions;
-        inputBindingDescriptions.ReserveFor(description.VertexBindingDescriptions.GetLength());
-        inputAttributesDescriptions.ReserveFor(description.VertexBindingDescriptions.GetLength());
+        inputBindingDescriptions.ReserveFor(description.VertexBindingDescriptions.GetSize());
+        inputAttributesDescriptions.ReserveFor(description.VertexBindingDescriptions.GetSize());
 
         if (description.VertexBindingDescriptions)
         {
@@ -167,10 +167,10 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
                 }
             }
 
-            vertexInputInfo.vertexBindingDescriptionCount = (Uint32)inputBindingDescriptions.GetLength();
+            vertexInputInfo.vertexBindingDescriptionCount = (Uint32)inputBindingDescriptions.GetSize();
             vertexInputInfo.pVertexBindingDescriptions    = inputBindingDescriptions.GetData();
 
-            vertexInputInfo.vertexAttributeDescriptionCount = (Uint32)inputAttributesDescriptions.GetLength();
+            vertexInputInfo.vertexAttributeDescriptionCount = (Uint32)inputAttributesDescriptions.GetSize();
             vertexInputInfo.pVertexAttributeDescriptions    = inputAttributesDescriptions.GetData();
         }
         else
@@ -235,7 +235,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
 
 
         System::List<VkPipelineColorBlendAttachmentState> attachmentBlendStates = {};
-        attachmentBlendStates.ReserveFor(description.Blend.RenderTargetBlendStates.GetLength());
+        attachmentBlendStates.ReserveFor(description.Blend.RenderTargetBlendStates.GetSize());
 
         for (const auto& attachmentBlendState : description.Blend.RenderTargetBlendStates)
         {
@@ -261,7 +261,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
         colorBlending.sType                               = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         colorBlending.logicOpEnable                       = description.Blend.LogicOperationEnable ? VK_TRUE : VK_FALSE;
         colorBlending.logicOp                             = VulkanUtility::GetVkLogicOpFromLogicOperation(description.Blend.LogicOp);
-        colorBlending.attachmentCount                     = (Uint32)attachmentBlendStates.GetLength();
+        colorBlending.attachmentCount                     = (Uint32)attachmentBlendStates.GetSize();
         colorBlending.pAttachments                        = attachmentBlendStates.GetData();
         colorBlending.blendConstants[0]                   = 0.0f;
         colorBlending.blendConstants[1]                   = 0.0f;
@@ -296,7 +296,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
 
         VkGraphicsPipelineCreateInfo pipelineInfo = {};
         pipelineInfo.sType                        = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount                   = (Uint32)shaderStages.GetLength();
+        pipelineInfo.stageCount                   = (Uint32)shaderStages.GetSize();
         pipelineInfo.pStages                      = shaderStages.GetData();
         pipelineInfo.pVertexInputState            = &vertexInputInfo;
         pipelineInfo.pViewportState               = &viewportState;

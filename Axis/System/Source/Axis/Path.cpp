@@ -32,7 +32,7 @@ Bool IsPathValid(const StringView<WChar>& path)
         const wchar_t currentChar = *current;
 
         // Found invalid characters in path
-        for (Size i = 0; i < InvalidPathCharacters.GetLength(); i++)
+        for (Size i = 0; i < InvalidPathCharacters.GetSize(); i++)
         {
             if (currentChar == InvalidPathCharacters[i])
                 return false;
@@ -69,7 +69,7 @@ WString CombinePath(const Span<WString>& paths)
         if (!IsPathValid(path))
             return {};
 
-        pathSizeToReserve = path.GetLength();
+        pathSizeToReserve = path.GetSize();
     }
 
     // Reserve heap memory
@@ -86,16 +86,16 @@ WString CombinePath(const Span<WString>& paths)
         // Adds to the path
         combinedPath += path;
 
-        if (combinedPath[combinedPath.GetLength() - 1] != '\\' && combinedPath[combinedPath.GetLength() - 1] != '/')
+        if (combinedPath[combinedPath.GetSize() - 1] != '\\' && combinedPath[combinedPath.GetSize() - 1] != '/')
         {
             combinedPath += DirectorySeparator;
         }
     }
 
-    if (combinedPath[combinedPath.GetLength() - 1] == '\\' || combinedPath[combinedPath.GetLength() - 1] == '/')
+    if (combinedPath[combinedPath.GetSize() - 1] == '\\' || combinedPath[combinedPath.GetSize() - 1] == '/')
     {
         // Removes trailing directory seperator
-        combinedPath.RemoveAt(combinedPath.GetLength() - 1);
+        combinedPath.RemoveAt(combinedPath.GetSize() - 1);
     }
 
 

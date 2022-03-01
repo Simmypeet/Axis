@@ -60,12 +60,12 @@ System::UniquePointer<VulkanDescriptorSetGroup> VulkanDescriptorPool::GetDescrip
 {
     System::UniquePointer<VulkanDescriptorSetGroup> descriptorSetGroupToReturn;
 
-    if (_descriptorSetGroups.GetLength())
+    if (_descriptorSetGroups.GetSize())
     {
         {
             std::scoped_lock lockGuard(_vectorMutex);
 
-            for (Size i = 0; i < _descriptorSetGroups.GetLength(); i++)
+            for (Size i = 0; i < _descriptorSetGroups.GetSize(); i++)
             {
                 if (_descriptorSetGroups[i]->IsAvailable())
                 {
@@ -82,7 +82,7 @@ System::UniquePointer<VulkanDescriptorSetGroup> VulkanDescriptorPool::GetDescrip
             return descriptorSetGroupToReturn;
     }
 
-    if (_currentAllocation == GetCurrentGroupSize() || _descriptorPools.GetLength() == 0)
+    if (_currentAllocation == GetCurrentGroupSize() || _descriptorPools.GetSize() == 0)
         AddPool();
 
     VkDescriptorSet vkDescriptorSet = VK_NULL_HANDLE;
@@ -92,7 +92,7 @@ System::UniquePointer<VulkanDescriptorSetGroup> VulkanDescriptorPool::GetDescrip
     VkDescriptorSetAllocateInfo descriptorSetAllocationInfo = {};
     descriptorSetAllocationInfo.sType                       = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     descriptorSetAllocationInfo.pNext                       = nullptr;
-    descriptorSetAllocationInfo.descriptorPool              = _descriptorPools[_descriptorPools.GetLength() - 1];
+    descriptorSetAllocationInfo.descriptorPool              = _descriptorPools[_descriptorPools.GetSize() - 1];
     descriptorSetAllocationInfo.descriptorSetCount          = 1;
     descriptorSetAllocationInfo.pSetLayouts                 = &descriptorSetLayout;
 
@@ -126,7 +126,7 @@ void VulkanDescriptorPool::MarkAllAsNotUpToDate() noexcept
 
 void VulkanDescriptorPool::AddPool()
 {
-    const Size currentAllocationGroup = _descriptorPools.GetLength();
+    const Size currentAllocationGroup = _descriptorPools.GetSize();
     const Size multiplier             = InitialDescriptorSetPoolSize + currentAllocationGroup;
     _currentAllocation                = 0;
 
@@ -134,7 +134,7 @@ void VulkanDescriptorPool::AddPool()
 
     auto CreateVkDescriptorPool = [&]() -> VkDescriptorPool {
         System::List<VkDescriptorPoolSize> descriptorPoolSizes = {};
-        descriptorPoolSizes.ReserveFor(_resourceHeapDesc.ResourceHeapLayout->Description.ResourceBindings.GetLength());
+        descriptorPoolSizes.ReserveFor(_resourceHeapDesc.ResourceHeapLayout->Description.ResourceBindings.GetSize());
 
         for (const auto& resourceBinding : _resourceHeapDesc.ResourceHeapLayout->Description.ResourceBindings)
         {
@@ -150,8 +150,8 @@ void VulkanDescriptorPool::AddPool()
         descriptorPoolCreateInfo.pNext                      = nullptr;
         descriptorPoolCreateInfo.flags                      = 0;
         descriptorPoolCreateInfo.maxSets                    = (Uint32)multiplier;
-        descriptorPoolCreateInfo.poolSizeCount              = (Uint32)descriptorPoolSizes.GetLength();
-        descriptorPoolCreateInfo.pPoolSizes                 = descriptorPoolSizes.GetLength() == 0 ? nullptr : descriptorPoolSizes.GetData();
+        descriptorPoolCreateInfo.poolSizeCount              = (Uint32)descriptorPoolSizes.GetSize();
+        descriptorPoolCreateInfo.pPoolSizes                 = descriptorPoolSizes.GetSize() == 0 ? nullptr : descriptorPoolSizes.GetData();
 
         VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 

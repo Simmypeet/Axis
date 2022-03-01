@@ -27,7 +27,7 @@ public:
     static constexpr Size Length = N;
 
     /// \brief Gets the length of the array.
-    AXIS_NODISCARD constexpr Size GetLength() const noexcept;
+    AXIS_NODISCARD constexpr Size GetSize() const noexcept;
 
     /// \brief Indexing operator. Gets the reference to the element at the specified index.
     ///

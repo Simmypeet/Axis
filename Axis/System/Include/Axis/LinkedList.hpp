@@ -21,7 +21,7 @@ namespace System
 ///
 /// \tparam T Type of object to store in the list.
 /// \tparam Allocator Type of allocator to use for memory management.
-template <RawType T, AllocatorType Allocator = DefaultAllocator>
+template <RawType T, MemoryResourceType MemRes = DefaultMemoryResource>
 class LinkedList final
 {
 public:

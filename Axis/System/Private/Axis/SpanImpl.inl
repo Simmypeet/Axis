@@ -38,7 +38,7 @@ inline constexpr Span<T>::Span(const T* begin,
 template <RawType T>
 inline Span<T>::Span(const List<T>& array) noexcept :
     _begin(array.GetData()),
-    _end(array.GetData() + array.GetLength()) {}
+    _end(array.GetData() + array.GetSize()) {}
 
 template <RawType T>
 template <Size N>
@@ -47,7 +47,7 @@ inline constexpr Span<T>::Span(const T (&array)[N]) noexcept :
     _end(array + N) {}
 
 template <RawType T>
-inline constexpr Size Span<T>::GetLength() const noexcept
+inline constexpr Size Span<T>::GetSize() const noexcept
 {
     return (Size)(_end - _begin);
 }
@@ -73,13 +73,13 @@ inline constexpr const T* Span<T>::end() const noexcept
 template <RawType T>
 inline constexpr Bool Span<T>::operator==(NullptrType) const noexcept
 {
-    return !GetLength();
+    return !GetSize();
 }
 
 template <RawType T>
 inline constexpr Bool Span<T>::operator!=(NullptrType) const noexcept
 {
-    return GetLength();
+    return GetSize();
 }
 
 template <RawType T>
@@ -91,7 +91,7 @@ inline constexpr Span<T>::operator Bool() const noexcept
 template <RawType T>
 inline constexpr const T& Span<T>::operator[](Size index) const
 {
-    if (index >= GetLength())
+    if (index >= GetSize())
         throw ArgumentOutOfRangeException("`index` was out of range!");
 
     return _begin[index];

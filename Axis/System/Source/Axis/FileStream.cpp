@@ -7,9 +7,9 @@
 #include <Axis/Enum.hpp>
 #include <Axis/Exception.hpp>
 #include <Axis/FileStream.hpp>
-#include <corecrt_wstdio.h>
 #include <cstdio>
 #include <errno.h>
+#include <stdio.h>
 
 
 namespace Axis
@@ -199,7 +199,7 @@ Size FileStream::GetPosition() const
         return result;
 }
 
-Size FileStream::GetLength() const
+Size FileStream::GetSize() const
 {
     if (_fileHandle == nullptr)
         throw InvalidOperationException("FileStream was not opened!");

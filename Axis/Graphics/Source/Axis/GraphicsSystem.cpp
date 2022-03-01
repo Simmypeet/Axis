@@ -22,7 +22,7 @@ void IGraphicsSystem::ValidateCreateGraphicsDeviceAndContexts(Uint32            
 {
     auto graphicsAdapters = GetGraphicsAdapters();
 
-    if (adapterIndex >= graphicsAdapters.GetLength())
+    if (adapterIndex >= graphicsAdapters.GetSize())
         throw System::ArgumentOutOfRangeException("`adapterIndex` was out of range!");
 
     if (!immediateContextCreateInfos)
@@ -30,9 +30,9 @@ void IGraphicsSystem::ValidateCreateGraphicsDeviceAndContexts(Uint32            
 
     System::List<DeviceQueueFamily> currentDeviceQueueFamilies = graphicsAdapters[adapterIndex].DeviceQueueFamilies;
 
-    for (Uint64 i = 0; i < immediateContextCreateInfos.GetLength(); i++)
+    for (Uint64 i = 0; i < immediateContextCreateInfos.GetSize(); i++)
     {
-        if (immediateContextCreateInfos[i].DeviceQueueFamilyIndex >= currentDeviceQueueFamilies.GetLength())
+        if (immediateContextCreateInfos[i].DeviceQueueFamilyIndex >= currentDeviceQueueFamilies.GetSize())
             throw System::InvalidArgumentException("`immediateContextCreateInfos` contained out of range device queue family indices!");
 
         if (!currentDeviceQueueFamilies[immediateContextCreateInfos[i].DeviceQueueFamilyIndex].QueueCount)

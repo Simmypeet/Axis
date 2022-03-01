@@ -49,7 +49,7 @@ public:
     Span(const List<T>& array) noexcept;
 
     /// \brief Gets the number of element contained in the span.
-    AXIS_NODISCARD constexpr Size GetLength() const noexcept;
+    AXIS_NODISCARD constexpr Size GetSize() const noexcept;
 
     /// \brief Gets pointer to the read-only buffer.
     AXIS_NODISCARD constexpr const T* GetData() const noexcept;

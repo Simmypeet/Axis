@@ -43,14 +43,14 @@ inline constexpr StringView<T>::StringView(const T* begin, const T* end) :
 }
 
 template <CharType T>
-template <AllocatorType Allocator>
-inline constexpr StringView<T>::StringView(const String<T, Allocator>& string) noexcept :
+template <MemoryResourceType MemRes>
+inline constexpr StringView<T>::StringView(const String<T, MemRes>& string) noexcept :
     _stringBuffer(string.GetCString()),
-    _stringLength(string.GetLength()),
+    _stringLength(string.GetSize()),
     _nullTerminatedView(true) {}
 
 template <CharType T>
-inline constexpr Size StringView<T>::GetLength() const noexcept
+inline constexpr Size StringView<T>::GetSize() const noexcept
 {
     // String length calculation is defferred for the null terminated string
     if (_nullTerminatedView && _stringLength == 0)
@@ -68,13 +68,13 @@ inline constexpr const T* StringView<T>::GetCString() const noexcept
 template <CharType T>
 inline constexpr Bool StringView<T>::IsNullOrEmpty() const noexcept
 {
-    return !(Bool)GetLength();
+    return !(Bool)GetSize();
 }
 
 template <CharType T>
 inline constexpr StringView<T>::operator Bool() const noexcept
 {
-    return GetLength();
+    return GetSize();
 }
 
 template <CharType T>
@@ -98,7 +98,7 @@ inline constexpr const T* StringView<T>::begin() const noexcept
 template <CharType T>
 inline constexpr const T* StringView<T>::end() const noexcept
 {
-    return _stringBuffer + GetLength();
+    return _stringBuffer + GetSize();
 }
 
 template <CharType T>
@@ -110,29 +110,29 @@ inline constexpr Bool StringView<T>::IsNullTerminated() const noexcept
 template <CharType T>
 inline constexpr const T& StringView<T>::operator[](Size index) const
 {
-    if (index >= GetLength())
+    if (index >= GetSize())
         throw ArgumentOutOfRangeException("`index` was out of range!");
 
     return _stringBuffer[index];
 }
 
 template <CharType T>
-template <AllocatorType Allocator>
-inline constexpr StringView<T>::operator String<T, Allocator>() const
+template <MemoryResourceType MemRes>
+inline constexpr StringView<T>::operator String<T, MemRes>() const
 {
-    return String<T, Allocator>(_stringBuffer, _stringBuffer + GetLength());
+    return String<T, MemRes>(_stringBuffer, _stringBuffer + GetSize());
 }
 
 } // namespace System
 
 } // namespace Axis
 
-template <Axis::System::CharType T, Axis::System::CharType U, Axis::System::AllocatorType Allocator>
-Axis::System::String<T, Allocator>& operator+=(Axis::System::String<T, Allocator>& LHS, const Axis::System::StringView<U>& RHS)
+template <Axis::System::CharType T, Axis::System::CharType U, Axis::System::MemoryResourceType MemRes>
+Axis::System::String<T, MemRes>& operator+=(Axis::System::String<T, MemRes>& LHS, const Axis::System::StringView<U>& RHS)
 {
     LHS.Insert(RHS.begin(),
                RHS.end(),
-               LHS.GetLength());
+               LHS.GetSize());
     return LHS;
 }
 
@@ -140,14 +140,12 @@ Axis::System::String<T, Allocator>& operator+=(Axis::System::String<T, Allocator
 template <class OStream, class T>
 OStream& operator<<(OStream& stream, const Axis::System::StringView<T>& stringView)
 {
-    for (Axis::Size i = 0; i < stringView.GetLength(); i++)
+    for (Axis::Size i = 0; i < stringView.GetSize(); i++)
     {
         stream << stringView[i];
     }
 
     return stream;
 }
-
-
 
 #endif // AXIS_SYSTEM_STRINGVIEWIMPL_INLs

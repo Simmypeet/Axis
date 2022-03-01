@@ -47,7 +47,7 @@ public:
     virtual Size GetPosition() const = 0;
 
     /// \brief Gets the length in bytes of the stream.
-    virtual Size GetLength() const = 0;
+    virtual Size GetSize() const = 0;
 
     /// \brief Reads a sequence of bytes from the current stream and
     ///        advances the position within the stream by the number of bytes read.

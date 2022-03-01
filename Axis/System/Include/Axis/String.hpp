@@ -9,7 +9,6 @@
 #include "Math.hpp"
 #include "Memory.hpp"
 #include "Trait.hpp"
-#include <concepts>
 
 namespace Axis
 {
@@ -19,12 +18,12 @@ namespace System
 
 /// \brief Type of character with different size.
 template <class T>
-concept CharType = std::is_same_v<T, Char> ||(std::is_same_v<T, WChar> || std::is_same_v<T, char8_t> || std::is_same_v<T, char16_t> || std::is_same_v<T, char32_t>);
+concept CharType = IsSame<T, Char> || IsSame<T, WChar> || IsSame<T, char8_t> || IsSame<T, char16_t> || IsSame<T, char32_t>;
 
 /// \brief Container which contains a null terminated character sequence.
 ///
 /// \tparam T internal string data type.
-template <CharType T, AllocatorType Allocator = DefaultAllocator>
+template <CharType T, MemoryResourceType MemRes = DefaultMemoryResource>
 class String final
 {
 public:
@@ -65,8 +64,8 @@ public:
     /// \brief Constructs a string from different character type.
     ///
     /// \param[in] other instance to copy
-    template <CharType U, AllocatorType OtherAllocator>
-    String(const String<U, OtherAllocator>& other);
+    template <CharType U, MemoryResourceType OtherMemRes>
+    String(const String<U, OtherMemRes>& other);
 
     /// \brief Destructor
     ~String() noexcept;
@@ -122,16 +121,16 @@ public:
     /// \param[in] other instance to compare.
     ///
     /// \return Returns true if the string is equal to the other string.
-    template <CharType U, AllocatorType OtherAllocator>
-    AXIS_NODISCARD Bool operator==(const String<U, OtherAllocator>& other) const noexcept;
+    template <CharType U, MemoryResourceType OtherMemRes>
+    AXIS_NODISCARD Bool operator==(const String<U, OtherMemRes>& other) const noexcept;
 
     /// \brief Inequality operator.
     ///
     /// \param[in] other instance to compare.
     ///
     /// \return Returns true if the string is equal to the other string.
-    template <CharType U, AllocatorType OtherAllocator>
-    AXIS_NODISCARD Bool operator!=(const String<U, OtherAllocator>& other) const noexcept;
+    template <CharType U, MemoryResourceType OtherMemRes>
+    AXIS_NODISCARD Bool operator!=(const String<U, OtherMemRes>& other) const noexcept;
 
     /// \brief Array subscript operator
     ///
@@ -179,15 +178,15 @@ public:
     /// \brief Gets the number of elements in the string (null terminated character is not included).
     ///
     /// \return Returns the number of elements in the string.
-    AXIS_NODISCARD Size GetLength() const noexcept;
+    AXIS_NODISCARD Size GetSize() const noexcept;
 
     /// \brief Appends a single character to the string.
     template <CharType U>
     String& operator+=(const U& character);
 
     /// \brief Apeends the string.
-    template <CharType U, AllocatorType OtherAllocator>
-    String& operator+=(const String<U, OtherAllocator>& string);
+    template <CharType U, MemoryResourceType OtherMemRes>
+    String& operator+=(const String<U, OtherMemRes>& string);
 
     /// \brief Appends a null terminated character sequence to the string.
     template <CharType U>
@@ -212,7 +211,7 @@ public:
 
     /// \brief Parses the numerics value to the string.
     template <ArithmeticType U>
-    AXIS_NODISCARD static String<T, Allocator> ToString(const U& value);
+    AXIS_NODISCARD static String<T, MemRes> ToString(const U& value);
 
 private:
     template <Bool Move = true>
@@ -232,21 +231,21 @@ private:
     Size _stringLength  = 0;    // Caches the string length to this variable. not included null terminated character.
     Bool _isSmallString = true; // Indicates whether the current string is using small string optimization.
 
-    template <CharType, AllocatorType>
+    template <CharType, MemoryResourceType>
     friend class String;
 };
 
 /// \brief Data structure which contains null terminated `Axis::Char` sequence.
-using String8 = String<Char, DefaultAllocator>;
+using String8 = String<Char, DefaultMemoryResource>;
 
 /// \brief Data structure which contains null terminated `Axis::WChar` sequence.
-using WString = String<WChar, DefaultAllocator>;
+using WString = String<WChar, DefaultMemoryResource>;
 
 /// \brief Data structure which contains null terminated `char8_t` sequence.
-using StringU8 = String<char8_t, DefaultAllocator>;
+using StringU8 = String<char8_t, DefaultMemoryResource>;
 
 /// \brief Data structure which contains null terminated `char16_t` sequence.
-using StringU16 = String<char16_t, DefaultAllocator>;
+using StringU16 = String<char16_t, DefaultMemoryResource>;
 
 } // namespace System
 

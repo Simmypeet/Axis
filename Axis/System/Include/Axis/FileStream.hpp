@@ -89,7 +89,7 @@ public:
     Size GetPosition() const override final;
 
     /// \brief Gets the length in bytes of the stream.
-    Size GetLength() const override final;
+    Size GetSize() const override final;
 
     /// \brief Reads a sequence of bytes from the current stream and
     ///        advances the position within the stream by the number of bytes read.

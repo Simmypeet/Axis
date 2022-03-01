@@ -73,7 +73,7 @@ public:
     void MarkAllAsNotUpToDate() noexcept;
 
 private:
-    inline Size GetCurrentGroupSize() const noexcept { return InitialDescriptorSetPoolSize + _descriptorPools.GetLength() - 1; }
+    inline Size GetCurrentGroupSize() const noexcept { return InitialDescriptorSetPoolSize + _descriptorPools.GetSize() - 1; }
     void        AddPool();
 
     System::List<VkPtr<VkDescriptorPool>>                         _descriptorPools     = {};

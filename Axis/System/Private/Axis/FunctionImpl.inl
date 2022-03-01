@@ -72,23 +72,23 @@ inline constexpr auto VTable = CreateVTable<Functor, ReturnType, Args...>();
 
 } // namespace Private
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Function<ReturnType(Args...), Allocator>::Function() noexcept {}
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Function<ReturnType(Args...), MemRes>::Function() noexcept {}
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Function<ReturnType(Args...), Allocator>::Function(decltype(nullptr)) noexcept {}
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Function<ReturnType(Args...), MemRes>::Function(decltype(nullptr)) noexcept {}
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
 template <Callable<ReturnType, Args...> Functor, typename>
-Function<ReturnType(Args...), Allocator>::Function(const Functor& f) :
-    _pVtable(reinterpret_cast<const typename Function<ReturnType(Args...), Allocator>::VTable*>(&Private::VTable<Functor, ReturnType, Args...>)),
+Function<ReturnType(Args...), MemRes>::Function(const Functor& f) :
+    _pVtable(reinterpret_cast<const typename Function<ReturnType(Args...), MemRes>::VTable*>(&Private::VTable<Functor, ReturnType, Args...>)),
     _dynamicBufferSize(sizeof(Functor) > SmallBufferOptimizationSize ? sizeof(Functor) : 0)
 {
     if (_pVtable)
     {
         if (_dynamicBufferSize)
         {
-            DynamicBuffer = Allocator::Allocate(_dynamicBufferSize, alignof(std::max_align_t));
+            DynamicBuffer = MemRes::Allocate(_dynamicBufferSize, alignof(std::max_align_t));
 
             _pVtable->CopyConstruct(DynamicBuffer, std::addressof(f));
         }
@@ -99,17 +99,17 @@ Function<ReturnType(Args...), Allocator>::Function(const Functor& f) :
     }
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
 template <Callable<ReturnType, Args...> Functor, typename>
-Function<ReturnType(Args...), Allocator>::Function(Functor&& f) :
-    _pVtable(reinterpret_cast<const typename Function<ReturnType(Args...), Allocator>::VTable*>(&Private::VTable<Functor, ReturnType, Args...>)),
+Function<ReturnType(Args...), MemRes>::Function(Functor&& f) :
+    _pVtable(reinterpret_cast<const typename Function<ReturnType(Args...), MemRes>::VTable*>(&Private::VTable<Functor, ReturnType, Args...>)),
     _dynamicBufferSize(sizeof(Functor) > SmallBufferOptimizationSize ? sizeof(Functor) : 0)
 {
     if (_pVtable)
     {
         if (_dynamicBufferSize)
         {
-            DynamicBuffer = Allocator::Allocate(_dynamicBufferSize, alignof(std::max_align_t));
+            DynamicBuffer = MemRes::Allocate(_dynamicBufferSize, alignof(std::max_align_t));
 
             _pVtable->MoveConstruct(DynamicBuffer, std::addressof(f));
         }
@@ -120,8 +120,8 @@ Function<ReturnType(Args...), Allocator>::Function(Functor&& f) :
     }
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Function<ReturnType(Args...), Allocator>::Function(const Function& other) :
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Function<ReturnType(Args...), MemRes>::Function(const Function& other) :
     _pVtable(other._pVtable),
     _dynamicBufferSize(other._dynamicBufferSize)
 {
@@ -129,7 +129,7 @@ Function<ReturnType(Args...), Allocator>::Function(const Function& other) :
     {
         if (_dynamicBufferSize)
         {
-            DynamicBuffer = Allocator::Allocate(_dynamicBufferSize, alignof(std::max_align_t));
+            DynamicBuffer = MemRes::Allocate(_dynamicBufferSize, alignof(std::max_align_t));
 
             _pVtable->CopyConstruct(DynamicBuffer, other.DynamicBuffer);
         }
@@ -140,8 +140,8 @@ Function<ReturnType(Args...), Allocator>::Function(const Function& other) :
     }
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Function<ReturnType(Args...), Allocator>::Function(Function&& other) noexcept :
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Function<ReturnType(Args...), MemRes>::Function(Function&& other) noexcept :
     _pVtable(other._pVtable),
     _dynamicBufferSize(other._dynamicBufferSize)
 {
@@ -160,14 +160,14 @@ Function<ReturnType(Args...), Allocator>::Function(Function&& other) noexcept :
     other._dynamicBufferSize = 0;
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Function<ReturnType(Args...), Allocator>::~Function() noexcept
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Function<ReturnType(Args...), MemRes>::~Function() noexcept
 {
     Destroy();
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-ReturnType Function<ReturnType(Args...), Allocator>::operator()(Args&&... args)
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+ReturnType Function<ReturnType(Args...), MemRes>::operator()(Args&&... args)
 {
     if (!_pVtable)
         throw InvalidOperationException("Attempted to call a null function");
@@ -175,8 +175,8 @@ ReturnType Function<ReturnType(Args...), Allocator>::operator()(Args&&... args)
     return _pVtable->Invoke(_dynamicBufferSize ? DynamicBuffer : Storage.GetStoragePtr(), std::forward<Args>(args)...);
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Function<ReturnType(Args...), Allocator>& Function<ReturnType(Args...), Allocator>::operator=(const Function& other)
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Function<ReturnType(Args...), MemRes>& Function<ReturnType(Args...), MemRes>::operator=(const Function& other)
 {
     if (this == std::addressof(other))
         return *this;
@@ -186,7 +186,7 @@ Function<ReturnType(Args...), Allocator>& Function<ReturnType(Args...), Allocato
         // Allocates a new buffer if necessary
         if (other._dynamicBufferSize)
         {
-            auto newBuffer = Allocator::Allocate(other._dynamicBufferSize, alignof(std::max_align_t));
+            auto newBuffer = MemRes::Allocate(other._dynamicBufferSize, alignof(std::max_align_t));
 
             other._pVtable->CopyConstruct(newBuffer, other.DynamicBuffer);
 
@@ -210,8 +210,8 @@ Function<ReturnType(Args...), Allocator>& Function<ReturnType(Args...), Allocato
     return *this;
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Function<ReturnType(Args...), Allocator>& Function<ReturnType(Args...), Allocator>::operator=(Function&& other) noexcept
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Function<ReturnType(Args...), MemRes>& Function<ReturnType(Args...), MemRes>::operator=(Function&& other) noexcept
 {
     if (this == std::addressof(other))
         return *this;
@@ -239,20 +239,20 @@ Function<ReturnType(Args...), Allocator>& Function<ReturnType(Args...), Allocato
     return *this;
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Bool Function<ReturnType(Args...), Allocator>::operator==(decltype(nullptr)) const noexcept
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Bool Function<ReturnType(Args...), MemRes>::operator==(decltype(nullptr)) const noexcept
 {
     return _pVtable == nullptr;
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Bool Function<ReturnType(Args...), Allocator>::operator!=(decltype(nullptr)) const noexcept
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Bool Function<ReturnType(Args...), MemRes>::operator!=(decltype(nullptr)) const noexcept
 {
     return _pVtable != nullptr;
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Function<ReturnType(Args...), Allocator>& Function<ReturnType(Args...), Allocator>::operator=(decltype(nullptr)) noexcept
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Function<ReturnType(Args...), MemRes>& Function<ReturnType(Args...), MemRes>::operator=(decltype(nullptr)) noexcept
 {
     Destroy();
 
@@ -261,21 +261,21 @@ Function<ReturnType(Args...), Allocator>& Function<ReturnType(Args...), Allocato
     return *this;
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-Function<ReturnType(Args...), Allocator>::operator Bool() const noexcept
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+Function<ReturnType(Args...), MemRes>::operator Bool() const noexcept
 {
     return _pVtable != nullptr;
 }
 
-template <AllocatorType Allocator, class ReturnType, class... Args>
-void Function<ReturnType(Args...), Allocator>::Destroy() noexcept
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+void Function<ReturnType(Args...), MemRes>::Destroy() noexcept
 {
     if (_pVtable)
     {
         _pVtable->Destruct(_dynamicBufferSize ? DynamicBuffer : Storage.GetStoragePtr());
 
         if (_dynamicBufferSize)
-            Allocator::Deallocate(DynamicBuffer);
+            MemRes::Deallocate(DynamicBuffer);
     }
 }
 

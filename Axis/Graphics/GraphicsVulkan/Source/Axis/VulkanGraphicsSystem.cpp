@@ -147,9 +147,9 @@ VulkanGraphicsSystem::VulkanGraphicsSystem()
         VkInstanceCreateInfo instanceCreateInfo    = {};
         instanceCreateInfo.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instanceCreateInfo.pApplicationInfo        = &appInfo;
-        instanceCreateInfo.enabledLayerCount       = (Axis::Uint32)Axis::Graphics::VulkanGraphicsSystem::InstanceLayers.GetLength();
+        instanceCreateInfo.enabledLayerCount       = (Axis::Uint32)Axis::Graphics::VulkanGraphicsSystem::InstanceLayers.GetSize();
         instanceCreateInfo.ppEnabledLayerNames     = Axis::Graphics::VulkanGraphicsSystem::InstanceLayers.GetData();
-        instanceCreateInfo.enabledExtensionCount   = (Axis::Uint32)Axis::Graphics::VulkanGraphicsSystem::InstancecExtensions.GetLength();
+        instanceCreateInfo.enabledExtensionCount   = (Axis::Uint32)Axis::Graphics::VulkanGraphicsSystem::InstancecExtensions.GetSize();
         instanceCreateInfo.ppEnabledExtensionNames = Axis::Graphics::VulkanGraphicsSystem::InstancecExtensions.GetData();
 
         auto result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
@@ -297,7 +297,7 @@ System::Pair<System::SharedPointer<IGraphicsDevice>, System::List<System::Shared
 SwapChainSpecification VulkanGraphicsSystem::GetSwapChainSpecification(Uint32                                              adapterIndex,
                                                                        const System::SharedPointer<Window::DisplayWindow>& targetWindow) const
 {
-    if (adapterIndex >= _vulkanPhysicalDevices.GetLength())
+    if (adapterIndex >= _vulkanPhysicalDevices.GetSize())
         throw System::ArgumentOutOfRangeException("`adapterIndex` was out of range!");
 
     return _vulkanPhysicalDevices[adapterIndex].GetSwapChainSpecification(GetVkSurfaceKHR(targetWindow));

@@ -39,12 +39,12 @@ Bool VulkanRenderPassCacheKey::operator==(const VulkanRenderPassCacheKey& RHS) c
     const Bool generalEquality =
         SampleCount == RHS.SampleCount &&
         DepthStencilViewFormat == RHS.DepthStencilViewFormat &&
-        RenderTargetViewFormats.GetLength() == RHS.RenderTargetViewFormats.GetLength();
+        RenderTargetViewFormats.GetSize() == RHS.RenderTargetViewFormats.GetSize();
 
     if (!generalEquality)
         return false;
 
-    for (Size i = 0; i < RenderTargetViewFormats.GetLength(); i++)
+    for (Size i = 0; i < RenderTargetViewFormats.GetSize(); i++)
     {
         if (RenderTargetViewFormats[i] != RHS.RenderTargetViewFormats[i])
             return false;
@@ -78,7 +78,7 @@ System::SharedPointer<IRenderPass> VulkanRenderPassCache::GetRenderPass(const Vu
     if (iterator == _hashCache.end())
     {
         RenderPassDescription renderPassDesc = {};
-        renderPassDesc.Attachments           = System::List<RenderPassAttachment>(renderPassCacheKey.DepthStencilViewFormat == TextureFormat::Unknown ? renderPassCacheKey.RenderTargetViewFormats.GetLength() : renderPassCacheKey.RenderTargetViewFormats.GetLength() + 1);
+        renderPassDesc.Attachments           = System::List<RenderPassAttachment>(renderPassCacheKey.DepthStencilViewFormat == TextureFormat::Unknown ? renderPassCacheKey.RenderTargetViewFormats.GetSize() : renderPassCacheKey.RenderTargetViewFormats.GetSize() + 1);
         renderPassDesc.Subpasses             = System::List<SubpassDescription>(1);
 
         auto& allAttachments = renderPassDesc.Attachments;
@@ -101,9 +101,9 @@ System::SharedPointer<IRenderPass> VulkanRenderPassCache::GetRenderPass(const Vu
             renderPassDesc.Subpasses[0].DepthStencilReference.SubpassState = ResourceState::DepthStencilWrite;
         }
 
-        renderPassDesc.Subpasses[0].RenderTargetReferences = System::List<AttachmentReference>(renderPassCacheKey.RenderTargetViewFormats.GetLength());
+        renderPassDesc.Subpasses[0].RenderTargetReferences = System::List<AttachmentReference>(renderPassCacheKey.RenderTargetViewFormats.GetSize());
 
-        for (Size i = 0; i < renderPassCacheKey.RenderTargetViewFormats.GetLength(); i++)
+        for (Size i = 0; i < renderPassCacheKey.RenderTargetViewFormats.GetSize(); i++)
         {
             Size indexNow = renderPassCacheKey.DepthStencilViewFormat == TextureFormat::Unknown ? i : i + 1;
 

@@ -33,43 +33,45 @@ template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline UniquePointer<T, Deleter>::UniquePointer(NullptrType) noexcept {}
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
-inline UniquePointer<T, Deleter>::UniquePointer(PointerType ptr) noexcept :
-    _objectPointer(ptr) {}
+inline UniquePointer<T, Deleter>::UniquePointer(PointerType    ptr,
+                                                const Deleter& deleter) noexcept :
+    _pair(ptr, deleter) {}
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline UniquePointer<T, Deleter>::UniquePointer(UniquePointer<T, Deleter>&& other) noexcept :
-    _objectPointer(other._objectPointer)
+    _pair(PerfectForwardTag, MoveConstructIfNoThrow(other._pair.GetFirst()), MoveConstructIfNoThrow(other._pair.GetSecond()))
 {
-    other._objectPointer = nullptr;
+    other._pair.GetFirst() = nullptr;
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 template <SmartPointerType U, SmartPointerDeleterType<U> AnotherDeleter>
 inline UniquePointer<T, Deleter>::UniquePointer(UniquePointer<U, AnotherDeleter>&& other) noexcept requires(ConvertibleFrom<U>) :
-    _objectPointer(other._objectPointer)
+    _pair(PerfectForwardTag, MoveConstructIfNoThrow(other._pair.GetFirst()), MoveConstructIfNoThrow(other._pair.GetSecond()))
 {
-    other._objectPointer = nullptr;
+    other._pair.GetFirst() = nullptr;
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline UniquePointer<T, Deleter>::~UniquePointer() noexcept
 {
-    if (_objectPointer != nullptr)
-        Deleter{}(_objectPointer);
+    if (_pair.GetFirst() != nullptr)
+        _pair.GetSecond()(_pair.GetFirst());
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline UniquePointer<T, Deleter>& UniquePointer<T, Deleter>::operator=(UniquePointer<T, Deleter>&& other) noexcept
 {
-    if (this == std::addressof(other))
+    if (this == AddressOf(other))
         return *this;
 
-    if (_objectPointer != nullptr)
-        Deleter{}(_objectPointer);
+    if (_pair.GetFirst() != nullptr)
+        _pair.GetSecond()(_pair.GetFirst());
 
-    _objectPointer = other._objectPointer;
+    _pair.GetFirst()  = MoveAssignIfNoThrow(_pair.GetFirst());
+    _pair.GetSecond() = MoveAssignIfNoThrow(_pair.GetSecond());
 
-    other._objectPointer = nullptr;
+    other._pair.GetFirst() = nullptr;
 
     return *this;
 }
@@ -85,15 +87,16 @@ template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 template <SmartPointerType U, SmartPointerDeleterType<U> AnotherDeleter>
 inline UniquePointer<T, Deleter>& UniquePointer<T, Deleter>::operator=(UniquePointer<U, AnotherDeleter>&& other) noexcept requires(ConvertibleFrom<U>)
 {
-    if (*this == std::addressof(other))
+    if (this == AddressOf(other))
         return *this;
 
-    if (_objectPointer != nullptr)
-        Deleter{}(_objectPointer);
+    if (_pair.GetFirst() != nullptr)
+        _pair.GetSecond()(_pair.GetFirst());
 
-    _objectPointer = other._objectPointer;
+    _pair.GetFirst()  = MoveAssignIfNoThrow(_pair.GetFirst());
+    _pair.GetSecond() = MoveAssignIfNoThrow(_pair.GetSecond());
 
-    other._objectPointer = nullptr;
+    other._pair.GetFirst() = nullptr;
 
     return *this;
 }
@@ -102,52 +105,51 @@ template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 template <SmartPointerType U, typename>
 inline std::add_lvalue_reference_t<std::remove_all_extents_t<T>> UniquePointer<T, Deleter>::operator*() const noexcept
 {
-    return *_objectPointer;
+    return *(_pair.GetFirst());
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 template <SmartPointerType U, typename>
 inline typename UniquePointer<T, Deleter>::PointerType UniquePointer<T, Deleter>::operator->() const noexcept
 {
-    return _objectPointer;
+    return _pair.GetFirst();
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline std::add_lvalue_reference_t<std::remove_all_extents_t<T>> UniquePointer<T, Deleter>::operator[](Size index) const requires(std::is_unbounded_array_v<T>)
 {
-    return _objectPointer[index];
+    return _pair.GetFirst()[index];
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline Bool UniquePointer<T, Deleter>::operator==(NullptrType) const noexcept
 {
-    return _objectPointer == nullptr;
+    return _pair.GetFirst() == nullptr;
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline Bool UniquePointer<T, Deleter>::operator!=(NullptrType) const noexcept
 {
-    return _objectPointer != nullptr;
+    return _pair.GetFirst() != nullptr;
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline UniquePointer<T, Deleter>::operator Bool() const noexcept
 {
-    return _objectPointer != nullptr;
+    return _pair.GetFirst() != nullptr;
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline typename UniquePointer<T, Deleter>::PointerType UniquePointer<T, Deleter>::GetPointer() const noexcept
 {
-    return _objectPointer;
+    return _pair.GetFirst();
 }
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline void UniquePointer<T, Deleter>::Reset() noexcept
 {
-    Deleter{}(_objectPointer);
-
-    _objectPointer = nullptr;
+    if (_pair.GetFirst() != nullptr)
+        _pair.GetSecond()(_pair.GetFirst());
 }
 
 // ===> SharedPointer vvv
@@ -211,18 +213,20 @@ class ReferenceCounterConstructor final : public IReferenceCounter // reference 
 public:
     ReferenceCounterConstructor(std::remove_all_extents_t<T>* objectPointer,
                                 Deleter&&                     deleter) noexcept :
-        _objectPointer(objectPointer),
-        _deleter(deleter) {}
+        _pair(PerfectForwardTag, objectPointer, Move(deleter)) {}
+
+    ReferenceCounterConstructor(std::remove_all_extents_t<T>* objectPointer,
+                                const Deleter&                deleter) noexcept :
+        _pair(PerfectForwardTag, objectPointer, deleter) {}
 
     // Using Deleter to delete the object
-    inline void DeleteObject() noexcept override final { _deleter(_objectPointer); }
+    inline void DeleteObject() noexcept override final { _pair.GetSecond()(_pair.GetFirst()); }
 
     // Using Axis::Delete to delete this reference counter
     inline void DeleteThisCounter() noexcept override final { Axis::System::Delete(this); }
 
 private:
-    std::remove_all_extents_t<T>* _objectPointer = nullptr; // pointer to the original object
-    Deleter                       _deleter;                 // Deleter
+    CompressedPair<std::remove_all_extents_t<T>*, Deleter> _pair;
 };
 
 struct MakeSharedHeaderArray final
@@ -231,7 +235,7 @@ struct MakeSharedHeaderArray final
     PVoid OriginalMemory; // Pointer to the memory which is allocated in the first place
 };
 
-template <SmartPointerType T, AllocatorType Allocator>
+template <SmartPointerType T, MemoryResourceType MemRes>
 class ReferenceCounterMakeShared final : public IReferenceCounter // reference counter when creates with `MakeShared` and `AllocatedMakeShared`
 {
 public:
@@ -262,11 +266,11 @@ public:
         {
             MakeSharedHeaderArray* header = (MakeSharedHeaderArray*)(((PVoid)_objectPointer)) - 1;
 
-            Allocator::Deallocate(header->OriginalMemory);
+            MemRes::Deallocate(header->OriginalMemory);
         }
         else
         {
-            Allocator::Deallocate(_objectPointer);
+            MemRes::Deallocate(_objectPointer);
         }
     }
 
@@ -765,43 +769,43 @@ SharedPointer<T> WeakPointer<T>::Generate() const noexcept
 template <SmartPointerType T, class... Args, typename>
 inline SharedPointer<T> MakeShared(Args&&... args) requires(std::is_constructible_v<T, Args...>)
 {
-    return AllocatedMakeShared<T, DefaultAllocator, Args...>(std::forward<Args>(args)...);
+    return AllocatedMakeShared<T, DefaultMemoryResource, Args...>(std::forward<Args>(args)...);
 }
 
 template <SmartPointerType T, typename>
 inline SharedPointer<T> MakeShared(Size elementCount) requires(std::is_default_constructible_v<std::remove_all_extents_t<T>>)
 {
-    return AllocatedMakeShared<T, DefaultAllocator>(elementCount);
+    return AllocatedMakeShared<T, DefaultMemoryResource>(elementCount);
 }
 
-template <SmartPointerType T, AllocatorType Allocator, class... Args, typename>
+template <SmartPointerType T, MemoryResourceType MemRes, class... Args, typename>
 inline SharedPointer<T> AllocatedMakeShared(Args&&... args) requires(std::is_constructible_v<T, Args...>)
 {
     // Allocates the memory to accommodate the object and reference counter in the same allocation
-    PVoid memory = Allocator::Allocate(sizeof(T) + sizeof(Detail::ReferenceCounterMakeShared<T, Allocator>), alignof(T));
+    PVoid memory = MemRes::Allocate(sizeof(T) + sizeof(Detail::ReferenceCounterMakeShared<T, MemRes>), alignof(T));
 
     // Constructs the object
-    if constexpr (std::is_nothrow_constructible_v<T, Args...>)
+    if constexpr (IsNothrowConstructible<T, Args...>)
     {
-        new ((T*)memory) T(std::forward<Args>(args)...);
+        new ((T*)memory) T(Forward<Args>(args)...);
     }
     else
     {
         try
         {
-            new ((T*)memory) T(std::forward<Args>(args)...);
+            new ((T*)memory) T(Forward<Args>(args)...);
         }
         catch (...)
         {
-            Allocator::Deallocate(memory);
+            MemRes::Deallocate(memory);
             throw;
         }
     }
 
     // Constructs the reference counter
-    auto referenceCounterPointer = (Detail::ReferenceCounterMakeShared<T, Allocator>*)((PVoid)(((T*)memory) + 1));
+    auto referenceCounterPointer = (Detail::ReferenceCounterMakeShared<T, MemRes>*)((PVoid)(((T*)memory) + 1));
 
-    new (referenceCounterPointer) Detail::ReferenceCounterMakeShared<T, Allocator>((T*)memory);
+    new (referenceCounterPointer) Detail::ReferenceCounterMakeShared<T, MemRes>((T*)memory);
 
     SharedPointer<T> sharedPointer;
 
@@ -819,7 +823,7 @@ inline SharedPointer<T> AllocatedMakeShared(Args&&... args) requires(std::is_con
     return sharedPointer;
 }
 
-template <SmartPointerType T, AllocatorType Allocator, typename>
+template <SmartPointerType T, MemoryResourceType MemRes, typename>
 inline SharedPointer<T> AllocatedMakeShared(Size elementCount) requires(std::is_default_constructible_v<std::remove_all_extents_t<T>>)
 {
     constexpr auto ElementSize  = sizeof(std::remove_all_extents_t<T>);
@@ -831,10 +835,10 @@ inline SharedPointer<T> AllocatedMakeShared(Size elementCount) requires(std::is_
     Int64 offset = ElementAlign - 1 + sizeof(Detail::MakeSharedHeaderArray);
 
     // Size of memory to allocate for the array
-    auto memorySize = (elementCount * ElementSize) + offset + sizeof(Detail::ReferenceCounterMakeShared<T, Allocator>);
+    auto memorySize = (elementCount * ElementSize) + offset + sizeof(Detail::ReferenceCounterMakeShared<T, MemRes>);
 
     // Malloc'ed memory
-    PVoid originalMemory = Allocator::Allocate(memorySize, 1);
+    PVoid originalMemory = MemRes::Allocate(memorySize, 1);
 
     // Calculates the aligned memory address.
     PVoid* alignedMemory = (PVoid*)(((Size)(originalMemory) + offset) & ~(alignof(T) - 1)); // Aligned block
@@ -878,7 +882,7 @@ inline SharedPointer<T> AllocatedMakeShared(Size elementCount) requires(std::is_
                 objectArray[i].~Type();
 
             // Frees the memory
-            Allocator::Deallocate(originalMemory);
+            MemRes::Deallocate(originalMemory);
 
             // Rethrows the exception
             throw;
@@ -886,9 +890,9 @@ inline SharedPointer<T> AllocatedMakeShared(Size elementCount) requires(std::is_
     }
 
     // Constructs the reference counter
-    auto referenceCounterPointer = (Detail::ReferenceCounterMakeShared<T, Allocator>*)((PVoid)(objectArray + elementCount));
+    auto referenceCounterPointer = (Detail::ReferenceCounterMakeShared<T, MemRes>*)((PVoid)(objectArray + elementCount));
 
-    new (referenceCounterPointer) Detail::ReferenceCounterMakeShared<T, Allocator>((PointerType)objectArray);
+    new (referenceCounterPointer) Detail::ReferenceCounterMakeShared<T, MemRes>((PointerType)objectArray);
 
     SharedPointer<T> sharedPointer;
     sharedPointer._objectPointer    = objectArray;

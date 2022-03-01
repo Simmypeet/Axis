@@ -20,7 +20,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             String8 helloWorld = "Hello World";
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(helloWorld.GetLength() == 11);
+            DOCTEST_CHECK(helloWorld.GetSize() == 11);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(helloWorld == "Hello World");
@@ -29,7 +29,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             String8 nullString = nullptr;
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(nullString.GetLength() == 0);
+            DOCTEST_CHECK(nullString.GetSize() == 0);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(nullString == "");
@@ -41,7 +41,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             String8 emptyString = "";
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(emptyString.GetLength() == 0);
+            DOCTEST_CHECK(emptyString.GetSize() == 0);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(emptyString == "");
@@ -53,7 +53,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             String8 longString = "This is a long string which probably uses dynamic memory";
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(longString.GetLength() == 56);
+            DOCTEST_CHECK(longString.GetSize() == 56);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(longString == "This is a long string which probably uses dynamic memory");
@@ -68,7 +68,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             String8 helloWorldCross = L"Hello World";
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(helloWorldCross.GetLength() == 11);
+            DOCTEST_CHECK(helloWorldCross.GetSize() == 11);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(helloWorldCross == "Hello World");
@@ -83,7 +83,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             String8 movedLongString = std::move(longString);
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(movedLongString.GetLength() == 56);
+            DOCTEST_CHECK(movedLongString.GetSize() == 56);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(movedLongString == "This is a long string which probably uses dynamic memory");
@@ -107,13 +107,13 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             String8 copyHelloWorld = helloWorld;
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(copyHelloWorld.GetLength() == 11);
+            DOCTEST_CHECK(copyHelloWorld.GetSize() == 11);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(copyHelloWorld == "Hello World");
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(helloWorld.GetLength() == 11);
+            DOCTEST_CHECK(helloWorld.GetSize() == 11);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(helloWorld == "Hello World");
@@ -125,13 +125,13 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             String8 copyLongString = longString;
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(copyLongString.GetLength() == 56);
+            DOCTEST_CHECK(copyLongString.GetSize() == 56);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(copyLongString == "This is a long string which probably uses dynamic memory");
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(longString.GetLength() == 56);
+            DOCTEST_CHECK(longString.GetSize() == 56);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(longString == "This is a long string which probably uses dynamic memory");
@@ -149,7 +149,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             String8 anotherString = "Another string";
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(helloWorld.GetLength() == 11);
+            DOCTEST_CHECK(helloWorld.GetSize() == 11);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(helloWorld == "Hello World");
@@ -158,13 +158,13 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             helloWorld = anotherString;
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(helloWorld.GetLength() == 14);
+            DOCTEST_CHECK(helloWorld.GetSize() == 14);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(helloWorld == "Another string");
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(anotherString.GetLength() == 14);
+            DOCTEST_CHECK(anotherString.GetSize() == 14);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(anotherString == "Another string");
@@ -179,7 +179,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             String8 anotherString = "Another string";
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(helloWorld.GetLength() == 11);
+            DOCTEST_CHECK(helloWorld.GetSize() == 11);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(helloWorld == "Hello World");
@@ -188,13 +188,13 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             helloWorld = std::move(anotherString);
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(helloWorld.GetLength() == 14);
+            DOCTEST_CHECK(helloWorld.GetSize() == 14);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(helloWorld == "Another string");
 
             // Checks if the string contains the correct amount of characters
-            DOCTEST_CHECK(anotherString.GetLength() == 0);
+            DOCTEST_CHECK(anotherString.GetSize() == 0);
 
             // Checks if the string contains the correct characters
             DOCTEST_CHECK(anotherString == "");

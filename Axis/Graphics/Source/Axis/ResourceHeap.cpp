@@ -62,7 +62,7 @@ void IResourceHeap::BindBuffers(Uint32                                          
 
     if (offsets)
     {
-        if (offsets.GetLength() != buffers.GetLength())
+        if (offsets.GetSize() != buffers.GetSize())
             throw System::InvalidArgumentException("`offsets` was not the same size as `buffers`!");
 
         index = 0;
@@ -77,7 +77,7 @@ void IResourceHeap::BindBuffers(Uint32                                          
 
     if (sizes)
     {
-        if (sizes.GetLength() != buffers.GetLength())
+        if (sizes.GetSize() != buffers.GetSize())
             throw System::InvalidArgumentException("`sizes` was not the same size as `buffers`!");
 
         index = 0;
@@ -124,13 +124,13 @@ void IResourceHeap::BindSamplers(Uint32                                         
     if (!textureViews)
         throw System::InvalidArgumentException("`textureViews` was nullptr!");
 
-    if (samplers.GetLength() != textureViews.GetLength())
+    if (samplers.GetSize() != textureViews.GetSize())
         throw System::InvalidArgumentException("`samplers` and `textureViews` were not the same size!");
 
     if (startingArrayIndex >= Description.ResourceHeapLayout->Description.ResourceBindings[arrayIndex].ArraySize)
         throw System::ArgumentOutOfRangeException("`startingArrayIndex` was out of range!");
 
-    for (Size i = 0; i < samplers.GetLength(); i++)
+    for (Size i = 0; i < samplers.GetSize(); i++)
     {
         if (!samplers[i])
             throw System::InvalidArgumentException("`samplers` contained a nullptr!");

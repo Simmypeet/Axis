@@ -25,7 +25,7 @@ VulkanFramebuffer::VulkanFramebuffer(FramebufferDescription description,
         VkFramebuffer vkFramebuffer = {};
 
         System::List<VkImageView> imageViews = {};
-        imageViews.ReserveFor(description.Attachments.GetLength());
+        imageViews.ReserveFor(description.Attachments.GetSize());
 
         Size index = 0;
         for (const auto& attachment : description.Attachments)
@@ -38,7 +38,7 @@ VulkanFramebuffer::VulkanFramebuffer(FramebufferDescription description,
         VkFramebufferCreateInfo frameBufferCreateInfo = {};
         frameBufferCreateInfo.sType                   = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         frameBufferCreateInfo.renderPass              = ((VulkanRenderPass*)description.RenderPass)->GetVkRenderPassHandle();
-        frameBufferCreateInfo.attachmentCount         = (Uint32)imageViews.GetLength();
+        frameBufferCreateInfo.attachmentCount         = (Uint32)imageViews.GetSize();
         frameBufferCreateInfo.pAttachments            = imageViews.GetData();
         frameBufferCreateInfo.width                   = description.FramebufferSize.X;
         frameBufferCreateInfo.height                  = description.FramebufferSize.Y;

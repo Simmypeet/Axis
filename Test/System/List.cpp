@@ -1,416 +1,234 @@
-#include <Axis/System>
+#include "Axis/Assert.hpp"
+#include "LeakTester.hpp"
+#include <Axis/List.hpp>
 #include <doctest.h>
 
 using namespace Axis;
 using namespace Axis::System;
 
-DOCTEST_TEST_CASE("Axis list data structure : [Axis::System]")
+DOCTEST_TEST_CASE("Axis list : [Axis::System]")
 {
-    DOCTEST_SUBCASE("`Axis::List` constructors")
+    using LeakTesterType = LeakTester<Size, false, false>;
+
+    DOCTEST_SUBCASE("Constructors")
     {
-        DOCTEST_SUBCASE("Constructor")
+        DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         {
-            // Default list (empty)
-            List<Int32> list;
+            List<LeakTesterType> list = {1, 2, 3, 4, 5};
 
-            // Length should be 0
-            CHECK(list.GetLength() == 0);
+            DOCTEST_CHECK(list.GetSize() == 5);
 
-            // Begin and end should be equal
-            CHECK(list.begin() == list.end());
+            DOCTEST_CHECK(list[0].Instance == 1);
+            DOCTEST_CHECK(list[1].Instance == 2);
+            DOCTEST_CHECK(list[2].Instance == 3);
+            DOCTEST_CHECK(list[3].Instance == 4);
+            DOCTEST_CHECK(list[4].Instance == 5);
 
-            // Creates a list from initializer list
-            List<Int32> list2 = {1, 2, 3, 4, 5};
+            DOCTEST_CHECK_THROWS_AS(Axis::System::Ignore = list[5], ArgumentOutOfRangeException);
 
-            // Length should be 5
-            CHECK(list2.GetLength() == 5);
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 5);
+        }
+        DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
 
-            // Checks the value of each element
-            CHECK(list2[0] == 1);
-            CHECK(list2[1] == 2);
-            CHECK(list2[2] == 3);
-            CHECK(list2[3] == 4);
-            CHECK(list2[4] == 5);
+        DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        {
+            List<LeakTesterType> list(5, 1);
 
-            // Creates a list with specified size and default value 
-            List<Int32> list3(3, 0);
+            DOCTEST_CHECK(list.GetSize() == 5);
 
-            // Length should be 3
-            CHECK(list3.GetLength() == 3);
+            DOCTEST_CHECK(list[0].Instance == 1);
+            DOCTEST_CHECK(list[1].Instance == 1);
+            DOCTEST_CHECK(list[2].Instance == 1);
+            DOCTEST_CHECK(list[3].Instance == 1);
+            DOCTEST_CHECK(list[4].Instance == 1);
 
-            // Checks the value of each element
-            CHECK(list3[0] == 0);
-            CHECK(list3[1] == 0);
-            CHECK(list3[2] == 0);
+            DOCTEST_CHECK_THROWS_AS(Axis::System::Ignore = list[5], ArgumentOutOfRangeException);
+
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 5);
+        }
+        DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+
+        DOCTEST_SUBCASE("Move constructor")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                List<LeakTesterType> list  = {1, 2, 3, 4, 5};
+                List<LeakTesterType> list1 = Axis::System::Move(list);
+
+                DOCTEST_CHECK(list.GetSize() == 0);
+                DOCTEST_CHECK(list1.GetSize() == 5);
+
+                DOCTEST_CHECK(list1[0].Instance == 1);
+                DOCTEST_CHECK(list1[1].Instance == 2);
+                DOCTEST_CHECK(list1[2].Instance == 3);
+                DOCTEST_CHECK(list1[3].Instance == 4);
+                DOCTEST_CHECK(list1[4].Instance == 5);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
 
         DOCTEST_SUBCASE("Copy constructor")
         {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                List<LeakTesterType> list  = {1, 2, 3, 4, 5};
+                List<LeakTesterType> list1 = list;
 
-            // Creates a list from initializer list
-            List<Int32> list = {1, 2, 3, 4, 5};
+                DOCTEST_CHECK(list.GetSize() == 5);
+                DOCTEST_CHECK(list1.GetSize() == 5);
 
-            // Creates a copy of the list
-            List<Int32> list2(list);
+                DOCTEST_CHECK(list1[0].Instance == 1);
+                DOCTEST_CHECK(list1[1].Instance == 2);
+                DOCTEST_CHECK(list1[2].Instance == 3);
+                DOCTEST_CHECK(list1[3].Instance == 4);
+                DOCTEST_CHECK(list1[4].Instance == 5);
 
-            // Length should be 5
-            CHECK(list.GetLength() == 5);
+                DOCTEST_CHECK(list[0].Instance == 1);
+                DOCTEST_CHECK(list[1].Instance == 2);
+                DOCTEST_CHECK(list[2].Instance == 3);
+                DOCTEST_CHECK(list[3].Instance == 4);
+                DOCTEST_CHECK(list[4].Instance == 5);
 
-            // Checks the value of each element
-            CHECK(list[0] == 1);
-            CHECK(list[1] == 2);
-            CHECK(list[2] == 3);
-            CHECK(list[3] == 4);
-            CHECK(list[4] == 5);
-
-            // Length should be 5
-            CHECK(list2.GetLength() == 5);
-
-            // Checks the value of each element
-            CHECK(list2[0] == 1);
-            CHECK(list2[1] == 2);
-            CHECK(list2[2] == 3);
-            CHECK(list2[3] == 4);
-            CHECK(list2[4] == 5);
-        }
-
-        DOCTEST_SUBCASE("Move constructor")
-        {
-            // Creates a list from initializer list
-            List<Int32> list = {1, 2, 3, 4, 5};
-
-            // Creates a copy of the list
-            List<Int32> list2(std::move(list));
-
-            // Length of moved list should be 0
-            CHECK(list.GetLength() == 0);
-
-            // Length should be 5
-            CHECK(list2.GetLength() == 5);
-
-            // Checks the value of each element
-            CHECK(list2[0] == 1);
-            CHECK(list2[1] == 2);
-            CHECK(list2[2] == 3);
-            CHECK(list2[3] == 4);
-            CHECK(list2[4] == 5);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 10);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
     }
 
-    DOCTEST_SUBCASE("Assignment operator")
+    DOCTEST_SUBCASE("Assignments")
     {
         DOCTEST_SUBCASE("Copy assignment")
         {
-            // Creates a list from initializer list
-            List<Int32> list = {1, 2, 3, 4, 5};
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                List<LeakTesterType> list1 = {1, 2, 3, 4, 5};
+                List<LeakTesterType> list2 = {6, 7, 8, 9, 0};
 
-            // Creates an another list from initializer list
-            List<Int32> list2 = {6, 7, 8, 9, 10};
+                list1 = list2;
 
-            // Checks the validity of list and list2
-            CHECK(list.GetLength() == 5);
-            CHECK(list2.GetLength() == 5);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 10);
 
-            // Checks the value of each element
-            CHECK(list[0] == 1);
-            CHECK(list[1] == 2);
-            CHECK(list[2] == 3);
-            CHECK(list[3] == 4);
-            CHECK(list[4] == 5);
-            CHECK(list2[0] == 6);
-            CHECK(list2[1] == 7);
-            CHECK(list2[2] == 8);
-            CHECK(list2[3] == 9);
-            CHECK(list2[4] == 10);
+                constexpr auto CheckCase1 = [](const List<LeakTesterType>& list) {
+                    DOCTEST_CHECK(list.GetSize() == 5);
 
-            // Assigns list2 to list
-            list = list2;
+                    DOCTEST_CHECK(list[0].Instance == 6);
+                    DOCTEST_CHECK(list[1].Instance == 7);
+                    DOCTEST_CHECK(list[2].Instance == 8);
+                    DOCTEST_CHECK(list[3].Instance == 9);
+                    DOCTEST_CHECK(list[4].Instance == 0);
+                };
 
-            // Checks the validity of list and list2
-            CHECK(list.GetLength() == 5);
-            CHECK(list2.GetLength() == 5);
+                CheckCase1(list1);
+                CheckCase1(list2);
 
-            // Checks the value of each element
-            CHECK(list[0] == 6);
-            CHECK(list[1] == 7);
-            CHECK(list[2] == 8);
-            CHECK(list[3] == 9);
-            CHECK(list[4] == 10);
-            CHECK(list2[0] == 6);
-            CHECK(list2[1] == 7);
-            CHECK(list2[2] == 8);
-            CHECK(list2[3] == 9);
-            CHECK(list2[4] == 10);
+                List<LeakTesterType> list3 = {10, 11, 12, 13, 14};
+                List<LeakTesterType> list4 = {15, 16, 17, 18, 19, 20};
+
+                list3 = list4;
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 22);
+
+                constexpr auto CheckCase2 = [](const List<LeakTesterType>& list) {
+                    DOCTEST_CHECK(list.GetSize() == 6);
+
+                    DOCTEST_CHECK(list[0].Instance == 15);
+                    DOCTEST_CHECK(list[1].Instance == 16);
+                    DOCTEST_CHECK(list[2].Instance == 17);
+                    DOCTEST_CHECK(list[3].Instance == 18);
+                    DOCTEST_CHECK(list[4].Instance == 19);
+                    DOCTEST_CHECK(list[5].Instance == 20);
+                };
+
+                CheckCase2(list3);
+                CheckCase2(list4);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
 
         DOCTEST_SUBCASE("Move assignment")
         {
-            // Creates a list from initializer list
-            List<Int32> list = {1, 2, 3, 4, 5};
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                List<LeakTesterType> list  = {0, 1, 2, 3, 4, 5};
+                List<LeakTesterType> list1 = {6, 7, 8, 9, 0};
 
-            // Creates an another list from initializer list
-            List<Int32> list2 = {6, 7, 8, 9, 10};
+                list = Axis::System::Move(list1);
 
-            // Checks the validity of list and list2
-            CHECK(list.GetLength() == 5);
-            CHECK(list2.GetLength() == 5);
+                DOCTEST_CHECK(list.GetSize() == 5);
 
-            // Checks the value of each element
-            CHECK(list[0] == 1);
-            CHECK(list[1] == 2);
-            CHECK(list[2] == 3);
-            CHECK(list[3] == 4);
-            CHECK(list[4] == 5);
-            CHECK(list2[0] == 6);
-            CHECK(list2[1] == 7);
-            CHECK(list2[2] == 8);
-            CHECK(list2[3] == 9);
-            CHECK(list2[4] == 10);
+                DOCTEST_CHECK(list[0].Instance == 6);
+                DOCTEST_CHECK(list[1].Instance == 7);
+                DOCTEST_CHECK(list[2].Instance == 8);
+                DOCTEST_CHECK(list[3].Instance == 9);
+                DOCTEST_CHECK(list[4].Instance == 0);
 
-            // Assigns list2 to list
-            list = std::move(list2);
-
-            // Checks the validity of list and list2
-            CHECK(list.GetLength() == 5);
-            CHECK(list2.GetLength() == 0);
-
-            // Checks the value of each element
-            CHECK(list[0] == 6);
-            CHECK(list[1] == 7);
-            CHECK(list[2] == 8);
-            CHECK(list[3] == 9);
-            CHECK(list[4] == 10);
+                DOCTEST_CHECK(list1.GetSize() + list.GetSize() == LeakTesterType::GetInstanceCount());
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
     }
 
-    DOCTEST_SUBCASE("Functions")
+    DOCTEST_SUBCASE("Iterators")
     {
-        DOCTEST_SUBCASE("EmplaceBack")
+        DOCTEST_SUBCASE("Range-based for loop")
         {
-            struct Number
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                Number(Int32 value)
-                {
-                    if (value < 0)
-                        throw value;
+                List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
 
-                    Value = value;
+                List<LeakTesterType>::Iterator it;
+
+                Size i = 0;
+                for (auto& item : list)
+                {
+                    DOCTEST_CHECK(item.Instance == i);
+                    ++i;
+                }
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
+    }
+
+    DOCTEST_SUBCASE("Modification")
+    {
+        DOCTEST_SUBCASE("Reserve")
+        {
+            constexpr auto CheckReserve = [](List<LeakTesterType>::SizeType reserveSize) {
+                List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
+
+                try
+                {
+                    list.Reserve(reserveSize);
+                }
+                catch (...)
+                {
+                    AXIS_DEBUG_TRAP();
                 }
 
-                Bool operator==(const Number& other) const noexcept { return Value == other.Value; }
+                DOCTEST_CHECK(list.GetSize() == 6);
 
-                Int32 Value = 0;
+                DOCTEST_CHECK(list[0].Instance == 0);
+                DOCTEST_CHECK(list[1].Instance == 1);
+                DOCTEST_CHECK(list[2].Instance == 2);
+                DOCTEST_CHECK(list[3].Instance == 3);
+                DOCTEST_CHECK(list[4].Instance == 4);
+                DOCTEST_CHECK(list[5].Instance == 5);
+
+                AXIS_DEBUG_TRAP();
             };
 
-            // Creates a list from initializer list
-            List<Number> list = {1, 2, 3, 4, 5};
+            // Reserves for 0 elements
+            CheckReserve(0);
 
-            // Checks the validity of list
-            CHECK(list.GetLength() == 5);
+            // Reserves for less than the current size
+            CheckReserve(3);
 
-            // Checks the value of each element
-            CHECK(list[0].Value == 1);
-            CHECK(list[1].Value == 2);
-            CHECK(list[2].Value == 3);
-            CHECK(list[3].Value == 4);
-            CHECK(list[4].Value == 5);
+            // Reserves for more than the current size
+            CheckReserve(10);
 
-            // Emplaces a new element at the end of the list
-            list.EmplaceBack(6);
-            list.EmplaceBack(7);
-            list.EmplaceBack(8);
-            list.EmplaceBack(9);
-            list.EmplaceBack(10);
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 10);
-
-            // Checks the value of each element
-            CHECK(list[0].Value == 1);
-            CHECK(list[1].Value == 2);
-            CHECK(list[2].Value == 3);
-            CHECK(list[3].Value == 4);
-            CHECK(list[4].Value == 5);
-            CHECK(list[5].Value == 6);
-            CHECK(list[6].Value == 7);
-            CHECK(list[7].Value == 8);
-            CHECK(list[8].Value == 9);
-            CHECK(list[9].Value == 10);
-
-            try
-            {
-                list.EmplaceBack(-1);
-            }
-            catch (Int32 value)
-            {
-                CHECK(value == -1);
-            }
-
-            // The list should not be changed
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 10);
-
-            // Checks the value of each element
-            CHECK(list[0].Value == 1);
-            CHECK(list[1].Value == 2);
-            CHECK(list[2].Value == 3);
-            CHECK(list[3].Value == 4);
-            CHECK(list[4].Value == 5);
-            CHECK(list[5].Value == 6);
-            CHECK(list[6].Value == 7);
-            CHECK(list[7].Value == 8);
-            CHECK(list[8].Value == 9);
-            CHECK(list[9].Value == 10);
-        }
-
-        DOCTEST_SUBCASE("Emplace")
-        {
-            struct Number
-            {
-                Number(Int32 value)
-                {
-                    if (value < 0)
-                        throw value;
-
-                    Value = value;
-                }
-
-                Number(const Number&) = default;
-
-                Number(Number&&) = delete;
-
-                Bool operator==(const Number& other) const noexcept { return Value == other.Value; }
-
-                Int32 Value = 0;
-            };
-
-            constexpr auto val = std::is_copy_constructible_v<Number>;
-
-            // Creates a list from initializer list
-            List<Number> list = {1, 2, 3, 4, 5};
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 5);
-
-            // Checks the value of each element
-            CHECK(list[0].Value == 1);
-            CHECK(list[1].Value == 2);
-            CHECK(list[2].Value == 3);
-            CHECK(list[3].Value == 4);
-            CHECK(list[4].Value == 5);
-
-            // Emplaces a new element at the end of the list
-            list.Emplace(5, 10);
-            list.Emplace(5, 9);
-            list.Emplace(5, 8);
-            list.Emplace(5, 7);
-            list.Emplace(5, 6);
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 10);
-
-            // Checks the value of each element
-            CHECK(list[0].Value == 1);
-            CHECK(list[1].Value == 2);
-            CHECK(list[2].Value == 3);
-            CHECK(list[3].Value == 4);
-            CHECK(list[4].Value == 5);
-            CHECK(list[5].Value == 6);
-            CHECK(list[6].Value == 7);
-            CHECK(list[7].Value == 8);
-            CHECK(list[8].Value == 9);
-            CHECK(list[9].Value == 10);
-
-            try
-            {
-                list.Emplace(1, -1);
-            }
-            catch (Int32 value)
-            {
-                CHECK(value == -1);
-            }
-
-            // The list should not be changed
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 10);
-
-            // Checks the value of each element
-            CHECK(list[0].Value == 1);
-            CHECK(list[1].Value == 2);
-            CHECK(list[2].Value == 3);
-            CHECK(list[3].Value == 4);
-            CHECK(list[4].Value == 5);
-            CHECK(list[5].Value == 6);
-            CHECK(list[6].Value == 7);
-            CHECK(list[7].Value == 8);
-            CHECK(list[8].Value == 9);
-            CHECK(list[9].Value == 10);
-        }
-
-        DOCTEST_SUBCASE("RemoveAt")
-        {
-            // Creates a list from initializer list
-            List<Int32> list = {1, 2, 3, 4, 5};
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 5);
-
-            // Checks the value of each element
-            CHECK(list[0] == 1);
-            CHECK(list[1] == 2);
-            CHECK(list[2] == 3);
-            CHECK(list[3] == 4);
-            CHECK(list[4] == 5);
-
-            // Removes the element at index 2
-            list.RemoveAt(2);
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 4);
-
-            // Checks the value of each element
-            CHECK(list[0] == 1);
-            CHECK(list[1] == 2);
-            CHECK(list[2] == 4);
-            CHECK(list[3] == 5);
-
-            // Removes the element at index 0
-            list.RemoveAt(0);
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 3);
-
-            // Checks the value of each element
-            CHECK(list[0] == 2);
-            CHECK(list[1] == 4);
-            CHECK(list[2] == 5);
-
-            // Removes the element at index 1
-            list.RemoveAt(1);
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 2);
-
-            // Checks the value of each element
-            CHECK(list[0] == 2);
-            CHECK(list[1] == 5);
-
-            // Removes the element at index 0
-            list.RemoveAt(0);
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 1);
-
-            // Checks the value of each element
-            CHECK(list[0] == 5);
-
-            // Removes the element at index 0
-            list.RemoveAt(0);
-
-            // Checks the validity of list
-            CHECK(list.GetLength() == 0);
+            // Reserves for the maximum size (probably throws an exception)
+            CheckReserve(10000000000);
         }
     }
 }

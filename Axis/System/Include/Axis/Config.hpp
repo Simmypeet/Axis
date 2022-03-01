@@ -169,6 +169,9 @@ typedef char Char;
 /// \warning The size may varies between different platforms and compilers
 typedef wchar_t WChar;
 
+/// \brief The type of the pointer differences.
+typedef ptrdiff_t PointerDifference;
+
 #ifdef AXIS_64_BIT_PTR
 
 /// \brief 64 Bits unsigned integer type, can be casted to pointer, back and
@@ -200,6 +203,8 @@ static_assert(sizeof(Uint8) == 1, "Size of `Axis::Uint8` was not 1 bytes (8 bits
 static_assert(sizeof(Uint16) == 2, "Size of `Axis::Uint16` was not 2 bytes (16 bits)");
 static_assert(sizeof(Uint32) == 4, "Size of `Axis::Uint32` was not 4 bytes (32 bits)");
 static_assert(sizeof(Uint64) == 8, "Size of `Axis::Uint64` was not 8 bytes (64 bits)");
+static_assert(sizeof(Float32) == 4, "Size of `Axis::Float32` was not 4 bytes (64 bits)");
+static_assert(sizeof(Float64) == 8, "Size of `Axis::Float64` was not 8 bytes (64 bits)");
 static_assert(sizeof(UintPtr) == PointerSize, "Size of `Axis::UintPtr` was not the same to `Axis::PointerSize`");
 
 /// \brief No discard compiler warning attribute
@@ -222,14 +227,6 @@ static_assert(sizeof(UintPtr) == PointerSize, "Size of `Axis::UintPtr` was not t
 /// \brief If the macro is defined then the container will check for the
 ///        arguments validity.
 #    define AXIS_CONTAINER_DEBUG
-#endif
-
-#ifdef _MSC_VER
-/// \brief Note that MSVC x86 compiler by default uses __this call for class
-/// member functions
-#    define AXIS_CALL_TYPE __cdecl
-#else
-#    define AXIS_CALL_TYPE
 #endif
 
 #endif // AXIS_SYSTEM_CONFIG_HPP

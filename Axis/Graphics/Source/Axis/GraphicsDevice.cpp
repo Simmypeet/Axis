@@ -85,7 +85,7 @@ void IGraphicsDevice::ValidateCreateRenderPass(const RenderPassDescription& desc
         if (subpass.DepthStencilReference.Index == AttachmentReference::Unused && !subpass.InputReferences && !subpass.RenderTargetReferences)
             throw System::InvalidArgumentException("Subpasses contained invalid attachment references!");
 
-        if (subpass.DepthStencilReference.Index != AttachmentReference::Unused && !(subpass.DepthStencilReference.Index < description.Attachments.GetLength()))
+        if (subpass.DepthStencilReference.Index != AttachmentReference::Unused && !(subpass.DepthStencilReference.Index < description.Attachments.GetSize()))
             throw System::InvalidArgumentException("Subpasses contained invalid attachment references!");
 
 
@@ -94,7 +94,7 @@ void IGraphicsDevice::ValidateCreateRenderPass(const RenderPassDescription& desc
             auto j = 0;
             for (const auto& attachment : subpass.RenderTargetReferences)
             {
-                if (!(attachment.Index < description.Attachments.GetLength()))
+                if (!(attachment.Index < description.Attachments.GetSize()))
                     throw System::InvalidArgumentException("Subpasses contained invalid attachment references!");
                 j++;
             }
@@ -105,7 +105,7 @@ void IGraphicsDevice::ValidateCreateRenderPass(const RenderPassDescription& desc
             auto j = 0;
             for (const auto& attachment : subpass.InputReferences)
             {
-                if (!(attachment.Index < description.Attachments.GetLength()))
+                if (!(attachment.Index < description.Attachments.GetSize()))
                     throw System::InvalidArgumentException("Subpasses contained invalid attachment references!");
                 j++;
             }
@@ -119,10 +119,10 @@ void IGraphicsDevice::ValidateCreateRenderPass(const RenderPassDescription& desc
     {
         for (const auto& dependency : description.Dependencies)
         {
-            if (dependency.DestSubpassIndex != SubpassDependency::SubpassExternal && !(dependency.DestSubpassIndex < description.Attachments.GetLength()))
+            if (dependency.DestSubpassIndex != SubpassDependency::SubpassExternal && !(dependency.DestSubpassIndex < description.Attachments.GetSize()))
                 throw System::InvalidArgumentException("description.Dependencies contained invalid subpass indices!");
 
-            if (dependency.SourceSubpassIndex != SubpassDependency::SubpassExternal && !(dependency.SourceSubpassIndex < description.Attachments.GetLength()))
+            if (dependency.SourceSubpassIndex != SubpassDependency::SubpassExternal && !(dependency.SourceSubpassIndex < description.Attachments.GetSize()))
                 throw System::InvalidArgumentException("description.Dependencies contained invalid subpass indices!");
         }
     }
@@ -147,10 +147,10 @@ void IGraphicsDevice::ValidateCreateFramebuffer(const FramebufferDescription& de
     const auto& framebufferDescription = description;
     const auto& renderPassDescription  = description.RenderPass->Description;
 
-    if (framebufferDescription.Attachments.GetLength() != renderPassDescription.Attachments.GetLength())
+    if (framebufferDescription.Attachments.GetSize() != renderPassDescription.Attachments.GetSize())
         throw System::InvalidArgumentException("description.Attachments and description.RenderPass.Attachments did not match!");
 
-    for (Size i = 0; i < framebufferDescription.Attachments.GetLength(); i++)
+    for (Size i = 0; i < framebufferDescription.Attachments.GetSize(); i++)
     {
         const auto& frameBufferAttachmentDescription = framebufferDescription.Attachments[i]->Description;
         const auto& renderPassAttachment             = renderPassDescription.Attachments[i];
@@ -182,7 +182,7 @@ void IGraphicsDevice::ValidateCreateResourceHeapLayout(const ResourceHeapLayoutD
         index++;
     }
 
-    if (bindingIndices.GetSize() != description.ResourceBindings.GetLength())
+    if (bindingIndices.GetSize() != description.ResourceBindings.GetSize())
         throw System::InvalidArgumentException("description.ResourceBindings contained duplicate binding indices!");
 }
 
@@ -209,7 +209,7 @@ void IGraphicsDevice::ValidateCreateGraphicsPipeline(const GraphicsPipelineDescr
             index++;
         }
 
-        if (hashSet.GetSize() != description.VertexBindingDescriptions.GetLength())
+        if (hashSet.GetSize() != description.VertexBindingDescriptions.GetSize())
             throw System::InvalidArgumentException("description.VertexBindingDescriptions contained duplicate binding indices!");
     }
 
@@ -221,7 +221,7 @@ void IGraphicsDevice::ValidateCreateGraphicsPipeline(const GraphicsPipelineDescr
 
     if (description.RenderPass)
     {
-        if (!(description.SubpassIndex < description.RenderPass->Description.Subpasses.GetLength()))
+        if (!(description.SubpassIndex < description.RenderPass->Description.Subpasses.GetSize()))
             throw System::ArgumentOutOfRangeException("description.SubpassIndex was out of range!");
     }
     else

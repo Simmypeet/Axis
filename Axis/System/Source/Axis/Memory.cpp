@@ -2,11 +2,13 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-#include <Axis/SystemPch.hpp>
-
-#include <Axis/Assert.hpp>
+#include "Axis/Assert.hpp"
 #include <Axis/Exception.hpp>
 #include <Axis/Memory.hpp>
+#include <memory>
+#include <mutex>
+#include <new>
+#include <unordered_map>
 
 namespace Axis
 {
@@ -14,24 +16,22 @@ namespace Axis
 namespace System
 {
 
-PVoid MallocAllocator::Allocate(Size size, Size alignment)
+PVoid MemoryResource::Allocate(Size byteSize, Size alignment)
 {
     // Arguments validation
-    if ((alignment & (alignment - 1)) != 0)
-        throw InvalidArgumentException("`alignment` was not a power of two!");
+    if ((alignment & (alignment - 1)) != 0) throw InvalidArgumentException("`alignment` was not a power of two!");
 
-    // Calculates the padding size.
+    // Calculates the padding Size.
     Int64 offset = alignment - 1 + sizeof(PVoid);
 
     // Malloc'ed memory
-    PVoid originalMemory = std::malloc(size + offset);
+    PVoid originalMemory = ::operator new(byteSize + offset, std::nothrow);
 
     // Failed to allocate memory
-    if (originalMemory == nullptr)
-        throw OutOfMemoryException();
+    if (originalMemory == nullptr) throw OutOfMemoryException();
 
     // Calculates the aligned memory address.
-    PVoid* alignedMemory = (PVoid*)(((Size)(originalMemory) + offset) & ~(alignment - 1)); // Aligned block
+    PVoid* alignedMemory = (PVoid*)(((UintPtr)(originalMemory) + offset) & ~(alignment - 1)); // Aligned block
 
     // Stores the original memory address before the aligned memory address.
     alignedMemory[-1] = originalMemory;
@@ -39,30 +39,15 @@ PVoid MallocAllocator::Allocate(Size size, Size alignment)
     return (PVoid)alignedMemory;
 }
 
-void MallocAllocator::Deallocate(PVoid ptr) noexcept
-{
-    std::free(((PVoid*)ptr)[-1]);
-}
+void MemoryResource::Deallocate(PVoid ptr) noexcept { ::operator delete(((PVoid*)ptr)[-1], std::nothrow); }
 
 // Allocator for the pool
 class FixedPoolAllocator
 {
 public:
     // Constructor
-    FixedPoolAllocator(Size size,
-                       Size alignment) noexcept :
-        _size(size),
-        _alignment(alignment) {}
-
-    FixedPoolAllocator(const FixedPoolAllocator&) = delete;
-
-    FixedPoolAllocator(FixedPoolAllocator&& other) noexcept :
-        _size(other._size),
-        _alignment(other._alignment),
-        _memoryBlockHeader(other._memoryBlockHeader)
-    {
-        other._memoryBlockHeader = nullptr;
-    }
+    FixedPoolAllocator(Size byteSize, Size alignment) noexcept :
+        _byteSize(byteSize), _alignment(alignment) {}
 
     ~FixedPoolAllocator() noexcept
     {
@@ -73,13 +58,13 @@ public:
         {
             auto next = currentBlock->Next;
 
-            std::free(currentBlock->AllocatedOriginalPointer);
+            ::operator delete(currentBlock->AllocatedOriginalPointer, std::nothrow);
 
             currentBlock = next;
         }
     }
 
-    // Allocates memory with the given size and alignment
+    // Allocates memory with the given Size and alignment
     PVoid Allocate()
     {
         // There are available blocks
@@ -95,15 +80,18 @@ public:
         }
         else
         {
-            // Calculates the padding size.
+            // Calculates the padding Size.
             Int64 offset = _alignment - 1 + sizeof(MemoryBlockHeader);
 
             // Malloc'ed memory
-            PVoid originalMemory = std::malloc(_size);
+            PVoid originalMemory = ::operator new(_byteSize, std::nothrow);
 
             // Failed to allocate memory
             if (originalMemory == nullptr)
+            {
+                AXIS_DEBUG_TRAP();
                 throw OutOfMemoryException();
+            }
 
             // Calculates the aligned memory address.
             PVoid* alignedMemory = (PVoid*)(((Size)(originalMemory) + offset) & ~(_alignment - 1)); // Aligned block
@@ -137,7 +125,7 @@ public:
     };
 
 private:
-    Size               _size              = 0;       // <-- Size of the memory block
+    Size               _byteSize          = 0;       // <-- Size of the memory block
     Size               _alignment         = 0;       // <-- Alignment of the memory block
     MemoryBlockHeader* _memoryBlockHeader = nullptr; // <-- Memory block header
 };
@@ -151,10 +139,7 @@ struct PoolAllocatorKey
     // Gets the hash code of the key
     struct Hash
     {
-        inline Size operator()(const PoolAllocatorKey& key) const noexcept
-        {
-            return (Size)key.MemorySize ^ (Size)key.Alignment;
-        }
+        inline Size operator()(const PoolAllocatorKey& key) const noexcept { return (Size)key.MemorySize ^ (Size)key.Alignment; }
     };
 
     // Checks if two keys are the same
@@ -173,21 +158,18 @@ using PoolAllocatorMap = std::unordered_map<PoolAllocatorKey, std::unique_ptr<Fi
 static PoolAllocatorMap s_poolAllocatorMap      = {}; // Global pool allocator map
 static std::mutex       s_poolAllocatorMapMutex = {}; // Mutex for accessing the pool allocator map
 
-PVoid PoolAllocator::Allocate(Size size,
-                              Size alignment)
+PVoid PoolMemoryResource::Allocate(Size byteSize, Size alignment)
 {
     // Arguments validation
-    if ((alignment & (alignment - 1)) != 0)
-        throw InvalidArgumentException("`alignment` was not a power of two!");
+    if ((alignment & (alignment - 1)) != 0) throw InvalidArgumentException("`alignment` was not a power of two!");
 
-    // Calculates the actual size to allocate
-    Size actualSize = size + sizeof(FixedPoolAllocator::MemoryBlockHeader) + alignment - 1;
+    // Calculates the actual Size to allocate
+    Size actualSize = byteSize + sizeof(FixedPoolAllocator::MemoryBlockHeader) + alignment - 1;
 
     // Round to the next nearest power of 2
     actualSize--;
 
-    for (Size i = 1; i < sizeof(Size) * CHAR_BIT; i <<= 1)
-        actualSize |= (actualSize >> i);
+    for (Size i = 1; i < sizeof(Size) * CHAR_BIT; i <<= 1) actualSize |= (actualSize >> i);
 
     actualSize = actualSize + 1;
 
@@ -216,10 +198,9 @@ PVoid PoolAllocator::Allocate(Size size,
     return allocator->Allocate();
 }
 
-void PoolAllocator::Deallocate(PVoid ptr) noexcept
+void PoolMemoryResource::Deallocate(PVoid ptr) noexcept
 {
-    if (ptr == nullptr)
-        return;
+    if (ptr == nullptr) return;
 
     // Backwards the userPtr to the memory block header
     auto block = (FixedPoolAllocator::MemoryBlockHeader*)((Size)ptr - sizeof(FixedPoolAllocator::MemoryBlockHeader));

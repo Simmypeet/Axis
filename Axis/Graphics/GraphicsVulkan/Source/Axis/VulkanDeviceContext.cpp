@@ -503,9 +503,9 @@ void VulkanDeviceContext::SetRenderTarget(const RenderTargetBinding& renderTarge
 
     // Creates framebuffer out of render target views
     VulkanFramebufferCacheKey framebufferCacheKey = {};
-    framebufferCacheKey.RenderTargetViews         = System::List<System::WeakPointer<ITextureView>>(GetCurrentRenderTargetBinding().RenderTargetViews.GetLength());
+    framebufferCacheKey.RenderTargetViews         = System::List<System::WeakPointer<ITextureView>>(GetCurrentRenderTargetBinding().RenderTargetViews.GetSize());
 
-    for (Size i = 0; i < GetCurrentRenderTargetBinding().RenderTargetViews.GetLength(); i++)
+    for (Size i = 0; i < GetCurrentRenderTargetBinding().RenderTargetViews.GetSize(); i++)
     {
         framebufferCacheKey.RenderTargetViews[i] = GetCurrentRenderTargetBinding().RenderTargetViews[i];
     }
@@ -1137,8 +1137,8 @@ void VulkanDeviceContext::CommitVertexBufferBinding()
         System::List<Uint64>          bufferBindingOffset;
         System::List<GraphicsAdapter> graphicsAdapters = GetCreatorDevice()->GraphicsSystem->GetGraphicsAdapters();
 
-        bufferBinding.ReserveFor(GetCurrentBindingVertexBuffers().GetLength());
-        bufferBindingOffset.ReserveFor(GetCurrentBindingVertexBuffers().GetLength());
+        bufferBinding.ReserveFor(GetCurrentBindingVertexBuffers().GetSize());
+        bufferBindingOffset.ReserveFor(GetCurrentBindingVertexBuffers().GetSize());
 
         for (const auto& bindingBuffer : GetCurrentBindingVertexBuffers())
         {

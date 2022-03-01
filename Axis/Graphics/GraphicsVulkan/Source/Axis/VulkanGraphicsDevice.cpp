@@ -40,7 +40,7 @@ VulkanGraphicsDevice::VulkanGraphicsDevice(const System::SharedPointer<VulkanGra
 {
     System::HashMap<Uint32, Uint32> deviceQueueFamilyIndexCountPairs = {};
 
-    for (Uint64 i = 0; i < pImmediateContextCreateInfos.GetLength(); i++)
+    for (Uint64 i = 0; i < pImmediateContextCreateInfos.GetSize(); i++)
     {
         auto it = deviceQueueFamilyIndexCountPairs.Find(pImmediateContextCreateInfos[i].DeviceQueueFamilyIndex);
         if (it == deviceQueueFamilyIndexCountPairs.end())
@@ -89,11 +89,11 @@ VulkanGraphicsDevice::VulkanGraphicsDevice(const System::SharedPointer<VulkanGra
         deviceCreateInfo.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         deviceCreateInfo.pNext                   = &features;
         deviceCreateInfo.flags                   = 0;
-        deviceCreateInfo.queueCreateInfoCount    = (Uint32)deviceQueueCreateInfos.GetLength();
+        deviceCreateInfo.queueCreateInfoCount    = (Uint32)deviceQueueCreateInfos.GetSize();
         deviceCreateInfo.pQueueCreateInfos       = deviceQueueCreateInfos.GetData();
-        deviceCreateInfo.enabledLayerCount       = (Uint32)VulkanGraphicsSystem::InstanceLayers.GetLength();
+        deviceCreateInfo.enabledLayerCount       = (Uint32)VulkanGraphicsSystem::InstanceLayers.GetSize();
         deviceCreateInfo.ppEnabledLayerNames     = VulkanGraphicsSystem::InstanceLayers.GetData();
-        deviceCreateInfo.enabledExtensionCount   = (Uint32)VulkanGraphicsDevice::DeviceExtensions.GetLength();
+        deviceCreateInfo.enabledExtensionCount   = (Uint32)VulkanGraphicsDevice::DeviceExtensions.GetSize();
         deviceCreateInfo.ppEnabledExtensionNames = VulkanGraphicsDevice::DeviceExtensions.GetData();
         deviceCreateInfo.pEnabledFeatures        = &deviceFeatures;
 

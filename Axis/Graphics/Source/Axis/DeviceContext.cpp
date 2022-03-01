@@ -106,7 +106,7 @@ void IDeviceContext::BindPipeline(const System::SharedPointer<IPipeline>& pipeli
         case PipelineBinding::Graphics:
             if (!(Bool)(SupportedQueueOperations & QueueOperationFlags::Graphics))
                 throw System::InvalidArgumentException("pipeline->Binding was PipelineBinding::Graphics but this device context did not support graphics operations!");
-            resourceHeapLayoutCount = ((IGraphicsPipeline*)pipeline.GetPointer())->Description.ResourceHeapLayouts.GetLength();
+            resourceHeapLayoutCount = ((IGraphicsPipeline*)pipeline.GetPointer())->Description.ResourceHeapLayouts.GetSize();
             break;
 
         default:
@@ -239,12 +239,12 @@ void IDeviceContext::BindVertexBuffers(Uint32                                   
 
     if (offsets)
     {
-        if (offsets.GetLength() != vertexBuffers.GetLength())
+        if (offsets.GetSize() != vertexBuffers.GetSize())
             throw System::InvalidArgumentException("offsets.Size() != vertexBuffers.Size()!");
     }
 
-    if (firstBinding + vertexBuffers.GetLength() > _bindingVertexBuffers.GetLength())
-        throw System::InvalidArgumentException("firstBinding + vertexBuffers.GetLength() was greater than GraphicsCapability::MaxVertexInputBinding!");
+    if (firstBinding + vertexBuffers.GetSize() > _bindingVertexBuffers.GetSize())
+        throw System::InvalidArgumentException("firstBinding + vertexBuffers.GetSize() was greater than GraphicsCapability::MaxVertexInputBinding!");
 
     Size index = 0;
     for (const auto& vertexBuffer : vertexBuffers)

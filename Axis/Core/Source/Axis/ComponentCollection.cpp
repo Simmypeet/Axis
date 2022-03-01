@@ -41,7 +41,7 @@ inline void AppendSortedList(System::List<System::SharedPointer<ApplicationCompo
     Int32 value = predicate(componentRef);
 
     Size start = 0;
-    Size end   = array.GetLength() - 1;
+    Size end   = array.GetSize() - 1;
 
     while (start <= end)
     {
@@ -76,7 +76,7 @@ inline void RemoveSortedList(System::List<System::SharedPointer<ApplicationCompo
     Int32 value = predicate(componentRef);
 
     Size start = 0;
-    Size end   = array.GetLength() - 1;
+    Size end   = array.GetSize() - 1;
 
     while (start <= end)
     {
@@ -130,8 +130,8 @@ void ComponentCollection::AppendHighest(System::SharedPointer<ApplicationCompone
     Int32 renderOrder = component->GetRenderOrder();
 
     // Updates the update and render order of the component.
-    component->SetUpdateOrder(_componentsUpdateOrder[_componentsUpdateOrder.GetLength() - 1]->GetUpdateOrder() + 1);
-    component->SetRenderOrder(_componentsDrawOrder[_componentsDrawOrder.GetLength() - 1]->GetRenderOrder() + 1);
+    component->SetUpdateOrder(_componentsUpdateOrder[_componentsUpdateOrder.GetSize() - 1]->GetUpdateOrder() + 1);
+    component->SetRenderOrder(_componentsDrawOrder[_componentsDrawOrder.GetSize() - 1]->GetRenderOrder() + 1);
 
     // Adds the component to the collection.
     try
@@ -153,7 +153,7 @@ Bool ComponentCollection::Remove(const ApplicationComponent& component)
 {
     Bool found = false;
 
-    for (Size i = 0; i < _components.GetLength(); ++i)
+    for (Size i = 0; i < _components.GetSize(); ++i)
     {
         if (_components[i].GetPointer() == &component)
         {
@@ -181,7 +181,7 @@ Bool ComponentCollection::Remove(const ApplicationComponent& component)
 void ComponentCollection::UpdateAll(const System::TimePeriod& timeStep)
 {
     // Updates all the components in the collection.
-    for (Size i = 0; i < _componentsUpdateOrder.GetLength(); ++i)
+    for (Size i = 0; i < _componentsUpdateOrder.GetSize(); ++i)
     {
         // Checks if the component is enabled.
         if (_componentsUpdateOrder[i]->IsActive())
@@ -195,7 +195,7 @@ void ComponentCollection::UpdateAll(const System::TimePeriod& timeStep)
 void ComponentCollection::RenderAll(const System::TimePeriod& timeStep)
 {
     // Draws all the components in the collection.
-    for (Size i = 0; i < _componentsDrawOrder.GetLength(); ++i)
+    for (Size i = 0; i < _componentsDrawOrder.GetSize(); ++i)
     {
         // Checks if the component is enabled.
         if (_componentsDrawOrder[i]->IsVisible())

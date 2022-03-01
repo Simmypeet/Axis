@@ -7,7 +7,8 @@
 #pragma once
 
 #include "Config.hpp"
-#include <type_traits>
+#include "Trait.hpp"
+#include <cstddef>
 #include <utility>
 
 namespace Axis
@@ -26,43 +27,6 @@ struct Pair
     /// \brief Second element
     TSecond Second;
 };
-
-/// \brief Iterating through variadic template arguments.
-///
-/// \note Reference: https://gist.github.com/nabijaczleweli/37cdd8c28039ea41a999
-template <class T, class... Rest>
-struct VariadicIterate
-{
-    using Next                         = VariadicIterate<Rest...>;
-    static const constexpr Uint64 Size = 1 + Next::Size;
-
-    template <class C>
-    inline constexpr static C ForEach(C cbk, T&& currentArg, Rest&&... restArgs)
-    {
-        cbk(std::forward<T>(currentArg));
-        Next::ForEach(cbk, std::forward<Rest>(restArgs)...);
-        return cbk;
-    }
-
-    template <class C>
-    inline constexpr C operator()(C cbk, T&& currentArg, Rest&&... restArgs) const
-    {
-        return ForEach(cbk, std::forward<T>(currentArg), std::forward<Rest>(restArgs)...);
-    }
-};
-
-/// \brief Struct that ignores assignment
-struct IgnoreImpl
-{
-    template <class T> // Ignores the assignment
-    inline constexpr const IgnoreImpl& operator=(const T&) const noexcept
-    {
-        return *this;
-    }
-};
-
-/// \brief Objects which ignores assignment
-inline constexpr IgnoreImpl Ignore = {};
 
 /// \private These tuple implementations are taken from: https://stackoverflow.com/a/52208842
 ///
@@ -112,8 +76,54 @@ public:
     PVoid GetStoragePtr() noexcept { return &_staticStorage; };
 
 private:
-    alignas(StorageAlign) Uint8 _staticStorage[StorageSize];
+    alignas(StorageAlign) Byte _staticStorage[StorageSize];
 };
+
+/// \brief Creates rvalue reference to the given type
+template <class T>
+inline AddRValueReference<T> MakeValue() noexcept;
+
+/// \brief Forwards an lvalue reference as either an rvalue or an lvalue reference.
+template <class T>
+AXIS_NODISCARD constexpr T&& Forward(RemoveReference<T>& arg) noexcept;
+
+/// \brief Forwards an rvalue as an rvalue reference.
+template <class T>
+AXIS_NODISCARD constexpr T&& Forward(RemoveReference<T>&& arg) noexcept requires(!IsLvalueReference<T>);
+
+/// \brief Gets the addressof the give reference.
+template <class T>
+AXIS_NODISCARD constexpr T* AddressOf(T& value);
+
+/// \brief Casts the given reference to rvalue reference.
+template <class T>
+AXIS_NODISCARD constexpr RemoveReference<T>&& Move(T&& value) noexcept;
+
+/// \brief Returns rvalue reference to the given type if the given type is nothrow move assignable else returns const lvalue reference.
+template <RawType T>
+AXIS_NODISCARD constexpr ConditionalType<IsNoThrowMoveAssignable<T>, T&&, const T&> MoveAssignIfNoThrow(T& value) noexcept;
+
+/// \brief Returns rvalue reference to the given type if the given type is nothrow move constructible else returns const lvalue reference.
+template <RawType T>
+AXIS_NODISCARD constexpr ConditionalType<IsNoThrowMoveConstructible<T>, T&&, const T&> MoveConstructIfNoThrow(T& value) noexcept;
+
+namespace Detail
+{
+
+/// \brief Struct that ignores assignment
+struct IgnoreImpl
+{
+    template <class T> // Ignores the assignment
+    inline constexpr const IgnoreImpl& operator=(const T&) const noexcept
+    {
+        return *this;
+    }
+};
+
+} // namespace Detail
+
+/// \brief Objects which ignores assignment
+inline constexpr Detail::IgnoreImpl Ignore = {};
 
 } // namespace System
 
@@ -121,5 +131,7 @@ private:
 
 /// \brief bit mask for the specified number of bits.
 #define AXIS_BIT(x) (1 << (x - 1))
+
+#include "../../Private/Axis/UtilityImpl.inl"
 
 #endif // AXIS_SYSTEM_UTILITY_HPP

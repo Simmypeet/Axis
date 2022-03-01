@@ -11,7 +11,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
         DOCTEST_SUBCASE("Allocate memory with `Axis::MallocAllocator`")
         {
             // Allocates memory for 16 bytes with alignment of 16 bytes
-            auto allocatedMemory = MallocAllocator::Allocate(16, 16);
+            auto allocatedMemory = MemoryResource::Allocate(16, 16);
 
             // Checks if the allocated memory is not null
             DOCTEST_CHECK(allocatedMemory != nullptr);
@@ -20,13 +20,13 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
             DOCTEST_CHECK(reinterpret_cast<uintptr_t>(allocatedMemory) % 16 == 0);
 
             // Frees the allocated memory
-            MallocAllocator::Deallocate(allocatedMemory);
+            MemoryResource::Deallocate(allocatedMemory);
         }
 
         DOCTEST_SUBCASE("Allocate memory with `Axis::PoolAllocator`")
         {
             // Allocates memory for 16 bytes with alignment of 16 bytes
-            auto allocatedMemory = PoolAllocator::Allocate(16, 16);
+            auto allocatedMemory = PoolMemoryResource::Allocate(16, 16);
 
             // Checks if the allocated memory is not null
             DOCTEST_CHECK(allocatedMemory != nullptr);
@@ -35,7 +35,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
             DOCTEST_CHECK(reinterpret_cast<uintptr_t>(allocatedMemory) % 16 == 0);
 
             // Frees the allocated memory
-            PoolAllocator::Deallocate(allocatedMemory);
+            PoolMemoryResource::Deallocate(allocatedMemory);
         }
     }
 
@@ -67,7 +67,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
             };
 
             // Creates an instance of `TestClass`
-            auto instace = Axis::System::AllocatedNew<DefaultAllocator, TestClass>(&objectAlive);
+            auto instace = Axis::System::MemoryNew<DefaultMemoryResource, TestClass>(&objectAlive);
 
             // Checks if the instance is not null
             DOCTEST_CHECK(instace != nullptr);
@@ -76,7 +76,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
             DOCTEST_CHECK(objectAlive == true);
 
             // Destroys the instance
-            Axis::System::AllocatedDelete<DefaultAllocator>(instace);
+            Axis::System::MemoryDelete<DefaultMemoryResource>(instace);
 
             // Checks if the instance is dead
             DOCTEST_CHECK(objectAlive == false);
@@ -98,7 +98,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
 
             try
             {
-                auto instace = Axis::System::AllocatedNew<DefaultAllocator, TestClass>();
+                auto instace = Axis::System::New<TestClass>();
             }
             catch (Int32& exception)
             {
@@ -134,7 +134,7 @@ DOCTEST_TEST_CASE("Axis memory allocation : [Axis-System]")
 
             try
             {
-                auto instances = Axis::System::AllocatedNewArray<DefaultAllocator, TestClass>(20);
+                auto instances = Axis::System::NewArray<TestClass>(20);
             }
             catch (Int32& exception)
             {

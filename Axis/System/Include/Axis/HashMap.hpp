@@ -62,12 +62,12 @@ public:
 /// \tparam TValue Type of value object.
 /// \tparam Hasher Type of hasher object.
 /// \tparam Comparer Type of comparer object.
-template <RawType TKey, RawType TValue, HasherType<TKey> Hasher = Hash<TKey>, ComparerType<TKey> Comparer = EqualityComparer<TKey>, AllocatorType Allocator = DefaultAllocator>
-class HashMap final : private HashSet<Pair<const TKey, TValue>, Detail::HashMapHasher<TKey, TValue, Hasher>, Detail::HashMapComparer<TKey, TValue, Comparer>, Allocator>
+template <RawType TKey, RawType TValue, HasherType<TKey> Hasher = Hash<TKey>, ComparerType<TKey> Comparer = EqualityComparer<TKey>, MemoryResourceType MemRes = DefaultMemoryResource>
+class HashMap final : private HashSet<Pair<const TKey, TValue>, Detail::HashMapHasher<TKey, TValue, Hasher>, Detail::HashMapComparer<TKey, TValue, Comparer>, MemRes>
 {
 public:
     /// \brief Internal hash table type
-    using HashSetBase = HashSet<Pair<const TKey, TValue>, Detail::HashMapHasher<TKey, TValue, Hasher>, Detail::HashMapComparer<TKey, TValue, Comparer>, Allocator>;
+    using HashSetBase = HashSet<Pair<const TKey, TValue>, Detail::HashMapHasher<TKey, TValue, Hasher>, Detail::HashMapComparer<TKey, TValue, Comparer>, MemRes>;
 
     /// \brief Default constructor
     HashMap() = default;

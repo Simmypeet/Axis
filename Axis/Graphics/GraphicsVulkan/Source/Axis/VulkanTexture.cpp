@@ -31,7 +31,7 @@ inline System::Tuple<System::List<Uint32>, VkImageCreateInfo> GetTextureCreation
     imageCreateInfo.tiling                = VK_IMAGE_TILING_OPTIMAL;
     imageCreateInfo.usage                 = VulkanUtility::GetVkImageUsageFlagsFromTextureBindingFlags(description.TextureBinding);
     imageCreateInfo.sharingMode           = indices ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
-    imageCreateInfo.queueFamilyIndexCount = (Uint32)indices.GetLength();
+    imageCreateInfo.queueFamilyIndexCount = (Uint32)indices.GetSize();
     imageCreateInfo.pQueueFamilyIndices   = indices.GetData();
     imageCreateInfo.initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED;
 

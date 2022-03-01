@@ -50,14 +50,14 @@ System::UniquePointer<VulkanCommandBuffer> VulkanCommandPool::GetCommandBuffer()
         return {};
 
     // Uses the recycled command buffer.
-    if (_returnedCommandBuffer.GetLength())
+    if (_returnedCommandBuffer.GetSize())
     {
         System::UniquePointer<VulkanCommandBuffer> commandBufferToReturn = nullptr;
 
         {
             std::scoped_lock<std::mutex> lockGuard(_mutex);
 
-            for (Size i = 0; i < _returnedCommandBuffer.GetLength(); i++)
+            for (Size i = 0; i < _returnedCommandBuffer.GetSize(); i++)
             {
                 if (_returnedCommandBuffer[i]->IsCommandBufferAvailable())
                 {

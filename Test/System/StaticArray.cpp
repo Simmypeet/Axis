@@ -10,7 +10,7 @@ DOCTEST_TEST_CASE("Static array : [Axis::System]")
     {
         StaticArray<int, 3> array;
 
-        DOCTEST_CHECK(array.GetLength() == 3);
+        DOCTEST_CHECK(array.GetSize() == 3);
         DOCTEST_CHECK(array[0] == 0);
         DOCTEST_CHECK(array[1] == 0);
         DOCTEST_CHECK(array[2] == 0);

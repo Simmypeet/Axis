@@ -27,7 +27,7 @@ VulkanResourceHeapLayout::VulkanResourceHeapLayout(const ResourceHeapLayoutDescr
         VkDescriptorSetLayout vkDescriptorSetLayout = VK_NULL_HANDLE;
 
         System::List<VkDescriptorSetLayoutBinding> setLayoutBindings;
-        setLayoutBindings.ReserveFor(description.ResourceBindings.GetLength());
+        setLayoutBindings.ReserveFor(description.ResourceBindings.GetSize());
 
         for (const auto& resourceBinding : description.ResourceBindings)
         {
@@ -43,8 +43,8 @@ VulkanResourceHeapLayout::VulkanResourceHeapLayout(const ResourceHeapLayoutDescr
 
         VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
         descriptorSetLayoutCreateInfo.sType                           = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        descriptorSetLayoutCreateInfo.bindingCount                    = (Uint32)setLayoutBindings.GetLength();
-        descriptorSetLayoutCreateInfo.pBindings                       = setLayoutBindings.GetLength() == 0 ? nullptr : setLayoutBindings.GetData();
+        descriptorSetLayoutCreateInfo.bindingCount                    = (Uint32)setLayoutBindings.GetSize();
+        descriptorSetLayoutCreateInfo.pBindings                       = setLayoutBindings.GetSize() == 0 ? nullptr : setLayoutBindings.GetData();
 
         auto vkResult = vkCreateDescriptorSetLayout(vulkanGraphicsDevice.GetVkDeviceHandle(), &descriptorSetLayoutCreateInfo, nullptr, &vkDescriptorSetLayout);
 

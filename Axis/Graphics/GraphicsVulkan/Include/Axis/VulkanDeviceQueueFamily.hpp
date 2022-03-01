@@ -84,7 +84,7 @@ struct VulkanDeviceQueueFamily final
     VulkanDeviceQueue& GetDeviceQueue(Uint32 deviceQueueIndex);
 
     // Gets the number of device queues in this device queue family.
-    inline Size GetDeviceQueueCount() const noexcept { return _deviceQueues.GetLength(); }
+    inline Size GetDeviceQueueCount() const noexcept { return _deviceQueues.GetSize(); }
 
 private:
     Uint32                          _deviceQueueFamilyIndex = 0;

@@ -323,8 +323,8 @@ VulkanSwapChain::VulkanSwapChain(const SwapChainDescription& description,
                                  _inFlightFences);
 
 
-    _imagesInFlight      = System::List<System::SharedPointer<IFence>>(_renderTargetViews.GetLength(), nullptr);
-    _inFlightFenceValues = System::List<Uint64>(_renderTargetViews.GetLength(), 0);
+    _imagesInFlight      = System::List<System::SharedPointer<IFence>>(_renderTargetViews.GetSize(), nullptr);
+    _inFlightFenceValues = System::List<Uint64>(_renderTargetViews.GetSize(), 0);
 
     StartFrame();
 }

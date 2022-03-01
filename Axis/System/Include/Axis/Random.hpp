@@ -25,7 +25,6 @@ public:
     /// \brief Default constructor, the seed is captured from
     ///        The system time.
     Random() noexcept;
-
     /// \brief Constructs a new Random class with defined seed value.
     constexpr explicit Random(Int32 seed) noexcept;
 

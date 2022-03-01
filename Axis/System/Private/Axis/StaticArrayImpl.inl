@@ -16,7 +16,7 @@ namespace System
 {
 
 template <RawType T, Size N>
-inline constexpr Size StaticArray<T, N>::GetLength() const noexcept
+inline constexpr Size StaticArray<T, N>::GetSize() const noexcept
 {
     return N;
 }

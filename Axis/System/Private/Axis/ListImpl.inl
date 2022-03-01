@@ -1,14 +1,11 @@
-/// \copyright Simmypeet - Copyright (C)
-///            This file is subject to the terms and conditions defined in
-///            file 'LICENSE', which is part of this source code package.
-
-#ifndef AXIS_SYSTEM_ARRAYIMPL_INL
-#define AXIS_SYSTEM_ARRAYIMPL_INL
+#ifndef AXIS_SYSTEM_LISTIMPL_INL
+#define AXIS_SYSTEM_LISTIMPL_INL
+#include "Axis/Trait.hpp"
+#include "Axis/Utility.hpp"
 #pragma once
 
 #include "../../Include/Axis/Exception.hpp"
 #include "../../Include/Axis/List.hpp"
-#include "../../Include/Axis/Math.hpp"
 
 namespace Axis
 {
@@ -16,639 +13,900 @@ namespace Axis
 namespace System
 {
 
-template <RawType T, AllocatorType Allocator>
-template <Bool FreeMemory>
-inline void List<T, Allocator>::ClearInternal(T*   buffer,
-                                              Size length)
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+struct List<T, Alloc, IteratorDebugging>::ContainerHolder
 {
-    if (buffer)
+    AllocType* AllocatorPointer = nullptr;
+    Data       Data             = {};
+
+    inline void Tidy() noexcept
     {
-        if constexpr (!PodType<T>)
+        for (SizeType i = SizeType(0); i < Data.InitializedSize; ++i)
+            AllocTraits::Destruct(*AllocatorPointer, Data.Begin + i);
+
+        // Deallocates the memory
+        AllocTraits::Deallocate(*AllocatorPointer, Data.Begin, Data.AllocatedSize);
+    }
+};
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+template <class IteratorPointerType, class IteratorReferenceType>
+class List<T, Alloc, IteratorDebugging>::BaseIterator final : private ConditionalType<IteratorDebugging, Detail::BaseDebugIterator, Detail::Empty>
+{
+private:
+    using BaseType = ConditionalType<IteratorDebugging, Detail::BaseDebugIterator, Detail::Empty>;
+    using ListType = List<T, Alloc, IteratorDebugging>;
+
+public:
+    using DifferenceType = typename ListType::DifferenceType;
+    using SizeType       = typename ListType::SizeType;
+
+private:
+    IteratorPointerType _currentPointer = nullptr; // Pointer to the current element
+
+public:
+    BaseIterator() noexcept = default;
+    BaseIterator(NullptrType) noexcept {}
+    BaseIterator(const BaseIterator&) noexcept = default;
+    BaseIterator(BaseIterator&&) noexcept      = default;
+    BaseIterator& operator=(const BaseIterator&) noexcept = default;
+    BaseIterator& operator=(BaseIterator&&) noexcept = default;
+
+private:
+    BaseIterator(PointerType pointer) :
+        _currentPointer(pointer) {}
+
+public:
+    // Operators
+    inline IteratorReferenceType operator*() const noexcept
+    {
+        if constexpr (IteratorDebugging)
         {
-            for (Size i = 0; i < length; i++)
-                buffer[i].~T();
+            if (!BaseType::_skipValidation)
+            {
+                BaseType::BasicValidate();
+
+                auto& listData = ((ListType*)BaseType::_debuggingTracker.GetPointer())->_dataAllocPair.GetFirst();
+
+                // Checks if _currentPointer is within the bounds of the list
+                AXIS_VALIDATE(_currentPointer >= listData.Begin && _currentPointer < listData.Begin + listData.InitializedSize, "Iterator was out of bounds!");
+            }
         }
 
-        if constexpr (FreeMemory)
-            Allocator::Deallocate(buffer);
+        return *_currentPointer;
     }
-}
 
-template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>::List(const List<T, Allocator>& other) requires(std::is_copy_constructible_v<T>)
-{
-    if (other._length > 0)
+    inline IteratorPointerType operator->() const noexcept
     {
-        auto newMemory   = ConstructsNewList<true, true, true>(other._length, Math::RoundToNextPowerOfTwo(other._length), other._buffer);
-        _allocatedLength = GetTuple<1>(newMemory);
-        _length          = other._length;
-        _buffer          = GetTuple<0>(newMemory);
+        if constexpr (IteratorDebugging)
+        {
+            if (!BaseType::_skipValidation)
+            {
+                BaseType::BasicValidate();
+
+                auto& listData = ((ListType*)BaseType::_debuggingTracker.GetPointer())->_dataAllocPair.GetFirst();
+
+                // Checks if _currentPointer is within the bounds of the list
+                AXIS_VALIDATE(_currentPointer >= listData.Begin && _currentPointer < listData.Begin + listData.InitializedSize, "Iterator was out of bounds!");
+            }
+        }
+
+        return _currentPointer;
     }
-}
 
-template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>::List(List<T, Allocator>&& other) noexcept :
-    _buffer(other._buffer),
-    _allocatedLength(other._length),
-    _length(other._length)
-{
-    // Turns other into an empty array.
-    other._buffer          = nullptr;
-    other._length          = 0;
-    other._allocatedLength = 0;
-}
-
-template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>::List(NullptrType) noexcept {}
-
-template <RawType T, AllocatorType Allocator>
-template <class... Args>
-inline List<T, Allocator>::List(Size length, Args... args) requires(std::is_constructible_v<T, Args...>)
-{
-    if (length > 0)
+    // Comparison operators
+    template <class OtherIteratorPointerType, class OtherIteratorReferenceType>
+    inline bool operator==(const BaseIterator<OtherIteratorPointerType, OtherIteratorReferenceType>& other) const noexcept
     {
-        auto newMemory   = ConstructsNewList<true, false, false>(length, Math::RoundToNextPowerOfTwo(length), nullptr, std::forward<Args>(args)...);
-        _allocatedLength = GetTuple<1>(newMemory);
-        _length          = length;
-        _buffer          = GetTuple<0>(newMemory);
+        return _currentPointer == other._currentPointer;
     }
-}
 
-template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>::List(const std::initializer_list<T>& other) requires(std::is_copy_constructible_v<T>)
-{
-    if (other.size() > 0)
+    template <class OtherIteratorPointerType, class OtherIteratorReferenceType>
+    inline bool operator!=(const BaseIterator<OtherIteratorPointerType, OtherIteratorReferenceType>& other) const noexcept
     {
-        auto newMemory   = ConstructsNewList<true, true, true>(other.size(), Math::RoundToNextPowerOfTwo(other.size()), const_cast<T*>(std::addressof(*other.begin())));
-        _allocatedLength = GetTuple<1>(newMemory);
-        _length          = other.size();
-        _buffer          = GetTuple<0>(newMemory);
+        return _currentPointer != other._currentPointer;
     }
-}
 
-template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>::~List() noexcept
-{
-    ClearInternal<true>(_buffer, _length);
-}
+    template <class OtherIteratorPointerType, class OtherIteratorReferenceType>
+    inline bool operator<(const BaseIterator<OtherIteratorPointerType, OtherIteratorReferenceType>& other) const noexcept
+    {
+        return _currentPointer < other._currentPointer;
+    }
 
-template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>& List<T, Allocator>::operator=(const List<T, Allocator>& other) requires(std::is_copy_constructible_v<T>)
-{
-    if (this == std::addressof(other))
+    template <class OtherIteratorPointerType, class OtherIteratorReferenceType>
+    inline bool operator>(const BaseIterator<OtherIteratorPointerType, OtherIteratorReferenceType>& other) const noexcept
+    {
+        return _currentPointer > other._currentPointer;
+    }
+
+    template <class OtherIteratorPointerType, class OtherIteratorReferenceType>
+    inline bool operator<=(const BaseIterator<OtherIteratorPointerType, OtherIteratorReferenceType>& other) const noexcept
+    {
+        return _currentPointer <= other._currentPointer;
+    }
+
+    template <class OtherIteratorPointerType, class OtherIteratorReferenceType>
+    inline bool operator>=(const BaseIterator<OtherIteratorPointerType, OtherIteratorReferenceType>& other) const noexcept
+    {
+        return _currentPointer >= other._currentPointer;
+    }
+
+    // Arithmetic operators
+    inline BaseIterator operator+(const DifferenceType difference) const noexcept // Addition
+    {
+        BaseIterator copy = *this;
+        copy._currentPointer += difference;
+        return copy;
+    }
+
+    inline BaseIterator operator-(const DifferenceType difference) const noexcept // Subtraction
+    {
+        BaseIterator copy = *this;
+        copy._currentPointer -= difference;
+        return copy;
+    }
+
+    inline BaseIterator& operator+=(const DifferenceType difference) noexcept // Addition assignment
+    {
+        _currentPointer += difference;
         return *this;
-
-    if constexpr (std::is_nothrow_copy_constructible_v<T>)
-    {
-        // Clears the current list
-        if (other._length > _allocatedLength)
-        {
-            auto allocatedLength = Math::RoundToNextPowerOfTwo(other._length);
-
-            ClearInternal<true>(_buffer, _length);
-
-            _buffer          = (T*)Allocator::Allocate(allocatedLength * sizeof(T), alignof(T));
-            _allocatedLength = allocatedLength;
-        }
-        else
-            ClearInternal<false>(_buffer, _length);
-
-        _length = other._length;
-
-        if constexpr (PodType<T>)
-        {
-            std::memcpy(_buffer, other._buffer, _length * sizeof(T));
-        }
-        else
-        {
-            for (Size i = 0; i < _length; ++i)
-                new (&_buffer[i]) T(other._buffer[i]);
-        }
-    }
-    else
-    {
-        // Clears the current list
-        ClearInternal<true>(_buffer, _length);
-
-        // Creates new buffer to provide strong exception guarantee
-        auto newMemory = ConstructsNewList<false, true, true>(other._length, Math::RoundToNextPowerOfTwo(other._length), const_cast<T*>(other._buffer));
-
-        _allocatedLength = GetTuple<1>(newMemory);
-        _length          = other._length;
-        _buffer          = GetTuple<0>(newMemory);
     }
 
-    return *this;
-}
-
-template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>& List<T, Allocator>::operator=(List<T, Allocator>&& other) noexcept
-{
-    if (this == std::addressof(other))
+    inline BaseIterator& operator-=(const DifferenceType difference) noexcept // Subtraction assignment
+    {
+        _currentPointer -= difference;
         return *this;
-
-    ClearInternal<true>(_buffer, _length);
-
-    _buffer          = other._buffer;
-    _length          = other._length;
-    _allocatedLength = other._allocatedLength;
-
-    // Turns other into an empty array.
-    other._buffer          = nullptr;
-    other._length          = 0;
-    other._allocatedLength = 0;
-
-    return *this;
-}
-
-template <RawType T, AllocatorType Allocator>
-inline Size List<T, Allocator>::GetLength() const noexcept
-{
-    return _length;
-}
-
-template <RawType T, AllocatorType Allocator>
-inline void List<T, Allocator>::ReserveFor(Size length)
-{
-    if (length > _allocatedLength)
-    {
-        auto newMemory = ConstructsNewList<false, true, !std::is_nothrow_move_constructible_v<T>>(_length, Math::RoundToNextPowerOfTwo(length), _buffer);
-
-        // Destructs the old array.
-        ClearInternal<true>(_buffer, _length);
-
-        _allocatedLength = GetTuple<1>(newMemory);
-        _buffer          = GetTuple<0>(newMemory);
-    }
-}
-
-template <RawType T, AllocatorType Allocator>
-inline void List<T, Allocator>::Clear() noexcept
-{
-    ClearInternal<false>(_buffer, _length);
-
-    _length = 0;
-}
-
-template <RawType T, AllocatorType Allocator>
-template <class... Args>
-inline void List<T, Allocator>::Reset(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>)
-{
-    if constexpr (std::is_nothrow_default_constructible_v<T>)
-    {
-        ClearInternal<false>(_buffer, _length);
-
-        constexpr Bool DefaultConstructed = sizeof...(Args) == 0;
-
-        if constexpr (!PodType<T> || !DefaultConstructed)
-        {
-            // Invokes default constructor using placement new.
-            for (Size i = 0; i < _length; i++)
-                new (_buffer + i) T();
-        }
-    }
-    else
-    {
-        // Allocates new memory to ensure strong exception safety.
-        auto newMemory = ConstructsNewList<false, false, false>(_length, Math::RoundToNextPowerOfTwo(_length), nullptr, std::forward<Args>(args)...);
-
-        // Destructs the old array.
-        ClearInternal<true>(_buffer, _length);
-
-        _allocatedLength = GetTuple<1>(newMemory);
-        _buffer          = GetTuple<0>(newMemory);
-    }
-}
-
-template <RawType T, AllocatorType Allocator>
-template <class... Args>
-inline T* List<T, Allocator>::EmplaceBack(Args&&... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>))
-{
-    if (_length == _allocatedLength)
-    {
-        auto newMemory = ConstructsNewList<false, true, !std::is_nothrow_move_constructible_v<T>>(_length, Math::RoundToNextPowerOfTwo(_length + 1), _buffer);
-
-        // Destructs the old array.
-        ClearInternal<true>(_buffer, _length);
-
-        _allocatedLength = GetTuple<1>(newMemory);
-        _buffer          = GetTuple<0>(newMemory);
     }
 
-    // Invokes new placement constructor
-    new (_buffer + _length) T(std::forward<Args>(args)...);
-
-    _length++;
-
-    return _buffer + _length;
-}
-
-template <RawType T, AllocatorType Allocator>
-inline T* List<T, Allocator>::Append(const T& element) requires(std::is_copy_constructible_v<T>)
-{
-    return EmplaceBack<const T&>(element);
-}
-
-template <RawType T, AllocatorType Allocator>
-inline T* List<T, Allocator>::Append(T&& element) requires(std::is_move_constructible_v<T>)
-{
-    return EmplaceBack<T&&>(std::move(element));
-}
-
-template <RawType T, AllocatorType Allocator>
-template <class... Args>
-inline T* List<T, Allocator>::Emplace(Size index, Args&&... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>))
-{
-    if (index > _length)
-        throw ArgumentOutOfRangeException("`index` was out of range!");
-
-    // Checks if the index is the end.
-    if (index == _length) return EmplaceBack(std::forward<Args>(args)...);
-
-    if (_length < _allocatedLength && (std::is_nothrow_move_constructible_v<T> || std::is_nothrow_copy_constructible_v<T>)&&std::is_nothrow_constructible_v<T, Args...>)
+    template <class OtherIteratorPointerType, class OtherIteratorReferenceType>
+    inline DifferenceType operator-(const BaseIterator<OtherIteratorPointerType, OtherIteratorReferenceType>& other) const noexcept // Difference
     {
-        if constexpr (PodType<T>)
-        {
-            // Simply uses memmove to move the elements to create space for the new element.
-            std::memmove(_buffer + index + 1, _buffer + index, (_length - index) * sizeof(T));
-        }
-        else
-        {
-            // Moves the elements to the right of the index.
-            for (Size i = _length; i > index; i--)
-            {
-                // Uses any constructor with noexcept.
-                if constexpr (std::is_nothrow_move_constructible_v<T>)
-                    new (_buffer + i) T(std::move(_buffer[i - 1]));
-                else
-                    new (_buffer + i) T(_buffer[i - 1]);
-
-                // Destructs the old element.
-                _buffer[i - 1].~T();
-            }
-        }
-
-        // Invokes placement new at the index.
-        new (_buffer + index) T(std::forward<Args>(args)...);
-
-        return _buffer + index;
+        return _currentPointer - other._currentPointer;
     }
-    else
+
+    // Increment and decrement operators
+    inline BaseIterator& operator++() noexcept // Pre-increment
     {
-        auto newAllocatedLength = Math::RoundToNextPowerOfTwo(_length + 1);
-
-        // Allocates new memory.
-        auto newMemory = (T*)Allocator::Allocate(newAllocatedLength * sizeof(T), alignof(T));
-
-        if constexpr (PodType<T>)
-        {
-            // Uses memcpy for the first lefthand side.
-            std::memcpy(newMemory, _buffer, index * sizeof(T));
-
-            // Placement new
-            new (newMemory + index) T(std::forward<Args>(args)...);
-
-            // Uses memcpy for the second righthand side.
-            std::memcpy(newMemory + index + 1, _buffer + index, (_length - index) * sizeof(T));
-        }
-        else
-        {
-            // Copies the elements to the new memory and creates a space for the new element.
-            for (Size i = 0; i < index; i++)
-            {
-                // try to use move constructor if it is nothrow.
-                if constexpr (std::is_nothrow_move_constructible_v<T>)
-                    new (newMemory + i) T(std::move(_buffer[i]));
-                else
-                {
-                    // if copy constructor isn't noexcept, wraps it with try-catch.
-
-                    if constexpr (std::is_nothrow_copy_constructible_v<T>)
-                        new (newMemory + i) T(_buffer[i]);
-                    else
-                    {
-                        try
-                        {
-                            new (newMemory + i) T(_buffer[i]);
-                        }
-                        catch (...)
-                        {
-                            // Destructs the new memory.
-                            ClearInternal<true>(newMemory, i + 1);
-
-                            // Re-throws the exception.
-                            throw;
-                        }
-                    }
-                }
-            }
-
-            // Invokes new placement constructor at the index.
-            new (newMemory + index) T(std::forward<Args>(args)...);
-
-            // Continue copying the elements to the new memory.
-            for (Size i = index; i < _length; i++)
-            {
-                // try to use move constructor if it is nothrow.
-                if constexpr (std::is_nothrow_move_constructible_v<T>)
-                    new (newMemory + i + 1) T(std::move(_buffer[i]));
-                else
-                {
-                    // if copy constructor isn't noexcept, wraps it with try-catch.
-
-                    if constexpr (std::is_nothrow_copy_constructible_v<T>)
-                        new (newMemory + i + 1) T(_buffer[i]);
-                    else
-                    {
-                        try
-                        {
-                            new (newMemory + i + 1) T(_buffer[i]);
-                        }
-                        catch (...)
-                        {
-                            // Destructs the new memory.
-                            ClearInternal<true>(newMemory, i + 2);
-
-                            // Re-throws the exception.
-                            throw;
-                        }
-                    }
-                }
-            }
-        }
-
-        // The old memory is destructed.
-        ClearInternal<true>(_buffer, _length);
-
-        // Assigns the new memory.
-        _buffer          = newMemory;
-        _allocatedLength = newAllocatedLength;
-
-        // Increases the length.
-        _length++;
-
-        return _buffer + index;
+        ++_currentPointer;
+        return *this;
     }
-}
 
-template <RawType T, AllocatorType Allocator>
-inline void List<T, Allocator>::PopBack() noexcept
+    inline BaseIterator operator++(int) noexcept // Post-increment
+    {
+        BaseIterator copy = *this;
+        ++_currentPointer;
+        return copy;
+    }
+
+    inline BaseIterator& operator--() noexcept // Pre-decrement
+    {
+        --_currentPointer;
+        return *this;
+    }
+
+    inline BaseIterator operator--(int) noexcept // Post-decrement
+    {
+        BaseIterator copy = *this;
+        --_currentPointer;
+        return copy;
+    }
+
+    friend class List<T, Alloc, IteratorDebugging>;
+};
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline void List<T, Alloc, IteratorDebugging>::Reserve(SizeType elementCount)
 {
-    // Checks if the array is empty, if so, does nothing.
-    if (_length == 0)
+    if (elementCount <= _dataAllocPair.GetFirst().AllocatedSize)
         return;
 
-    if constexpr (!PodType<T>)
-    {
-        // Destructs the last element.
-        _buffer[_length - 1].~T();
-    }
+    auto newDataCopy = CreateCopy(elementCount);
 
-    // Decreases the length.
-    _length--;
+    if (newDataCopy.Second)
+        Tidy();
+
+    _dataAllocPair.GetFirst() = newDataCopy.First;
 }
 
-template <RawType T, AllocatorType Allocator>
-inline void List<T, Allocator>::RemoveAt(Size index) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>)
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline T& List<T, Alloc, IteratorDebugging>::Append(const T& value)
 {
-    // Checks if the index is valid.
-    if (index >= _length)
+    return EmplaceBack<const T&>(value);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline T& List<T, Alloc, IteratorDebugging>::Append(T&& value)
+{
+    return EmplaceBack<T&&>(Axis::System::Move(value));
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+template <RandomAccessReadIterator<T> IteratorType>
+inline void List<T, Alloc, IteratorDebugging>::Append(const IteratorType& begin,
+                                                      const IteratorType& end)
+{
+    if (begin == end)
+        return;
+
+    if (begin > end)
+        throw InvalidArgumentException("`begin` was greater than `end`!");
+
+    SizeType elementToInsert = (SizeType)(end - begin);
+
+    auto& data  = _dataAllocPair.GetFirst();
+    auto& alloc = _dataAllocPair.GetSecond();
+
+    Reserve(Detail::RoundToNextPowerOfTwo(data.InitializedSize + elementToInsert));
+
+    struct AppendGuard
+    {
+        Data*      Data           = {};
+        AllocType* Allocator      = {};
+        SizeType   AppendingIndex = {}; // The first index of the elements to append
+
+        inline void Tidy() noexcept
+        {
+            auto appendedCount = Data->InitializedSize - AppendingIndex;
+
+            for (SizeType i = 0; i < appendedCount; ++i)
+                AllocTraits::Destruct(*Allocator, Data->Begin + AppendingIndex + i);
+        }
+    };
+
+    AppendGuard appendGuard = {
+        AddressOf(data),
+        AddressOf(alloc),
+        data.InitializedSize};
+
+    Detail::TidyGuard<AppendGuard*> guard = {AddressOf(appendGuard)};
+
+    for (auto it = begin; it != end; ++it)
+    {
+        const auto& value = *it;
+        AllocTraits::Construct(alloc, data.Begin + data.InitializedSize, value);
+        ++data.InitializedSize;
+    }
+
+    guard.Target = nullptr;
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline void List<T, Alloc, IteratorDebugging>::PopBack() noexcept
+{
+    if (_dataAllocPair.GetFirst().InitializedSize == 0)
+        return;
+
+    AllocTraits::Destruct(_dataAllocPair.GetSecond(), _dataAllocPair.GetFirst().Begin + (_dataAllocPair.GetFirst().InitializedSize - 1));
+    --_dataAllocPair.GetFirst().InitializedSize;
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline void List<T, Alloc, IteratorDebugging>::RemoveAt(SizeType index,
+                                                        SizeType count)
+{
+    if (count == 0)
+        return;
+
+    if (index >= _dataAllocPair.GetFirst().InitializedSize)
         throw ArgumentOutOfRangeException("`index` was out of range!");
 
-    if constexpr (PodType<T>)
-    {
-        // Simply uses memmove to move the elements.
-        std::memmove(_buffer + index, _buffer + index + 1, (_length - index - 1) * sizeof(T));
-    }
-    // No need to allocate new memory if
-    else if constexpr (std::is_nothrow_move_constructible_v<T> || std::is_nothrow_copy_constructible_v<T>)
-    {
-        // Destruct the element at the index.
-        _buffer[index].~T();
+    if (index + count > _dataAllocPair.GetFirst().InitializedSize)
+        throw ArgumentOutOfRangeException("`count` was out of range!");
 
-        // Moves the elements to the left of the index.
-        for (Size i = index; i < _length - 1; i++)
+    auto& data  = _dataAllocPair.GetFirst();
+    auto& alloc = _dataAllocPair.GetSecond();
+
+    // Uses move / copy assign to move the elements (if nothrow)
+    constexpr bool Assign = IsNoThrowMoveConstructible<T> || IsNoThrowCopyAssignable<T>;
+
+    // Uses move / copy construct to move the elements (if nothrow)
+    constexpr bool Construct = IsNoThrowMoveConstructible<T> || IsNoThrowCopyConstructible<T>;
+
+    if constexpr (Assign || Construct)
+    {
+        auto moveCount = data.InitializedSize - (index + count);
+
+        if constexpr (Construct)
         {
-            // Uses any constructor with noexcept.
-            if constexpr (std::is_nothrow_move_constructible_v<T>)
-                new (_buffer + i) T(std::move(_buffer[i + 1]));
-            else
-                new (_buffer + i) T(_buffer[i + 1]);
+            for (SizeType i = 0; i < count; ++i)
+                AllocTraits::Destruct(alloc, data.Begin + index + i);
+        }
 
-            // Destructs the old element.
-            _buffer[i + 1].~T();
+        for (SizeType i = 0; i < moveCount; ++i)
+        {
+            const SizeType sourceIndex = index + count + i;
+            const SizeType destIndex   = index + i;
+
+            if constexpr (Assign)
+            {
+                data.Begin[destIndex] = ::Axis::System::MoveAssignIfNoThrow(data.Begin[sourceIndex]);
+            }
+            else if constexpr (Construct)
+            {
+                // Moves / copies and destructs
+                AllocTraits::Construct(alloc, data.Begin + destIndex, ::Axis::System::MoveConstructIfNoThrow(data.Begin[sourceIndex]));
+
+                AllocTraits::Destruct(alloc, data.Begin + sourceIndex);
+            }
+        }
+
+        if constexpr (Assign)
+        {
+            for (SizeType i = 0; i < count; ++i)
+                AllocTraits::Destruct(alloc, data.Begin + (data.InitializedSize - 1 - i));
+        }
+
+        // Updates the initialized size
+        data.InitializedSize -= count;
+    }
+    else
+    {
+        // Allocates new memory and copies the old elements and skips the ones to remove
+        ContainerHolder newDataHolder = {
+            {AllocTraits::Allocate(alloc, data.InitializedSize - count),
+             data.InitializedSize - count,
+             0},
+            AddressOf(alloc)};
+
+        Detail::TidyGuard<ContainerHolder*> guard = {AddressOf(newDataHolder)};
+
+        // Copies / moves the old elements that are before the ones to remove
+        for (SizeType i = 0; i < index; ++i)
+        {
+            AllocTraits::Construct(alloc, newDataHolder.GetFirst().Begin + i, ::Axis::System::MoveConstructIfNoThrow(data.Begin + i));
+            ++newDataHolder.Data.InitializedSize;
+        }
+
+        // Copies / moves the old elements that are after the ones to remove
+        for (SizeType i = index + count; i < data.InitializedSize; ++i)
+        {
+            AllocTraits::Construct(alloc, newDataHolder.GetFirst().Begin + i - count, ::Axis::System::MoveConstructIfNoThrow(data.Begin + i));
+            ++newDataHolder.Data.InitializedSize;
+        }
+
+        guard.Target = nullptr;
+
+        Tidy();
+
+        data = newDataHolder.Data;
+    }
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline void List<T, Alloc, IteratorDebugging>::Tidy() noexcept
+{
+    Data&      dataInstance  = _dataAllocPair.GetFirst();
+    AllocType& allocInstance = _dataAllocPair.GetSecond();
+
+    for (SizeType i = 0; i < dataInstance.InitializedSize; ++i)
+        AllocTraits::Destruct(allocInstance, dataInstance.Begin + i);
+
+    if (dataInstance.Begin)
+        AllocTraits::Deallocate(allocInstance, dataInstance.Begin, dataInstance.AllocatedSize);
+
+    dataInstance.Begin           = PointerType(nullptr);
+    dataInstance.AllocatedSize   = SizeType(0);
+    dataInstance.InitializedSize = SizeType(0);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline void List<T, Alloc, IteratorDebugging>::TidyData(const Data& data) noexcept
+{
+    Data&      dataInstance  = _dataAllocPair.GetFirst();
+    AllocType& allocInstance = _dataAllocPair.GetSecond();
+
+    for (SizeType i = 0; i < dataInstance.InitializedSize; ++i)
+        AllocTraits::Destruct(allocInstance, dataInstance.Begin + i);
+
+    if (dataInstance.Begin)
+        AllocTraits::Deallocate(allocInstance, dataInstance.Begin, dataInstance.AllocatedSize);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline Pair<typename List<T, Alloc, IteratorDebugging>::Data, Bool> List<T, Alloc, IteratorDebugging>::CreateCopy(SizeType elementCount)
+{
+    auto& data  = _dataAllocPair.GetFirst();
+    auto& alloc = _dataAllocPair.GetSecond();
+
+    if (elementCount <= data.AllocatedSize)
+        return {data, false};
+
+    ContainerHolder containerHolder = {AddressOf(alloc),
+                                       {AllocTraits::Allocate(alloc, elementCount), elementCount, 0}};
+
+    Detail::TidyGuard<ContainerHolder*> guard = {AddressOf(containerHolder)};
+
+    for (SizeType i = 0; i < data.InitializedSize; ++i)
+    {
+        AllocTraits::Construct(alloc, containerHolder.Data.Begin + i, ::Axis::System::MoveConstructIfNoThrow(data.Begin[i]));
+        ++containerHolder.Data.InitializedSize;
+    }
+
+    guard.Target = nullptr;
+
+    return {containerHolder.Data, true};
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, IteratorDebugging>::GetCapacity() const noexcept
+{
+    return _dataAllocPair.GetFirst().AllocatedSize;
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+template <Bool ForceNewAllocation>
+inline Pair<typename List<T, Alloc, IteratorDebugging>::Data, Bool> List<T, Alloc, IteratorDebugging>::CreateSpace(SizeType index,
+                                                                                                                   SizeType elementCount)
+{
+    constexpr bool constructNoExcept = IsNoThrowCopyConstructible<T> || IsNoThrowMoveConstructible<T>;
+    constexpr bool assignNoExcept    = IsNoThrowCopyAssignable<T> || IsNoThrowMoveAssignable<T>;
+
+    auto& data  = _dataAllocPair.GetFirst();
+    auto& alloc = _dataAllocPair.GetSecond();
+
+    const bool allocateNewMemory = ForceNewAllocation || (data.InitializedSize + elementCount > data.AllocatedSize) || !constructNoExcept;
+
+    if (allocateNewMemory)
+    {
+        Data newData = {
+            AllocTraits::Allocate(alloc, Detail::RoundToNextPowerOfTwo(data.InitializedSize + elementCount))};
+    }
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+template <class... Args>
+inline T& List<T, Alloc, IteratorDebugging>::EmplaceBack(Args&&... args)
+{
+    auto& data  = _dataAllocPair.GetFirst();
+    auto& alloc = _dataAllocPair.GetSecond();
+
+    Reserve(Detail::RoundToNextPowerOfTwo(data.InitializedSize + 1));
+
+    AllocTraits::Construct(alloc, data.Begin, Forward<Args>(args)...);
+
+    ++data.InitializedSize;
+
+    return data.Begin[data.InitializedSize - 1];
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+template <class Lambda>
+inline void List<T, Alloc, IteratorDebugging>::ConstructContinuousContainer(SizeType elementCount, const Lambda& construct)
+{
+    Detail::TidyGuard<ThisType*> guard = {this};
+
+    // Allocate memory
+    Data&      dataInstance  = _dataAllocPair.GetFirst();
+    AllocType& allocInstance = _dataAllocPair.GetSecond();
+
+    // Assigns data
+    dataInstance.Begin         = AllocTraits::Allocate(allocInstance, elementCount);
+    dataInstance.AllocatedSize = elementCount;
+
+    construct(elementCount);
+
+    guard.Target = nullptr;
+}
+
+// Default constructor
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>::List() noexcept(DefaultConstructorNoexcept) :
+    _dataAllocPair() {}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>::~List() noexcept { Tidy(); }
+
+// Constructor with allocator instance
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>::List(const AllocType& allocator) noexcept(AllocatorCopyConstructorNoexcept) :
+    _dataAllocPair(Data(), allocator) {}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>::List(SizeType elementCount, const AllocType& allocator) :
+    _dataAllocPair(Data(), allocator)
+{
+    auto construct = [this](SizeType elementCount) -> void {
+        for (SizeType i = 0; i < elementCount; ++i)
+        {
+            AllocTraits::Construct(_dataAllocPair.GetSecond(), _dataAllocPair.GetFirst().Begin + i);
+            _dataAllocPair.GetFirst().InitializedSize++;
+        }
+    };
+
+    ConstructContinuousContainer(elementCount, construct);
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>::List(SizeType elementCount, const T& value, const AllocType& allocator) :
+    _dataAllocPair(Data(), allocator)
+{
+    auto construct = [&](SizeType elementCount) -> void {
+        for (SizeType i = 0; i < elementCount; ++i)
+        {
+            AllocTraits::Construct(_dataAllocPair.GetSecond(), _dataAllocPair.GetFirst().Begin + i, value);
+            ++_dataAllocPair.GetFirst().InitializedSize;
+        }
+    };
+
+    ConstructContinuousContainer(elementCount, construct);
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>::List(std::initializer_list<T> list, const AllocType& allocator) :
+    _dataAllocPair(Data(), allocator)
+{
+    auto construct = [&](SizeType elementCount) -> void {
+        for (SizeType i = 0; i < elementCount; ++i)
+        {
+            AllocTraits::Construct(_dataAllocPair.GetSecond(), _dataAllocPair.GetFirst().Begin + i, *(list.begin() + i));
+            ++_dataAllocPair.GetFirst().InitializedSize;
+        }
+    };
+
+    ConstructContinuousContainer(list.size(), construct);
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>::List(const List& other) :
+    _dataAllocPair(Data(), other._dataAllocPair.GetSecond())
+{
+    auto construct = [&](SizeType elementCount) -> void {
+        for (SizeType i = 0; i < elementCount; ++i)
+        {
+            AllocTraits::Construct(_dataAllocPair.GetSecond(), _dataAllocPair.GetFirst().Begin + i, *(other._dataAllocPair.GetFirst().Begin + i));
+            ++_dataAllocPair.GetFirst().InitializedSize;
+        }
+    };
+
+    ConstructContinuousContainer(other._dataAllocPair.GetFirst().InitializedSize, construct);
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>::List(List&& other) noexcept(MoveConstructorNoexcept) :
+    _dataAllocPair(PerfectForwardTag, Data(other._dataAllocPair.GetFirst()), Axis::System::Move(other._dataAllocPair.GetSecond()))
+{
+    auto& otherData           = other._dataAllocPair.GetFirst();
+    otherData.Begin           = PointerType(nullptr);
+    otherData.AllocatedSize   = SizeType(0);
+    otherData.InitializedSize = SizeType(0);
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::operator=(const List<T, Alloc, IteratorDebugging>& other)
+{
+    if (this == AddressOf(other))
+        return *this;
+
+    auto& thisData   = _dataAllocPair.GetFirst();
+    auto& thisAlloc  = _dataAllocPair.GetSecond();
+    auto& otherData  = other._dataAllocPair.GetFirst();
+    auto& otherAlloc = other._dataAllocPair.GetSecond();
+
+    // Copy assignment
+    if constexpr (AllocTraits::PropagateOnContainerCopyAssignment)
+    {
+        // Tidies this instance
+        Tidy();
+
+        // Copy assignment
+        thisAlloc = otherAlloc;
+    }
+
+
+    // Checks if after the allocator's copy assignment, the allocator is the same
+    const bool propagatedEqual = AllocTraits::PropagateOnContainerCopyAssignment ? (AllocTraits::IsAlwaysEqual ? true : thisAlloc == otherAlloc) : true;
+
+    const bool useOldMemoryOnlyAssignment                      = propagatedEqual && thisData.InitializedSize >= otherData.InitializedSize && IsNoThrowCopyAssignable<ValueType>;
+    const bool useOldMemoryWithAssignmentAndExtraConstructions = propagatedEqual && thisData.InitializedSize < otherData.InitializedSize && thisData.AllocatedSize >= otherData.InitializedSize && IsNoThrowCopyAssignable<ValueType> && IsNoThrowCopyConstructible<T>;
+    const bool spareMemory                                     = propagatedEqual && thisData.AllocatedSize >= otherData.InitializedSize && IsNoThrowCopyConstructible<T>;
+
+    if (useOldMemoryOnlyAssignment)
+    {
+        // Prevents ill-formedness
+        if constexpr (IsNoThrowCopyAssignable<ValueType>)
+        {
+            // Assigns
+            for (SizeType i = SizeType(0); i < otherData.InitializedSize; ++i)
+                *(thisData.Begin + i) = *(otherData.Begin + i);
+
+            // Destructs the rest
+            for (SizeType i = otherData.InitializedSize; i < thisData.InitializedSize; ++i)
+                AllocTraits::Destruct(_dataAllocPair.GetSecond(), thisData.Begin + i);
+
+            thisData.InitializedSize = otherData.InitializedSize;
+        }
+    }
+    else if (useOldMemoryWithAssignmentAndExtraConstructions)
+    {
+        if constexpr (IsNoThrowCopyAssignable<ValueType> && IsNoThrowCopyConstructible<T>)
+        {
+            auto assignRange = thisData.InitializedSize < otherData.InitializedSize ? thisData.InitializedSize : otherData.InitializedSize;
+
+            // Assigns
+            for (SizeType i = SizeType(0); i < assignRange; ++i)
+                *(thisData.Begin + i) = MoveAssignIfNoThrow(*(otherData.Begin + i));
+
+            // Constructs
+            for (SizeType i = thisData.InitializedSize; i < otherData.InitializedSize; ++i)
+                AllocTraits::Construct(_dataAllocPair.GetSecond(), thisData.Begin + i, *(otherData.Begin + i));
+
+            thisData.InitializedSize = otherData.InitializedSize;
+        }
+    }
+    else if (spareMemory)
+    {
+        if constexpr (IsNoThrowCopyConstructible<T>)
+        {
+            // Destructs all the elements
+            for (SizeType i = SizeType(0); i < thisData.InitializedSize; ++i)
+                AllocTraits::Destruct(_dataAllocPair.GetSecond(), thisData.Begin + i);
+
+            // Constructs all the elements
+            for (SizeType i = SizeType(0); i < otherData.InitializedSize; ++i)
+                AllocTraits::Construct(_dataAllocPair.GetSecond(), thisData.Begin + i, *(otherData.Begin + i));
+
+            thisData.InitializedSize = otherData.InitializedSize;
         }
     }
     else
     {
-        // Creates new buffer to ensure strong exception safety.
-        auto newBuffer = (T*)Allocator::Allocate((_length - 1) * sizeof(T), alignof(T));
+        Data newThisData = {
+            AllocTraits::Allocate(_dataAllocPair.GetSecond(), otherData.InitializedSize),
+            otherData.InitializedSize,
+            0};
 
-        // Keeps track of allocated elements in case of exception.
-        Size allocated = 0;
+        ContainerHolder containerHolder = {
+            AddressOf(_dataAllocPair.GetSecond()),
+            newThisData};
 
-        // Copies the elements to the new buffer.
-        try
+        Detail::TidyGuard<ContainerHolder*> guard = {AddressOf(containerHolder)};
+
+        // Constructs all the elements
+        for (SizeType i = SizeType(0); i < otherData.InitializedSize; ++i)
         {
-            for (Size i = 0; i < index; i++)
-            {
-                new (newBuffer + i) T(_buffer[i]);
-                allocated++;
-            }
-
-            for (Size i = index + 1; i < _length; i++)
-            {
-                new (newBuffer + i - 1) T(_buffer[i]);
-                allocated++;
-            }
-        }
-        catch (...)
-        {
-            // Destructs the new memory.
-            ClearInternal<true>(newBuffer, allocated);
-
-            // Re-throws the exception.
-            throw;
+            AllocTraits::Construct(_dataAllocPair.GetSecond(), containerHolder.Data.Begin + i, *(otherData.Begin + i));
+            ++containerHolder.Data.InitializedSize;
         }
 
-        // The old memory is destructed.
-        ClearInternal<true>(_buffer, _length);
+        guard.Target = nullptr;
 
-        // Assigns the new memory.
-        _buffer = newBuffer;
+        if constexpr (!AllocTraits::PropagateOnContainerCopyAssignment)
+            Tidy();
+
+        thisData = containerHolder.Data;
     }
 
-    // Decreases the length.
-    _length--;
+    return *this;
 }
 
-template <RawType T, AllocatorType Allocator>
-inline T* List<T, Allocator>::GetData() noexcept
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::operator=(List<T, Alloc, IteratorDebugging>&& other) noexcept(MoveAssignmentNoexcept)
 {
-    return _buffer;
-}
+    if (this == AddressOf(other))
+        return *this;
 
-template <RawType T, AllocatorType Allocator>
-inline const T* List<T, Allocator>::GetData() const noexcept
-{
-    return _buffer;
-}
+    auto& thisData  = _dataAllocPair.GetFirst();
+    auto& otherData = other._dataAllocPair.GetFirst();
 
-template <RawType T, AllocatorType Allocator>
-inline void List<T, Allocator>::Resize(Size length) requires(std::is_default_constructible_v<T>)
-{
-    if (length <= _allocatedLength && std::is_nothrow_default_constructible_v<T>)
+    const bool equal = AllocTraits::IsAlwaysEqual || (_dataAllocPair.GetSecond() == other._dataAllocPair.GetSecond());
+
+    if (AllocTraits::PropagateOnContainerMoveAssignment || equal)
     {
-        if constexpr (!PodType<T>)
-        {
-            for (Size i = 0; i < _length; i++)
-                _buffer[i].~T();
-        }
+        Tidy();
 
-        _length = length;
+        if constexpr (AllocTraits::PropagateOnContainerMoveAssignment)
+            _dataAllocPair.GetSecond() = Axis::System::MoveAssignIfNoThrow(other._dataAllocPair.GetSecond());
 
-        for (Size i = 0; i < _length; i++)
-            new (_buffer + i) T();
+        // Simply moves the pointer
+        thisData.Begin           = otherData.Begin;
+        thisData.AllocatedSize   = otherData.AllocatedSize;
+        thisData.InitializedSize = otherData.InitializedSize;
+
+        otherData.Begin           = PointerType(nullptr);
+        otherData.AllocatedSize   = SizeType(0);
+        otherData.InitializedSize = SizeType(0);
     }
     else
     {
-        // Creates new buffer to ensure strong exception safety.
-        auto newMemory = ConstructsNewList<true, false, false>(length,
-                                                               Math::RoundToNextPowerOfTwo(length),
-                                                               nullptr);
+        const bool useOldMemoryOnlyAssignment                      = thisData.InitializedSize >= otherData.InitializedSize && (IsNoThrowCopyAssignable<ValueType> || IsNoThrowMoveAssignable<ValueType>);
+        const bool useOldMemoryWithAssignmentAndExtraConstructions = thisData.InitializedSize < otherData.InitializedSize && thisData.AllocatedSize >= otherData.InitializedSize && (IsNoThrowCopyAssignable<ValueType> || IsNoThrowMoveAssignable<ValueType>)&&(IsNoThrowCopyConstructible<T> || IsNoThrowMoveConstructible<T>);
+        const bool spareMemory                                     = thisData.AllocatedSize >= otherData.InitializedSize && (IsNoThrowCopyConstructible<T> || IsNoThrowMoveConstructible<T>);
 
-        // Destroys the old buffer.
-        ClearInternal<true>(_buffer, _length);
-
-        // Assigns the new buffer.
-        _allocatedLength = GetTuple<1>(newMemory);
-        _buffer          = GetTuple<0>(newMemory);
-        _length          = length;
-    }
-}
-
-template <RawType T, AllocatorType Allocator>
-inline T& List<T, Allocator>::operator[](Size index)
-{
-    // Checks if the index is valid.
-    if (index >= _length)
-        throw ArgumentOutOfRangeException("`index` was out of range!");
-
-    return _buffer[index];
-}
-
-template <RawType T, AllocatorType Allocator>
-inline const T& List<T, Allocator>::operator[](Size index) const
-{
-    // Checks if the index is valid.
-    if (index >= _length)
-        throw ArgumentOutOfRangeException("`index` was out of range!");
-
-    return _buffer[index];
-}
-
-template <RawType T, AllocatorType Allocator>
-inline T* List<T, Allocator>::begin() noexcept { return _buffer; }
-
-template <RawType T, AllocatorType Allocator>
-inline const T* List<T, Allocator>::begin() const noexcept { return _buffer; }
-
-template <RawType T, AllocatorType Allocator>
-inline T* List<T, Allocator>::end() noexcept { return _buffer + _length; }
-
-template <RawType T, AllocatorType Allocator>
-inline const T* List<T, Allocator>::end() const noexcept { return _buffer + _length; }
-
-template <RawType T, AllocatorType Allocator>
-template <Bool CleanWhenThrow, Bool ListInitialize, Bool CopyConstructor, class... Args>
-inline Tuple<T*, Size> List<T, Allocator>::ConstructsNewList(Size elementCount,
-                                                             Size allocationSize,
-                                                             T*   begin,
-                                                             Args&&... args)
-{
-    if (elementCount == 0 && allocationSize == 0)
-        return {{nullptr}, {{Size(0)}}};
-
-    // Allocates memory for the array.
-    T* array = (T*)Allocator::Allocate(sizeof(T) * allocationSize, alignof(T));
-
-    // Initializes the array.
-    // If T can be constructed with noexcept, then we don't need to check for exceptions.
-    // Otherwise, we need to check for exceptions.
-    constexpr Bool NoException = ListInitialize ? (CopyConstructor ? std::is_nothrow_copy_constructible_v<T> : std::is_nothrow_move_constructible_v<T>) : std::is_nothrow_constructible_v<T, Args...>;
-
-    constexpr Bool DefaultConstructed = sizeof...(Args) == 0 && !ListInitialize;
-
-    // If T is POD and is default constructed, then we don't need to do anything simply return.
-    if constexpr (PodType<T> && DefaultConstructed)
-    {
-        return {{array}, {{Size(allocationSize)}}};
-    }
-
-    // Uses memcpy if T is POD.
-    if constexpr (PodType<T> && ListInitialize)
-    {
-        // Simply use memcpy to initialize the array.
-        std::memcpy(array, begin, sizeof(T) * elementCount);
-    }
-    else if constexpr (NoException)
-    {
-        for (Size i = 0; i < elementCount; i++)
+        if (useOldMemoryOnlyAssignment)
         {
-            if constexpr (ListInitialize)
+            if constexpr (IsNoThrowCopyAssignable<ValueType> || IsNoThrowMoveAssignable<ValueType>)
             {
-                if constexpr (CopyConstructor)
-                    new (array + i) T(begin[i]);
-                else
-                    new (array + i) T(std::move(begin[i]));
+                // Assigns
+                for (SizeType i = SizeType(0); i < otherData.InitializedSize; ++i)
+                    *(thisData.Begin + i) = MoveAssignIfNoThrow(*(otherData.Begin + i));
+
+                // Destructs the rest
+                for (SizeType i = otherData.InitializedSize; i < thisData.InitializedSize; ++i)
+                    AllocTraits::Destruct(_dataAllocPair.GetSecond(), thisData.Begin + i);
+
+                thisData.InitializedSize = otherData.InitializedSize;
             }
-            else
-                new (array + i) T(std::forward<Args>(args)...);
         }
+        else if (useOldMemoryWithAssignmentAndExtraConstructions)
+        {
+            if constexpr ((IsNoThrowCopyAssignable<ValueType> || IsNoThrowMoveAssignable<ValueType>)&&(IsNoThrowCopyConstructible<T> || IsNoThrowMoveConstructible<T>))
+            {
+                auto assignRange = thisData.InitializedSize < otherData.InitializedSize ? thisData.InitializedSize : otherData.InitializedSize;
+
+                // Assigns
+                for (SizeType i = SizeType(0); i < assignRange; ++i)
+                    *(thisData.Begin + i) = MoveAssignIfNoThrow(*(otherData.Begin + i));
+
+                // Constructs
+                for (SizeType i = thisData.InitializedSize; i < otherData.InitializedSize; ++i)
+                    AllocTraits::Construct(_dataAllocPair.GetSecond(), thisData.Begin + i, MoveConstructIfNoThrow(*(otherData.Begin + i)));
+
+                thisData.InitializedSize = otherData.InitializedSize;
+            }
+        }
+        else if (spareMemory)
+        {
+            if constexpr (IsNoThrowCopyConstructible<T> || IsNoThrowMoveConstructible<T>)
+            {
+                // Destructs all the elements
+                for (SizeType i = SizeType(0); i < thisData.InitializedSize; ++i)
+                    AllocTraits::Destruct(_dataAllocPair.GetSecond(), thisData.Begin + i);
+
+                // Constructs all the elements
+                for (SizeType i = SizeType(0); i < otherData.InitializedSize; ++i)
+                    AllocTraits::Construct(_dataAllocPair.GetSecond(), thisData.Begin + i, MoveConstructIfNoThrow(*(otherData.Begin + i)));
+
+                thisData.InitializedSize = otherData.InitializedSize;
+            }
+        }
+        else
+        {
+            Data newThisData = {
+                AllocTraits::Allocate(_dataAllocPair.GetSecond(), otherData.InitializedSize),
+                otherData.InitializedSize,
+                0};
+
+            ContainerHolder containerHolder = {
+                AddressOf(_dataAllocPair.GetSecond()),
+                newThisData};
+
+
+            Detail::TidyGuard<ContainerHolder*> guard = {AddressOf(containerHolder)};
+
+            // Constructs all the elements
+            for (SizeType i = SizeType(0); i < otherData.InitializedSize; ++i)
+            {
+                AllocTraits::Construct(_dataAllocPair.GetSecond(), containerHolder.Data.Begin + i, MoveConstructIfNoThrow(*(otherData.Begin + i)));
+                ++containerHolder.Data.InitializedSize;
+            }
+
+            guard.Target = nullptr;
+
+            Tidy();
+
+            thisData = containerHolder.Data;
+        }
+    }
+
+    return *this;
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, IteratorDebugging>::GetSize() const noexcept
+{
+    return _dataAllocPair.GetFirst().InitializedSize;
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline T& List<T, Alloc, IteratorDebugging>::operator[](SizeType index)
+{
+    if (index >= _dataAllocPair.GetFirst().InitializedSize)
+        throw ArgumentOutOfRangeException("`index` was out of range!");
+
+    return _dataAllocPair.GetFirst().Begin[index];
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline const T& List<T, Alloc, IteratorDebugging>::operator[](SizeType index) const
+{
+    if (index >= _dataAllocPair.GetFirst().InitializedSize)
+        throw ArgumentOutOfRangeException("`index` was out of range!");
+
+    return _dataAllocPair.GetFirst().Begin[index];
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::begin()
+{
+    if constexpr (IteratorDebugging)
+    {
+        auto it = Iterator(_dataAllocPair.GetFirst().Begin);
+
+        BaseType::AssignIterator(it);
+
+        return it;
     }
     else
-    {
-        // Keeps track of the number of constructed elements.
-        Size constructedCount = 0;
-        try
-        {
-            for (Size i = 0; i < elementCount; i++)
-            {
-                if constexpr (ListInitialize)
-                {
-                    if constexpr (CopyConstructor)
-                        new (array + i) T(begin[i]);
-                    else
-                        new (array + i) T(std::move(begin[i]));
-                }
-                else
-                    new (array + i) T(std::forward<Args>(args)...);
-            }
-        }
-        catch (...)
-        {
-            // Destructs the already constructed elements.
-            for (Size i = 0; i < constructedCount; i++)
-                array[i].~T();
-
-            ClearInternal<CleanWhenThrow>(array, constructedCount);
-
-            throw;
-        }
-    }
-
-    // Done constructing the array.
-    return {{array}, {{Size(allocationSize)}}};
+        return Iterator(_dataAllocPair.GetFirst().Begin);
 }
 
-template <RawType T, AllocatorType Allocator>
-inline List<T, Allocator>::operator Bool() const noexcept
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, IteratorDebugging>::begin() const
 {
-    return _length > 0;
+    if constexpr (IteratorDebugging)
+    {
+        auto it = ConstIterator(_dataAllocPair.GetFirst().Begin);
+
+        BaseType::AssignIterator(it);
+
+        return it;
+    }
+    else
+        return ConstIterator(_dataAllocPair.GetFirst().Begin);
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::end()
+{
+    if constexpr (IteratorDebugging)
+    {
+        auto it = Iterator(_dataAllocPair.GetFirst().Begin + _dataAllocPair.GetFirst().InitializedSize);
+
+        BaseType::AssignIterator(it);
+
+        return it;
+    }
+    else
+        return Iterator(_dataAllocPair.GetFirst().Begin + _dataAllocPair.GetFirst().InitializedSize);
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, IteratorDebugging>::end() const
+{
+    if constexpr (IteratorDebugging)
+    {
+        auto it = ConstIterator(_dataAllocPair.GetFirst().Begin + _dataAllocPair.GetFirst().InitializedSize);
+
+        BaseType::AssignIterator(it);
+
+        return it;
+    }
+    else
+        return ConstIterator(_dataAllocPair.GetFirst().Begin + _dataAllocPair.GetFirst().InitializedSize);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, IteratorDebugging>::cbegin() const
+{
+    if constexpr (IteratorDebugging)
+    {
+        auto it = ConstIterator(_dataAllocPair.GetFirst().Begin);
+
+        BaseType::AssignIterator(it);
+
+        return it;
+    }
+    else
+        return ConstIterator(_dataAllocPair.GetFirst().Begin);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, IteratorDebugging>::cend() const
+{
+    if constexpr (IteratorDebugging)
+    {
+        auto it = ConstIterator(_dataAllocPair.GetFirst().Begin + _dataAllocPair.GetFirst().InitializedSize);
+
+        BaseType::AssignIterator(it);
+
+        return it;
+    }
+    else
+        return ConstIterator(_dataAllocPair.GetFirst().Begin + _dataAllocPair.GetFirst().InitializedSize);
 }
 
 } // namespace System
 
 } // namespace Axis
 
-#endif // AXIS_SYSTEM_ARRAYIMPL_INL
+#endif // AXIS_SYSTEM_LISTIMPL_INL

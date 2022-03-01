@@ -61,9 +61,9 @@ concept HasherType = requires(const T& hasher, const U& object)
 {
     {
         hasher(object)
-        } -> SameAs<Size>;
+        } -> IsSame<Size>;
 }
-&&std::is_nothrow_default_constructible_v<T>&& std::is_nothrow_copy_constructible_v<T>&& std::is_nothrow_move_constructible_v<T>&& std::is_nothrow_copy_assignable_v<T>&& std::is_nothrow_move_assignable_v<T>&& std::is_nothrow_destructible_v<T>;
+&&IsNoThrowDefaultConstructible<T>&& IsNoThrowCopyConstructible<T>&& IsNoThrowMoveConstructible<T>&& IsNoThrowCopyAssignable<T>;
 
 /// \brief Functor object for comparing two objects equality.
 template <class T, class U>
@@ -71,9 +71,9 @@ concept ComparerType = requires(const T& comparer, const U& object)
 {
     {
         comparer(object, object)
-        } -> SameAs<Bool>;
+        } -> IsSame<Bool>;
 }
-&&std::is_nothrow_default_constructible_v<T>&& std::is_nothrow_copy_constructible_v<T>&& std::is_nothrow_move_constructible_v<T>&& std::is_nothrow_copy_assignable_v<T>&& std::is_nothrow_move_assignable_v<T>&& std::is_nothrow_destructible_v<T>;
+&&IsNoThrowDefaultConstructible<T>&& IsNoThrowCopyConstructible<T>&& IsNoThrowMoveConstructible<T>&& IsNoThrowCopyAssignable<T>;
 
 /// \brief Hash table template container implemented in separate chaining method.
 ///
@@ -84,7 +84,7 @@ concept ComparerType = requires(const T& comparer, const U& object)
 /// \tparam Hasher Functor object used for hash calculation from the \a `T` object.
 /// \tparam Comparer Functor object used for comparing \a `T` object equality.
 /// \tparam Allocator Memory allocator for all dynamic memory allocation in the hash table.
-template <RawType T, HasherType<T> Hasher = Hash<T>, ComparerType<T> Comparer = EqualityComparer<T>, AllocatorType Allocator = DefaultAllocator>
+template <RawType T, HasherType<T> Hasher = Hash<T>, ComparerType<T> Comparer = EqualityComparer<T>, MemoryResourceType MemRes = DefaultMemoryResource>
 class HashSet
 {
 public:

@@ -17,7 +17,7 @@ namespace System
 {
 
 /// \brief Template type erasure container class for containing all callable objects.
-template <class T, AllocatorType Allocator = DefaultAllocator>
+template <class T, MemoryResourceType MemRes = DefaultMemoryResource>
 struct Function;
 
 /// \brief Template type erasure container class for containing all callable objects.
@@ -25,8 +25,8 @@ struct Function;
 /// To use this class, the functor object that you want to store must have the following conditions:
 /// - Must have noexcept copy and move constructors.
 /// - The functor object must have a function call operator.
-template <AllocatorType Allocator, class ReturnType, class... Args>
-struct Function<ReturnType(Args...), Allocator>
+template <MemoryResourceType MemRes, class ReturnType, class... Args>
+struct Function<ReturnType(Args...), MemRes>
 {
 public:
     /// \brief Default constructor

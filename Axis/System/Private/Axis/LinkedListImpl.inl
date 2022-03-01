@@ -14,17 +14,17 @@ namespace System
 {
 
 // Default constructor
-template <RawType T, AllocatorType Allocator>
-inline LinkedList<T, Allocator>::LinkedList() noexcept {}
+template <RawType T, MemoryResourceType MemRes>
+inline LinkedList<T, MemRes>::LinkedList() noexcept {}
 
-template <RawType T, AllocatorType Allocator>
-inline LinkedList<T, Allocator>::~LinkedList() noexcept
+template <RawType T, MemoryResourceType MemRes>
+inline LinkedList<T, MemRes>::~LinkedList() noexcept
 {
     Clear(_head);
 }
 
-template <RawType T, AllocatorType Allocator>
-inline LinkedList<T, Allocator>::LinkedList(const LinkedList<T, Allocator>& other) requires(std::is_copy_constructible_v<T>)
+template <RawType T, MemoryResourceType MemRes>
+inline LinkedList<T, MemRes>::LinkedList(const LinkedList<T, MemRes>& other) requires(std::is_copy_constructible_v<T>)
 {
     if (other._size == 0)
         return;
@@ -52,8 +52,8 @@ inline LinkedList<T, Allocator>::LinkedList(const LinkedList<T, Allocator>& othe
     }
 }
 
-template <RawType T, AllocatorType Allocator>
-inline LinkedList<T, Allocator>::LinkedList(LinkedList<T, Allocator>&& other) noexcept :
+template <RawType T, MemoryResourceType MemRes>
+inline LinkedList<T, MemRes>::LinkedList(LinkedList<T, MemRes>&& other) noexcept :
     _size(other._size),
     _head(other._head),
     _tail(other._tail)
@@ -63,8 +63,8 @@ inline LinkedList<T, Allocator>::LinkedList(LinkedList<T, Allocator>&& other) no
     other._tail = nullptr;
 }
 
-template <RawType T, AllocatorType Allocator>
-LinkedList<T, Allocator>& LinkedList<T, Allocator>::operator=(const LinkedList<T, Allocator>& other) requires(std::is_copy_constructible_v<T>)
+template <RawType T, MemoryResourceType MemRes>
+LinkedList<T, MemRes>& LinkedList<T, MemRes>::operator=(const LinkedList<T, MemRes>& other) requires(std::is_copy_constructible_v<T>)
 {
     if (this == &other)
         return *this;
@@ -118,7 +118,7 @@ LinkedList<T, Allocator>& LinkedList<T, Allocator>::operator=(const LinkedList<T
                 auto next = thisNode->Next;
 
                 // Frees the memory
-                Allocator::Deallocate(thisNode);
+                MemRes::Deallocate(thisNode);
 
                 thisNode = next;
             }
@@ -132,7 +132,7 @@ LinkedList<T, Allocator>& LinkedList<T, Allocator>::operator=(const LinkedList<T
             while (otherNode != nullptr)
             {
                 // Creates a new node
-                Node* newNode = (Node*)Allocator::Allocate(sizeof(Node), alignof(Node));
+                Node* newNode = (Node*)MemRes::Allocate(sizeof(Node), alignof(Node));
 
                 // Invokes copy constructor
                 new (&newNode->Value) T(otherNode->Value);
@@ -202,8 +202,8 @@ LinkedList<T, Allocator>& LinkedList<T, Allocator>::operator=(const LinkedList<T
     return *this;
 }
 
-template <RawType T, AllocatorType Allocator>
-LinkedList<T, Allocator>& LinkedList<T, Allocator>::operator=(LinkedList<T, Allocator>&& other) noexcept
+template <RawType T, MemoryResourceType MemRes>
+LinkedList<T, MemRes>& LinkedList<T, MemRes>::operator=(LinkedList<T, MemRes>&& other) noexcept
 {
     if (this == &other)
         return *this;
@@ -224,9 +224,9 @@ LinkedList<T, Allocator>& LinkedList<T, Allocator>::operator=(LinkedList<T, Allo
     return *this;
 }
 
-template <RawType T, AllocatorType Allocator>
+template <RawType T, MemoryResourceType MemRes>
 template <class Reference, class Pointer>
-struct LinkedList<T, Allocator>::Iterator
+struct LinkedList<T, MemRes>::Iterator
 {
 public:
     using value_type = T;         ///< Type of object stored in the node.
@@ -298,50 +298,50 @@ private:
     friend struct Iterator;
 };
 
-template <RawType T, AllocatorType Allocator>
-inline typename LinkedList<T, Allocator>::iterator LinkedList<T, Allocator>::AddFront(const T& value) requires(std::is_copy_constructible_v<T>)
+template <RawType T, MemoryResourceType MemRes>
+inline typename LinkedList<T, MemRes>::iterator LinkedList<T, MemRes>::AddFront(const T& value) requires(std::is_copy_constructible_v<T>)
 {
     return Emplace(iterator(_head), value);
 }
 
-template <RawType T, AllocatorType Allocator>
-inline typename LinkedList<T, Allocator>::iterator LinkedList<T, Allocator>::AddFront(T&& value) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>)
+template <RawType T, MemoryResourceType MemRes>
+inline typename LinkedList<T, MemRes>::iterator LinkedList<T, MemRes>::AddFront(T&& value) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>)
 {
     return Emplace(iterator(_head), std::move(value));
 }
 
-template <RawType T, AllocatorType Allocator>
+template <RawType T, MemoryResourceType MemRes>
 template <class... Args>
-inline typename LinkedList<T, Allocator>::iterator LinkedList<T, Allocator>::EmplaceFront(Args&&... args) requires(std::is_constructible_v<T, Args...>)
+inline typename LinkedList<T, MemRes>::iterator LinkedList<T, MemRes>::EmplaceFront(Args&&... args) requires(std::is_constructible_v<T, Args...>)
 {
     return Emplace(iterator(_head), std::forward<Args>(args)...);
 }
 
-template <RawType T, AllocatorType Allocator>
-inline typename LinkedList<T, Allocator>::iterator LinkedList<T, Allocator>::AddBack(const T& value) requires(std::is_copy_constructible_v<T>)
+template <RawType T, MemoryResourceType MemRes>
+inline typename LinkedList<T, MemRes>::iterator LinkedList<T, MemRes>::AddBack(const T& value) requires(std::is_copy_constructible_v<T>)
 {
     return Emplace(iterator(nullptr), value);
 }
 
-template <RawType T, AllocatorType Allocator>
-inline typename LinkedList<T, Allocator>::iterator LinkedList<T, Allocator>::AddBack(T&& value) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>)
+template <RawType T, MemoryResourceType MemRes>
+inline typename LinkedList<T, MemRes>::iterator LinkedList<T, MemRes>::AddBack(T&& value) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>)
 {
     return Emplace(iterator(nullptr), std::move(value));
 }
 
-template <RawType T, AllocatorType Allocator>
+template <RawType T, MemoryResourceType MemRes>
 template <class... Args>
-inline typename LinkedList<T, Allocator>::iterator LinkedList<T, Allocator>::EmplaceBack(Args&&... args) requires(std::is_constructible_v<T, Args...>)
+inline typename LinkedList<T, MemRes>::iterator LinkedList<T, MemRes>::EmplaceBack(Args&&... args) requires(std::is_constructible_v<T, Args...>)
 {
     return Emplace(iterator(nullptr), std::forward<Args>(args)...);
 }
 
-template <RawType T, AllocatorType Allocator>
+template <RawType T, MemoryResourceType MemRes>
 template <class IteratorVariant, class... Args>
-inline IteratorVariant LinkedList<T, Allocator>::Emplace(const IteratorVariant& position, Args&&... args) requires(std::is_constructible_v<T, Args...> && (std::is_same_v<IteratorVariant, iterator> || std::is_same_v<IteratorVariant, const_iterator>))
+inline IteratorVariant LinkedList<T, MemRes>::Emplace(const IteratorVariant& position, Args&&... args) requires(std::is_constructible_v<T, Args...> && (std::is_same_v<IteratorVariant, iterator> || std::is_same_v<IteratorVariant, const_iterator>))
 {
     // Allocates a new node.
-    Node* node = (Node*)Allocator::Allocate(sizeof(Node), alignof(Node));
+    Node* node = (Node*)MemRes::Allocate(sizeof(Node), alignof(Node));
 
     // Checks if the allocation failed.
     if (node == nullptr)
@@ -366,7 +366,7 @@ inline IteratorVariant LinkedList<T, Allocator>::Emplace(const IteratorVariant& 
         catch (...)
         {
             // Deallocates the node.
-            Allocator::Deallocate(node);
+            MemRes::Deallocate(node);
 
             // Throws the exception.
             throw;
@@ -424,9 +424,9 @@ inline IteratorVariant LinkedList<T, Allocator>::Emplace(const IteratorVariant& 
     return IteratorVariant(node);
 }
 
-template <RawType T, AllocatorType Allocator>
+template <RawType T, MemoryResourceType MemRes>
 template <class IteratorVariant>
-inline IteratorVariant LinkedList<T, Allocator>::Remove(const IteratorVariant& position) noexcept requires(std::is_same_v<IteratorVariant, iterator> || std::is_same_v<IteratorVariant, const_iterator>)
+inline IteratorVariant LinkedList<T, MemRes>::Remove(const IteratorVariant& position) noexcept requires(std::is_same_v<IteratorVariant, iterator> || std::is_same_v<IteratorVariant, const_iterator>)
 {
     if (position._node == nullptr)
         return IteratorVariant(nullptr);
@@ -469,7 +469,7 @@ inline IteratorVariant LinkedList<T, Allocator>::Remove(const IteratorVariant& p
     position._node->Value.~T();
 
     // Deallocates the node.
-    Allocator::Deallocate(position._node);
+    MemRes::Deallocate(position._node);
 
     // Decrements the size.
     --_size;
@@ -477,32 +477,32 @@ inline IteratorVariant LinkedList<T, Allocator>::Remove(const IteratorVariant& p
     return IteratorVariant(position._node->Next);
 }
 
-template <RawType T, AllocatorType Allocator>
-inline typename LinkedList<T, Allocator>::iterator LinkedList<T, Allocator>::begin() noexcept
+template <RawType T, MemoryResourceType MemRes>
+inline typename LinkedList<T, MemRes>::iterator LinkedList<T, MemRes>::begin() noexcept
 {
     return iterator(_head);
 }
 
-template <RawType T, AllocatorType Allocator>
-inline typename LinkedList<T, Allocator>::const_iterator LinkedList<T, Allocator>::begin() const noexcept
+template <RawType T, MemoryResourceType MemRes>
+inline typename LinkedList<T, MemRes>::const_iterator LinkedList<T, MemRes>::begin() const noexcept
 {
     return const_iterator(_head);
 }
 
-template <RawType T, AllocatorType Allocator>
-inline typename LinkedList<T, Allocator>::iterator LinkedList<T, Allocator>::end() noexcept
+template <RawType T, MemoryResourceType MemRes>
+inline typename LinkedList<T, MemRes>::iterator LinkedList<T, MemRes>::end() noexcept
 {
     return iterator(nullptr);
 }
 
-template <RawType T, AllocatorType Allocator>
-inline typename LinkedList<T, Allocator>::const_iterator LinkedList<T, Allocator>::end() const noexcept
+template <RawType T, MemoryResourceType MemRes>
+inline typename LinkedList<T, MemRes>::const_iterator LinkedList<T, MemRes>::end() const noexcept
 {
     return const_iterator(nullptr);
 }
 
-template <RawType T, AllocatorType Allocator>
-inline void LinkedList<T, Allocator>::Clear(Node* nodeHead) noexcept
+template <RawType T, MemoryResourceType MemRes>
+inline void LinkedList<T, MemRes>::Clear(Node* nodeHead) noexcept
 {
     // Iterates though the chain of nodes.
     while (nodeHead != nullptr)
@@ -514,7 +514,7 @@ inline void LinkedList<T, Allocator>::Clear(Node* nodeHead) noexcept
         nodeHead->Value.~T();
 
         // Deallocates the node.
-        Allocator::Deallocate(nodeHead);
+        MemRes::Deallocate(nodeHead);
 
         // Sets the node to the next node.
         nodeHead = next;

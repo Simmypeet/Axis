@@ -14,32 +14,32 @@ namespace Axis
 namespace System
 {
 
-template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, AllocatorType Allocator>
-inline typename HashMap<TKey, TValue, Hasher, Comparer, Allocator>::HashSetBase::iterator HashMap<TKey, TValue, Hasher, Comparer, Allocator>::Find(const TKey& key) noexcept
+template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, MemoryResourceType MemRes>
+inline typename HashMap<TKey, TValue, Hasher, Comparer, MemRes>::HashSetBase::iterator HashMap<TKey, TValue, Hasher, Comparer, MemRes>::Find(const TKey& key) noexcept
 {
-    return HashSetBase::template FindIndirect<TKey, typename HashMap<TKey, TValue, Hasher, Comparer, Allocator>::HashSetBase::iterator>(key);
+    return HashSetBase::template FindIndirect<TKey, typename HashMap<TKey, TValue, Hasher, Comparer, MemRes>::HashSetBase::iterator>(key);
 }
 
-template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, AllocatorType Allocator>
-inline typename HashMap<TKey, TValue, Hasher, Comparer, Allocator>::HashSetBase::const_iterator HashMap<TKey, TValue, Hasher, Comparer, Allocator>::Find(const TKey& key) const noexcept
+template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, MemoryResourceType MemRes>
+inline typename HashMap<TKey, TValue, Hasher, Comparer, MemRes>::HashSetBase::const_iterator HashMap<TKey, TValue, Hasher, Comparer, MemRes>::Find(const TKey& key) const noexcept
 {
-    return HashSetBase::template FindIndirect<TKey, typename HashMap<TKey, TValue, Hasher, Comparer, Allocator>::HashSetBase::const_iterator>(key);
+    return HashSetBase::template FindIndirect<TKey, typename HashMap<TKey, TValue, Hasher, Comparer, MemRes>::HashSetBase::const_iterator>(key);
 }
 
-template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, AllocatorType Allocator>
-inline Pair<Bool, typename HashMap<TKey, TValue, Hasher, Comparer, Allocator>::HashSetBase::iterator> HashMap<TKey, TValue, Hasher, Comparer, Allocator>::Remove(const TKey& key) noexcept
+template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, MemoryResourceType MemRes>
+inline Pair<Bool, typename HashMap<TKey, TValue, Hasher, Comparer, MemRes>::HashSetBase::iterator> HashMap<TKey, TValue, Hasher, Comparer, MemRes>::Remove(const TKey& key) noexcept
 {
-    return HashSetBase::template RemoveIndirect<TKey, typename HashMap<TKey, TValue, Hasher, Comparer, Allocator>::HashSetBase::iterator>(key);
+    return HashSetBase::template RemoveIndirect<TKey, typename HashMap<TKey, TValue, Hasher, Comparer, MemRes>::HashSetBase::iterator>(key);
 }
 
-template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, AllocatorType Allocator>
-inline typename HashMap<TKey, TValue, Hasher, Comparer, Allocator>::HashSetBase::iterator HashMap<TKey, TValue, Hasher, Comparer, Allocator>::begin() noexcept
+template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, MemoryResourceType MemRes>
+inline typename HashMap<TKey, TValue, Hasher, Comparer, MemRes>::HashSetBase::iterator HashMap<TKey, TValue, Hasher, Comparer, MemRes>::begin() noexcept
 {
     return HashSetBase::NonConstBegin();
 }
 
-template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, AllocatorType Allocator>
-inline typename HashMap<TKey, TValue, Hasher, Comparer, Allocator>::HashSetBase::iterator HashMap<TKey, TValue, Hasher, Comparer, Allocator>::end() noexcept
+template <RawType TKey, RawType TValue, HasherType<TKey> Hasher, ComparerType<TKey> Comparer, MemoryResourceType MemRes>
+inline typename HashMap<TKey, TValue, Hasher, Comparer, MemRes>::HashSetBase::iterator HashMap<TKey, TValue, Hasher, Comparer, MemRes>::end() noexcept
 {
     return HashSetBase::NonConstEnd();
 }

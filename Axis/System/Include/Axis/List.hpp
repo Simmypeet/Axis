@@ -6,9 +6,9 @@
 #define AXIS_SYSTEM_LIST_HPP
 #pragma once
 
-#include "Memory.hpp"
-#include "Trait.hpp"
-#include "Utility.hpp"
+#include "../../Private/Axis/CoreContainer.inl"
+#include "Allocator.hpp"
+#include "Iterator.hpp"
 
 namespace Axis
 {
@@ -23,206 +23,226 @@ namespace System
 ///
 /// All the functions in this class are categorized as `strong exception guarantee`. Which means that
 /// if an exception is thrown, the state of the object is rolled back to the state before the function.
-template <RawType T, AllocatorType Allocator = DefaultAllocator>
-class List
+template <RawType T, AllocatorType Alloc = Allocator<T, DefaultMemoryResource>, bool IteratorDebugging = Detail::DefaultIteratorDebug>
+class List final : private ConditionalType<IteratorDebugging, Detail::DebugIteratorContainer, Detail::Empty>
 {
 public:
-    /// \brief Default constructor.
-    ///
-    /// The list is initialized with a size of 0 and no memory is allocated.
-    List() noexcept = default;
+    using ThisType             = List<T, Alloc, IteratorDebugging>;          // Type of this class
+    using AllocType            = Alloc;                                      // Type of the allocator base class
+    using AllocTraits          = AllocatorTraits<AllocType>;                 // Allocator traits
+    using ValueType            = typename AllocTraits::ValueType;            // Value type
+    using SizeType             = typename AllocTraits::SizeType;             // Size type
+    using DifferenceType       = typename AllocTraits::DifferenceType;       // Difference type
+    using PointerType          = typename AllocTraits::PointerType;          // Pointer type
+    using ConstPointerType     = typename AllocTraits::ConstPointerType;     // Const pointer type
+    using VoidPointerType      = typename AllocTraits::VoidPointerType;      // Void pointer type
+    using ConstVoidPointerType = typename AllocTraits::ConstVoidPointerType; // Const void pointer type
 
-    /// \brief Copy constructor.
-    ///
-    /// \param other List to copy from.
-    List(const List& other) requires(std::is_copy_constructible_v<T>);
-
-    /// \brief Move constructor.
-    ///
-    /// \param other List to move from.
-    List(List&& other) noexcept;
-
-    /// \brief nullptr constructor.
-    ///
-    /// The list is initialized with a size of 0 and no memory is allocated.
-    List(NullptrType) noexcept;
-
-    /// \brief Initializer constructor
-    ///
-    /// Initializes the list with the specified length,
-    /// and initializes the  elements with the specified value.
-    ///
-    /// \param[in] length The length of the list.
-    /// \param[in] args Arguments to forward to the constructor of the object to insert.
-    template <class... Args>
-    List(Size length, Args... args) requires(std::is_constructible_v<T, Args...>);
-
-    /// \brief Initializer list constructor.
-    ///
-    /// \param[in] init Initializer list to copy from.
-    List(const std::initializer_list<T>& init) requires(std::is_copy_constructible_v<T>);
-
-    /// \brief Destructor.
-    ~List() noexcept;
-
-    /// \brief Copy assignment operator.
-    ///
-    /// \param[in] other List to copy from.
-    List& operator=(const List& other) requires(std::is_copy_constructible_v<T>);
-
-    /// \brief Move assignment operator.
-    ///
-    /// \param[in] other List to move from.
-    List& operator=(List&& other) noexcept;
-
-    /// \brief Returns the length of the list.
-    ///
-    /// \return The length of the list.
-    AXIS_NODISCARD Size GetLength() const noexcept;
-
-    /// \brief Reserves memory for the list to the specified length.
-    ///
-    /// If the list's memory allocated length is already larger than the specified length,
-    /// the list is not resized.
-    ///
-    /// \param[in] length The length of the elements to reserve.
-    void ReserveFor(Size length);
-
-    /// \brief Clears the list.
-    ///
-    /// - Invokes the destructor on all the elements in the list.
-    /// - The list is then resized to 0. The memory is not deallocated.
-    void Clear() noexcept;
-
-    /// \brief Invokes the destructor followed by constructor forwarded on all the elements in the list.
-    template <class... Args>
-    void Reset(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>);
-
-    /// \brief Constructs an element at the end of the list.
-    ///
-    /// - The list is expanded to accommodate the new element.
-    /// - New memory might be allocated if necessary and might invalidate iterators.
-    ///
-    /// \param[in] args Arguments to forward to the constructor of the object to insert.
-    ///
-    /// \returns An iterator to the newly constructed element.
-    template <class... Args>
-    T* EmplaceBack(Args&&... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>));
-
-    /// \brief Appends an element at the end of the list.
-    ///
-    /// - The list is expanded to accommodate the new element.
-    /// - New memory might be allocated if necessary and might invalidate iterators.
-    ///
-    /// \param[in] element The element to append.
-    ///
-    /// \returns An iterator to the newly constructed element.
-    T* Append(const T& element) requires(std::is_copy_constructible_v<T>);
-
-    /// \brief Appends an element at the end of the list.
-    ///
-    /// - The list is expanded to accommodate the new element.
-    /// - New memory might be allocated if necessary and might invalidate iterators.
-    ///
-    /// \param[in] element The element to append.
-    ///
-    /// \returns An iterator to the newly constructed element.
-    T* Append(T&& element) requires(std::is_move_constructible_v<T>);
-
-    /// \brief Constructs an element at the end of the list.
-    ///
-    /// An insertion pushes all the elements after the insertion point to the right.
-    ///
-    /// - The list is expanded to accommodate the new element.
-    /// - New memory might be allocated if necessary and might invalidate iterators.
-    ///
-    /// \param[in] index The index of the element to insert.
-    /// \param[in] args Arguments to forward to the constructor of the object to insert.
-    ///
-    /// \pre The index must be less than or equal ot the list's length, otherwise the program will terminate.
-    ///
-    /// \remark If the index is equal to the list's length, the function calls \a `EmplaceBack` instead.
-    ///
-    /// \return An iterator to the inserted element.
-    template <class... Args>
-    T* Emplace(Size index, Args&&... args) requires(std::is_constructible_v<T, Args...> && (std::is_copy_constructible_v<T> || std::is_nothrow_move_constructible_v<T>));
-
-    /// \brief Removes the element at the end of the list.
-    ///
-    /// - The list memory is not deallocated. The element is only destroyed.
-    /// - The list is shrunk to accommodate the removed element.
-    void PopBack() noexcept;
-
-    /// \brief Removes the element at the specified index.
-    ///
-    /// - The list memory is not deallocated. The element is only destroyed.
-    /// - The list is shrunk to accommodate the removed element.
-    ///
-    /// \pre The index must be less than or equal ot the list's length, otherwise the program will terminate.
-    ///
-    /// \param[in] index The index of the element to remove.
-    void RemoveAt(Size index) requires(std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>);
-
-    /// \brief Gets the pointer to the first element of the list.
-    AXIS_NODISCARD T* GetData() noexcept;
-
-    /// \brief Gets the pointer to the first element of the list.
-    AXIS_NODISCARD const T* GetData() const noexcept;
-
-    /// \brief Resizes the list with the specified length. The object is constructed via default constructor.
-    void Resize(Size length) requires(std::is_default_constructible_v<T>);
-
-    /// \brief Index operator
-    ///
-    /// \param[in] index The index of the element to access.
-    ///
-    /// \returns A reference to the element at the specified index.
-    AXIS_NODISCARD T& operator[](Size index);
-
-    /// \brief Constant index operator
-    ///
-    /// \param[in] index The index of the element to access.
-    ///
-    /// \returns A reference to the element at the specified index.
-    AXIS_NODISCARD const T& operator[](Size index) const;
-
-    /// \brief Iterator to the beginning of the list.
-    ///
-    /// \returns An iterator to the beginning of the list.
-    AXIS_NODISCARD T* begin() noexcept;
-
-    /// \brief Iterator to the beginning of the list.
-    ///
-    /// \returns An iterator to the beginning of the list.
-    AXIS_NODISCARD const T* begin() const noexcept;
-
-    /// \brief Iterator to the end of the list.
-    ///
-    /// \returns An iterator to the end of the list.
-    AXIS_NODISCARD T* end() noexcept;
-
-    /// \brief Iterator to the end of the list.
-    ///
-    /// \returns An iterator to the end of the list.
-    AXIS_NODISCARD const T* end() const noexcept;
-
-    /// \brief Implicit conversion: checks if the list is empty or not.
-    ///
-    /// \returns `false` if the list is empty, `true` otherwise.
-    AXIS_NODISCARD operator Bool() const noexcept;
+    // AllocatorTraits' value type must be the same as `T`
+    static_assert(IsSame<ValueType, T>, "Allocator's value type mismatch");
 
 private:
-    template <Bool CleanWhenThrow = true, Bool ListInitialize = false, Bool CopyConstructor = true, class... Args>
-    Tuple<T*, Size>                        ConstructsNewList(Size elementCount,
-                                                             Size allocationSize, // Specifies zero if not specified
-                                                             T*   begin,
-                                                             Args&&... args); // Returns a tuple containing the pointer to the list and the size of allocated element.
-    template <Bool FreeMemory> static void ClearInternal(T*   buffer,
-                                                         Size length);
+    using BaseType = ConditionalType<IteratorDebugging, Detail::DebugIteratorContainer, Detail::Empty>;
 
-    T*   _buffer          = nullptr; ///< Pointer to the list's buffer.
-    Size _allocatedLength = 0;       ///< The length of the allocated buffer.
-    Size _length          = 0;       ///< The length of the list.
+    struct Data // Data structure for the container
+    {
+        PointerType Begin           = PointerType(nullptr); // Pointer to the first element
+        SizeType    AllocatedSize   = SizeType(0);          // Number of elements allocated
+        SizeType    InitializedSize = SizeType(0);          // Number of elements initialized
+    };
+
+    // Checks if default constructor is nooexcept
+    static constexpr bool DefaultConstructorNoexcept = IsNoThrowDefaultConstructible<AllocType>;
+
+    // Checks if allocator copy constructor is noexcept
+    static constexpr bool AllocatorCopyConstructorNoexcept = IsNoThrowCopyConstructible<AllocType>;
+
+    // Checks if move constructor is noexcept
+    static constexpr bool MoveConstructorNoexcept = IsNoThrowMoveConstructible<AllocType>;
+
+    // Checks if move assignment is noexcept
+    static constexpr bool MoveAssignmentNoexcept = AllocTraits::IsAlwaysEqual || AllocTraits::PropagateOnContainerMoveAssignment;
+
+    // Contains both the data and the allocator
+    CompressedPair<Data, AllocType> _dataAllocPair;
+
+public:
+    template <class IteratorPointerType, class IteratorReferenceType>
+    class BaseIterator; // Base iterator class
+
+    /// \brief List's iterator class.
+    using Iterator = BaseIterator<PointerType, ValueType&>;
+
+    /// \brief List's const iterator class.
+    using ConstIterator = BaseIterator<ConstPointerType, const ValueType&>;
+
+    /// \brief Default constructor
+    List() noexcept(DefaultConstructorNoexcept);
+
+    /// \brief Destructor
+    ~List() noexcept;
+
+    /// \brief Constructs the container with custom allocator.
+    explicit List(const AllocType& allocator) noexcept(AllocatorCopyConstructorNoexcept);
+
+    /// \brief Constructs the container with defined size and custom allocator.
+    ///
+    /// \param[in] elementCount Number of elements to allocate memory for.
+    /// \param[in] allocator    Custom allocator to copy into the container.
+    explicit List(SizeType         elementCount,
+                  const AllocType& allocator = AllocType());
+
+    /// \brief Constructs the container with defined size, custom allocator and initial value.
+    ///
+    /// \param[in] elementCount Number of elements to allocate memory for.
+    /// \param[in] value        Initial value for all the elements.
+    /// \param[in] allocator    Custom allocator to copy into the container.
+    explicit List(SizeType         elementCount,
+                  const T&         value,
+                  const AllocType& allocator = AllocType());
+
+    /// \brief Constructs the container with initializer list and custom allocator.
+    ///
+    /// \param[in] list      Initializer list to initialize the container.
+    /// \param[in] allocator Custom allocator to copy into the container.
+    List(std::initializer_list<T> list,
+         const AllocType&         allocator = AllocType());
+
+    /// \brief Copy constructor
+    ///
+    /// \param[in] other Other container to copy from.
+    List(const List& other);
+
+    /// \brief Move constructor
+    ///
+    /// \param[in] other Other container to move from.
+    List(List&& other) noexcept(MoveConstructorNoexcept);
+
+    /// \brief Copy assignment operator
+    ///
+    /// \param[in] other Other container to copy from.
+    List& operator=(const List& other);
+
+    /// \brief Move assignment operator
+    ///
+    /// \param[in] other Other container to move from.
+    List& operator=(List&& other) noexcept(MoveAssignmentNoexcept);
+
+    /// \brief Gets the number of elements in the list.
+    ///
+    ///  \return Number of elements in the list.
+    AXIS_NODISCARD SizeType GetSize() const noexcept;
+
+    /// \brief Gets the reference to the element at the specified index.
+    ///
+    /// \param[in] index Index of the element.
+    ///
+    /// \return Reference to the element at the specified index.
+    AXIS_NODISCARD T& operator[](SizeType index);
+
+    /// \brief Gets the const reference to the element at the specified index.
+    ///
+    /// \param[in] index Index of the element.
+    ///
+    /// \return Const reference to the element at the specified index.
+    AXIS_NODISCARD const T& operator[](SizeType index) const;
+
+    /// \brief Gets the iterator to the first element in the list.
+    ///
+    /// \return Iterator to the first element in the list.
+    AXIS_NODISCARD Iterator begin();
+
+    /// \brief Gets the const iterator to the first element in the list.
+    ///
+    /// \return Const iterator to the first element in the list.
+    AXIS_NODISCARD ConstIterator begin() const;
+
+    /// \brief Gets the iterator to the element after the last element in the list.
+    ///
+    /// \return Iterator to the element after the last element in the list.
+    AXIS_NODISCARD Iterator end();
+
+    /// \brief Gets the const iterator to the element after the last element in the list.
+    ///
+    /// \return Const iterator to the element after the last element in the list.
+    AXIS_NODISCARD ConstIterator end() const;
+
+    /// \brief Gets the const iterator to the first element in the list.
+    ///
+    /// \return Const iterator to the first element in the list.
+    AXIS_NODISCARD ConstIterator cbegin() const;
+
+    /// \brief Gets the const iterator to the element after the last element in the list.
+    ///
+    /// \return Const iterator to the element after the last element in the list.
+    AXIS_NODISCARD ConstIterator cend() const;
+
+    /// \brief Reserves the memory space for further insertions.
+    ///
+    /// \param[in] elementCount Numbers of element to reserve the memory for.
+    void Reserve(SizeType elementCount);
+
+    /// \brief Emplaces the element at the end of the list.
+    ///
+    /// \param[in] args Arguments to pass to the constructor.
+    ///
+    /// \return Reference to the emplaced element.
+    template <class... Args>
+    T& EmplaceBack(Args&&... args);
+
+    /// \brief Appends the element at the end of the list.
+    ///
+    /// \param[in] value Value to append.
+    ///
+    /// \return Reference to the appended element.
+    T& Append(const T& value);
+
+    /// \brief Appends the element at the end of the list.
+    ///
+    /// \param[in] value Value to append.
+    ///
+    /// \return Reference to the appended element.
+    T& Append(T&& value);
+
+    /// \brief Appends the range of elements at the end of the list.
+    ///
+    /// \param[in] begin Random access iterator to the first element of the range.
+    /// \param[in] end   Random access iterator to the element after the last element of the range.
+    template <RandomAccessReadIterator<T> IteratorType>
+    void Append(const IteratorType& begin,
+                const IteratorType& end);
+
+    /// \brief Removes the element at the end of the list.
+    void PopBack() noexcept;
+
+    /// \brief Removes the elements at the specified index.
+    ///
+    /// \param[in] index Index of the element to remove.
+    /// \param[in] count The number of elements to remove.
+    void RemoveAt(SizeType index,
+                  SizeType count = 1);
+
+    /// \brief Gets the capacity of the list (number of elements that have been allocated for).
+    SizeType GetCapacity() const noexcept;
+
+private:
+    void Tidy() noexcept;
+    void TidyData(const Data& data) noexcept;
+
+    template <class Lambda>
+    void ConstructContinuousContainer(SizeType      elementCount,
+                                      const Lambda& construct);
+
+    Pair<Data, Bool> CreateCopy(SizeType elementCount);
+
+    template <Bool ForceNewAllocation>
+    Pair<Data, Bool> CreateSpace(SizeType index,
+                                 SizeType elementCount);
+
+    template <class>
+    friend struct Detail::TidyGuard;
+
+    struct ContainerHolder;
 };
 
 } // namespace System

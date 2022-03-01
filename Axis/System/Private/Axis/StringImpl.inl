@@ -8,6 +8,7 @@
 
 #include "../../Include/Axis/Exception.hpp"
 #include "../../Include/Axis/String.hpp"
+#include <cstring>
 
 namespace Axis
 {
@@ -48,9 +49,9 @@ inline void CopyElement(const T* source,
         destination[sourceSize] = U(0);
 }
 
-template <ArithmeticType U, CharType T, AllocatorType Allocator>
-inline void AppendNumerics(String<T, Allocator>& str,
-                           U                     value) noexcept
+template <ArithmeticType U, CharType T, MemoryResourceType MemRes>
+inline void AppendNumerics(String<T, MemRes>& str,
+                           U                  value) noexcept
 {
     if (value >= 10)
         AppendNumerics(str, value / 10);
@@ -62,8 +63,8 @@ inline void AppendNumerics(String<T, Allocator>& str,
 
 } // namespace Detail
 
-template <CharType T, AllocatorType Allocator>
-constexpr Size String<T, Allocator>::GetStringLength(const T* strPtr) noexcept
+template <CharType T, MemoryResourceType MemRes>
+constexpr Size String<T, MemRes>::GetStringLength(const T* strPtr) noexcept
 {
     if (!strPtr)
         return 0;
@@ -76,13 +77,13 @@ constexpr Size String<T, Allocator>::GetStringLength(const T* strPtr) noexcept
     return length;
 }
 
-template <CharType T, AllocatorType Allocator>
-inline String<T, Allocator>::String(NullptrType) noexcept {}
+template <CharType T, MemoryResourceType MemRes>
+inline String<T, MemRes>::String(NullptrType) noexcept {}
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <CharType U>
-inline String<T, Allocator>::String(const U* str) :
-    _stringLength(String<U, Allocator>::GetStringLength(str))
+inline String<T, MemRes>::String(const U* str) :
+    _stringLength(String<U, MemRes>::GetStringLength(str))
 {
     auto pointer = Reserve(_stringLength);
 
@@ -90,10 +91,10 @@ inline String<T, Allocator>::String(const U* str) :
 }
 
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <CharType U>
-inline String<T, Allocator>::String(const U* begin,
-                                    const U* end) :
+inline String<T, MemRes>::String(const U* begin,
+                                 const U* end) :
     _stringLength(end - begin)
 {
     if (begin > end)
@@ -104,8 +105,8 @@ inline String<T, Allocator>::String(const U* begin,
     Detail::CopyElement<true>(begin, pointer, _stringLength);
 }
 
-template <CharType T, AllocatorType Allocator>
-inline String<T, Allocator>::String(const String<T, Allocator>& other) :
+template <CharType T, MemoryResourceType MemRes>
+inline String<T, MemRes>::String(const String<T, MemRes>& other) :
     _stringLength(other._stringLength)
 {
     auto pointer = Reserve(_stringLength);
@@ -113,8 +114,8 @@ inline String<T, Allocator>::String(const String<T, Allocator>& other) :
     Detail::CopyElement<true>(other.GetCString(), pointer, _stringLength);
 }
 
-template <CharType T, AllocatorType Allocator>
-inline String<T, Allocator>::String(String<T, Allocator>&& other) noexcept :
+template <CharType T, MemoryResourceType MemRes>
+inline String<T, MemRes>::String(String<T, MemRes>&& other) noexcept :
     _stringLength(other._stringLength),
     _isSmallString(other._isSmallString)
 {
@@ -132,9 +133,9 @@ inline String<T, Allocator>::String(String<T, Allocator>&& other) noexcept :
     other._isSmallString = true;
 }
 
-template <CharType T, AllocatorType Allocator>
-template <CharType U, AllocatorType OtherAllocator>
-inline String<T, Allocator>::String(const String<U, OtherAllocator>& other) :
+template <CharType T, MemoryResourceType MemRes>
+template <CharType U, MemoryResourceType OtherMemRes>
+inline String<T, MemRes>::String(const String<U, OtherMemRes>& other) :
     _stringLength(other._stringLength)
 {
     auto pointer = Reserve(_stringLength);
@@ -142,15 +143,15 @@ inline String<T, Allocator>::String(const String<U, OtherAllocator>& other) :
     Detail::CopyElement<true>(other.GetCString(), pointer, _stringLength);
 }
 
-template <CharType T, AllocatorType Allocator>
-inline String<T, Allocator>::~String() noexcept
+template <CharType T, MemoryResourceType MemRes>
+inline String<T, MemRes>::~String() noexcept
 {
     if (!_isSmallString)
-        Allocator::Deallocate(DynamicStringBuffer);
+        MemRes::Deallocate(DynamicStringBuffer);
 }
 
-template <CharType T, AllocatorType Allocator>
-String<T, Allocator>& String<T, Allocator>::operator=(const String<T, Allocator>& other)
+template <CharType T, MemoryResourceType MemRes>
+String<T, MemRes>& String<T, MemRes>::operator=(const String<T, MemRes>& other)
 {
     if (this == std::addressof(other))
         return *this;
@@ -164,8 +165,8 @@ String<T, Allocator>& String<T, Allocator>::operator=(const String<T, Allocator>
     return *this;
 }
 
-template <CharType T, AllocatorType Allocator>
-String<T, Allocator>& String<T, Allocator>::operator=(String<T, Allocator>&& other) noexcept
+template <CharType T, MemoryResourceType MemRes>
+String<T, MemRes>& String<T, MemRes>::operator=(String<T, MemRes>&& other) noexcept
 {
     if (this == std::addressof(other))
         return *this;
@@ -173,7 +174,7 @@ String<T, Allocator>& String<T, Allocator>::operator=(String<T, Allocator>&& oth
     // Deallocates the current string
     if (!_isSmallString)
     {
-        Allocator::Deallocate(DynamicStringBuffer);
+        MemRes::Deallocate(DynamicStringBuffer);
         _isSmallString = true;
     }
 
@@ -196,8 +197,8 @@ String<T, Allocator>& String<T, Allocator>::operator=(String<T, Allocator>&& oth
     return *this;
 }
 
-template <CharType T, AllocatorType Allocator>
-inline T* String<T, Allocator>::GetCString() noexcept
+template <CharType T, MemoryResourceType MemRes>
+inline T* String<T, MemRes>::GetCString() noexcept
 {
     // if _stringLength is zero, returns nullptr
     if (_stringLength == 0)
@@ -209,8 +210,8 @@ inline T* String<T, Allocator>::GetCString() noexcept
         return DynamicStringBuffer;
 }
 
-template <CharType T, AllocatorType Allocator>
-inline const T* String<T, Allocator>::GetCString() const noexcept
+template <CharType T, MemoryResourceType MemRes>
+inline const T* String<T, MemRes>::GetCString() const noexcept
 {
     // if _stringLength is zero, returns nullptr
     if (_stringLength == 0)
@@ -222,9 +223,9 @@ inline const T* String<T, Allocator>::GetCString() const noexcept
         return DynamicStringBuffer;
 }
 
-template <CharType T, AllocatorType Allocator>
-inline void String<T, Allocator>::RemoveAt(Size index,
-                                           Size count)
+template <CharType T, MemoryResourceType MemRes>
+inline void String<T, MemRes>::RemoveAt(Size index,
+                                        Size count)
 
 {
     if (index + count > _stringLength || index >= _stringLength)
@@ -244,15 +245,15 @@ inline void String<T, Allocator>::RemoveAt(Size index,
     pointer[_stringLength] = T(0);
 }
 
-template <CharType T, AllocatorType Allocator>
-inline void String<T, Allocator>::ReserveFor(Size count)
+template <CharType T, MemoryResourceType MemRes>
+inline void String<T, MemRes>::ReserveFor(Size count)
 {
     Reserve<true>(count);
 }
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <Bool Move>
-inline T* String<T, Allocator>::Reserve(Size size)
+inline T* String<T, MemRes>::Reserve(Size size)
 {
     if (size <= SmallStringSize && _isSmallString)
     {
@@ -272,7 +273,7 @@ inline T* String<T, Allocator>::Reserve(Size size)
         auto dynamicMemoryAllocatedSize       = size - 1;
 
         // Allocates the new memory
-        auto newDynamicMemory = (T*)Allocator::Allocate(actualDynamicMemoryAllocatedSize, alignof(T));
+        auto newDynamicMemory = (T*)MemRes::Allocate(actualDynamicMemoryAllocatedSize, alignof(T));
 
         // Copies the old string to the new one
         if constexpr (Move)
@@ -283,7 +284,7 @@ inline T* String<T, Allocator>::Reserve(Size size)
 
         // No exception thrown, so we can deallocate the old memory
         // Deallocate the old dynamic memory
-        if (!_isSmallString) Allocator::Deallocate(DynamicStringBuffer);
+        if (!_isSmallString) MemRes::Deallocate(DynamicStringBuffer);
 
         _isSmallString             = false;
         DynamicMemoryAllocatedSize = dynamicMemoryAllocatedSize;
@@ -292,9 +293,9 @@ inline T* String<T, Allocator>::Reserve(Size size)
     }
 }
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <CharType U>
-inline Bool String<T, Allocator>::operator==(const U* str) const noexcept
+inline Bool String<T, MemRes>::operator==(const U* str) const noexcept
 {
     auto stringLength = GetStringLength(str);
 
@@ -310,28 +311,28 @@ inline Bool String<T, Allocator>::operator==(const U* str) const noexcept
     return true;
 }
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <CharType U>
-inline Bool String<T, Allocator>::operator!=(const U* str) const noexcept
+inline Bool String<T, MemRes>::operator!=(const U* str) const noexcept
 {
     return !(*this == str);
 }
 
-template <CharType T, AllocatorType Allocator>
-inline Bool String<T, Allocator>::operator==(NullptrType) const noexcept
+template <CharType T, MemoryResourceType MemRes>
+inline Bool String<T, MemRes>::operator==(NullptrType) const noexcept
 {
     return _stringLength == 0;
 }
 
-template <CharType T, AllocatorType Allocator>
-inline Bool String<T, Allocator>::operator!=(NullptrType) const noexcept
+template <CharType T, MemoryResourceType MemRes>
+inline Bool String<T, MemRes>::operator!=(NullptrType) const noexcept
 {
     return _stringLength != 0;
 }
 
-template <CharType T, AllocatorType Allocator>
-template <CharType U, AllocatorType OtherAllocator>
-inline Bool String<T, Allocator>::operator==(const String<U, OtherAllocator>& str) const noexcept
+template <CharType T, MemoryResourceType MemRes>
+template <CharType U, MemoryResourceType OtherMemRes>
+inline Bool String<T, MemRes>::operator==(const String<U, OtherMemRes>& str) const noexcept
 {
     auto stringLength = str._stringLength;
 
@@ -348,15 +349,15 @@ inline Bool String<T, Allocator>::operator==(const String<U, OtherAllocator>& st
     return true;
 }
 
-template <CharType T, AllocatorType Allocator>
-template <CharType U, AllocatorType OtherAllocator>
-inline Bool String<T, Allocator>::operator!=(const String<U, OtherAllocator>& str) const noexcept
+template <CharType T, MemoryResourceType MemRes>
+template <CharType U, MemoryResourceType OtherMemRes>
+inline Bool String<T, MemRes>::operator!=(const String<U, OtherMemRes>& str) const noexcept
 {
     return !(*this == str);
 }
 
-template <CharType T, AllocatorType Allocator>
-inline T& String<T, Allocator>::operator[](Size index)
+template <CharType T, MemoryResourceType MemRes>
+inline T& String<T, MemRes>::operator[](Size index)
 {
     if (index >= _stringLength)
         throw ArgumentOutOfRangeException("`index` was out of range!");
@@ -364,8 +365,8 @@ inline T& String<T, Allocator>::operator[](Size index)
     return GetCString()[index];
 }
 
-template <CharType T, AllocatorType Allocator>
-inline const T& String<T, Allocator>::operator[](Size index) const
+template <CharType T, MemoryResourceType MemRes>
+inline const T& String<T, MemRes>::operator[](Size index) const
 {
     if (index >= _stringLength)
         throw ArgumentOutOfRangeException("`index` was out of range!");
@@ -373,63 +374,63 @@ inline const T& String<T, Allocator>::operator[](Size index) const
     return GetCString()[index];
 }
 
-template <CharType T, AllocatorType Allocator>
-inline const T* String<T, Allocator>::begin() const noexcept
+template <CharType T, MemoryResourceType MemRes>
+inline const T* String<T, MemRes>::begin() const noexcept
 {
     return GetCString();
 }
 
-template <CharType T, AllocatorType Allocator>
-inline const T* String<T, Allocator>::end() const noexcept
+template <CharType T, MemoryResourceType MemRes>
+inline const T* String<T, MemRes>::end() const noexcept
 {
     return GetCString() + _stringLength;
 }
 
 
-template <CharType T, AllocatorType Allocator>
-inline T* String<T, Allocator>::begin() noexcept
+template <CharType T, MemoryResourceType MemRes>
+inline T* String<T, MemRes>::begin() noexcept
 {
     return GetCString();
 }
 
-template <CharType T, AllocatorType Allocator>
-inline T* String<T, Allocator>::end() noexcept
+template <CharType T, MemoryResourceType MemRes>
+inline T* String<T, MemRes>::end() noexcept
 {
     return GetCString() + _stringLength;
 }
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <CharType U>
-inline String<T, Allocator>& String<T, Allocator>::operator+=(const U& character)
+inline String<T, MemRes>& String<T, MemRes>::operator+=(const U& character)
 {
     Append(std::addressof(character), std::addressof(character) + 1);
 
     return *this;
 }
 
-template <CharType T, AllocatorType Allocator>
-template <CharType U, AllocatorType OtherAllocator>
-inline String<T, Allocator>& String<T, Allocator>::operator+=(const String<U, OtherAllocator>& string)
+template <CharType T, MemoryResourceType MemRes>
+template <CharType U, MemoryResourceType OtherMemRes>
+inline String<T, MemRes>& String<T, MemRes>::operator+=(const String<U, OtherMemRes>& string)
 {
     Append(string.begin(), string.end());
 
     return *this;
 }
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <CharType U>
-inline String<T, Allocator>& String<T, Allocator>::operator+=(const U* string)
+inline String<T, MemRes>& String<T, MemRes>::operator+=(const U* string)
 {
     Append(string, string + String<U>::GetStringLength(string));
 
     return *this;
 }
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <CharType U>
-inline void String<T, Allocator>::Insert(const U* begin,
-                                         const U* end,
-                                         Size     index)
+inline void String<T, MemRes>::Insert(const U* begin,
+                                      const U* end,
+                                      Size     index)
 {
     if (index > _stringLength)
         throw ArgumentOutOfRangeException("`index` was out of range!");
@@ -473,7 +474,7 @@ inline void String<T, Allocator>::Insert(const U* begin,
         auto dynamicMemoryAllocatedSize       = newSize - 1;
 
         // Allocates the new memory
-        auto newDynamicMemory = (T*)Allocator::Allocate(actualDynamicMemoryAllocatedSize, alignof(T));
+        auto newDynamicMemory = (T*)MemRes::Allocate(actualDynamicMemoryAllocatedSize, alignof(T));
 
         // Copies the old string to the new one
         {
@@ -491,7 +492,7 @@ inline void String<T, Allocator>::Insert(const U* begin,
         // No exception thrown, so we can deallocate the old memory
         // Deallocate the old dynamic memory
         if (!_isSmallString)
-            Allocator::Deallocate(DynamicStringBuffer);
+            MemRes::Deallocate(DynamicStringBuffer);
 
         _isSmallString             = false;
         DynamicMemoryAllocatedSize = dynamicMemoryAllocatedSize;
@@ -501,10 +502,10 @@ inline void String<T, Allocator>::Insert(const U* begin,
     _stringLength += insertSize;
 }
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <CharType U>
-inline void String<T, Allocator>::Append(const U* begin,
-                                         const U* end)
+inline void String<T, MemRes>::Append(const U* begin,
+                                      const U* end)
 {
     // Checks the argument
     if (begin > end)
@@ -525,9 +526,9 @@ inline void String<T, Allocator>::Append(const U* begin,
     _stringLength += size;
 }
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <CharType U>
-inline void String<T, Allocator>::Append(const U& character)
+inline void String<T, MemRes>::Append(const U& character)
 {
     // Reserves the memory for the string
     auto pointer = Reserve(_stringLength + 1);
@@ -538,17 +539,17 @@ inline void String<T, Allocator>::Append(const U& character)
     _stringLength += 1;
 }
 
-template <CharType T, AllocatorType Allocator>
-inline Size String<T, Allocator>::GetLength() const noexcept
+template <CharType T, MemoryResourceType MemRes>
+inline Size String<T, MemRes>::GetSize() const noexcept
 {
     return _stringLength;
 }
 
-template <CharType T, AllocatorType Allocator>
+template <CharType T, MemoryResourceType MemRes>
 template <ArithmeticType U>
-inline String<T, Allocator> String<T, Allocator>::ToString(const U& value)
+inline String<T, MemRes> String<T, MemRes>::ToString(const U& value)
 {
-    String<T, Allocator> stringToReturn = {};
+    String<T, MemRes> stringToReturn = {};
 
     if (value == 0)
     {

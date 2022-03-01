@@ -4,7 +4,9 @@
 
 #ifndef AXIS_SYSTEM_SMARTPOINTER_HPP
 #define AXIS_SYSTEM_SMARTPOINTER_HPP
+#pragma once
 
+#include "../../Private/Axis/CompressedPair.inl"
 #include "Memory.hpp"
 #include "Trait.hpp"
 #include <atomic>
@@ -23,13 +25,26 @@ concept SmartPointerType = std::is_same_v<T, void> ||(!std::is_reference_v<T> &&
 
 /// \brief Type which can be used to delete the smart pointer's resource.
 template <class T, class U>
-concept SmartPointerDeleterType = Callable<std::remove_const_t<T>, void, std::decay_t<std::remove_all_extents_t<U>>*> && std::is_nothrow_default_constructible_v<std::remove_const_t<T>>;
+concept SmartPointerDeleterType = Callable<std::remove_const_t<T>, void, std::decay_t<std::remove_all_extents_t<U>>*> && (IsNoThrowCopyConstructible<T> || IsNoThrowMoveConstructible<T>) && (IsNoThrowCopyAssignable<T> || IsNoThrowMoveAssignable<T>);
 
 // clang-format on
 
-/// \brief Gets the pointer type of a type.
-template <SmartPointerType T>
-using Pointer = std::remove_all_extents_t<T>*;
+namespace Detail
+{
+
+template <class T, class Deleter, class = void>
+struct PointerTypeFromDeleter
+{
+    using Type = std::remove_all_extents_t<T>*;
+};
+
+template <class T, class Deleter>
+struct PointerTypeFromDeleter<T, Deleter, std::void_t<typename Deleter::PointerType>>
+{
+    using Type = typename Deleter::PointerType;
+};
+
+} // namespace Detail
 
 template <SmartPointerType T>
 struct DefaultDeleter;
@@ -39,12 +54,12 @@ template <SmartPointerType T, SmartPointerDeleterType<T> Deleter = DefaultDelete
 class UniquePointer final
 {
 public:
+    /// \brief Smart pointer internal pointer type.
+    using PointerType = typename Detail::PointerTypeFromDeleter<T, Deleter>::Type;
+
     /// \brief Checks if the template parameter U's pointer can be converted to the template parameter T's pointer.
     template <SmartPointerType U>
-    static constexpr Bool ConvertibleFrom = std::is_convertible_v<Pointer<U>, Pointer<T>>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
-
-    /// \brief Smart pointer internal pointer type.
-    using PointerType = Pointer<T>;
+    static constexpr Bool ConvertibleFrom = std::is_convertible_v<typename Detail::PointerTypeFromDeleter<U, Deleter>::Type, typename Detail::PointerTypeFromDeleter<T, Deleter>::Type>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
 
     /// \brief Constructs a null pointer. Default constructor.
     UniquePointer() noexcept = default;
@@ -54,9 +69,10 @@ public:
 
     /// \brief Constructs a pointer from the given pointer and deleter.
     ///
-    /// \param[in] ptr The pointer to construct the smart pointer from
+    /// \param[in] ptr     The pointer to construct the smart pointer from
     /// \param[in] deleter The deleter to use when deleting the pointer
-    explicit UniquePointer(PointerType ptr) noexcept;
+    explicit UniquePointer(PointerType    ptr,
+                           const Deleter& deleter = Deleter()) noexcept;
 
     /// \brief Copy constructor is deleted.
     UniquePointer(const UniquePointer<T, Deleter>&) = delete;
@@ -117,8 +133,7 @@ public:
     void Reset() noexcept;
 
 private:
-    PointerType _objectPointer = nullptr; ///< Pointer to the object.
-    Deleter     _deleter       = {};      ///< The deleter function.
+    CompressedPair<PointerType, Deleter> _pair;
 
     template <SmartPointerType U, SmartPointerDeleterType<U>>
     friend class UniquePointer;
@@ -147,6 +162,9 @@ namespace Detail
 /// Forward declaration of the internal reference counter.
 class IReferenceCounter;
 
+template <class T>
+using PointerType = std::remove_all_extents_t<T>*;
+
 } // namespace Detail
 
 /// \brief A reference-counted smart pointer; it will automatically delete the object when it the
@@ -157,10 +175,10 @@ class SharedPointer final
 public:
     /// \brief Checks if the template parameter U's pointer can be converted to the template parameter T's pointer.
     template <SmartPointerType U>
-    static constexpr Bool ConvertibleFrom = std::is_convertible_v<Pointer<U>, Pointer<T>>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
+    static constexpr Bool ConvertibleFrom = std::is_convertible_v<Detail::PointerType<U>, Detail::PointerType<T>>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
 
     /// \brief Smart pointer internal pointer type.
-    using PointerType = Pointer<T>;
+    using PointerType = std::remove_all_extents_t<T>*;
 
     /// \brief Constructs a null pointer. Default constructor.
     SharedPointer() noexcept = default;
@@ -282,10 +300,10 @@ private:
 
     friend class ISharedFromThis;
 
-    template <SmartPointerType U, AllocatorType Allocator, class... Args, typename>
+    template <SmartPointerType U, MemoryResourceType MemRes, class... Args, typename>
     friend SharedPointer<U> AllocatedMakeShared(Args&&...) requires(std::is_constructible_v<U, Args...>); // friend function to allow the AllocatedMakeShared function to access the private members
 
-    template <SmartPointerType U, AllocatorType Allocator, typename>
+    template <SmartPointerType U, MemoryResourceType MemRes, typename>
     friend SharedPointer<U> AllocatedMakeShared(Size) requires(std::is_default_constructible_v<std::remove_all_extents_t<U>>); // friend function to allow the AllocatedMakeShared function to access the private members
 };
 
@@ -297,10 +315,10 @@ class WeakPointer final
 public:
     /// \brief Checks if the template parameter U's pointer can be converted to the template parameter T's pointer.
     template <SmartPointerType U>
-    static constexpr Bool ConvertibleFrom = std::is_convertible_v<Pointer<U>, Pointer<T>>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
+    static constexpr Bool ConvertibleFrom = std::is_convertible_v<Detail::PointerType<U>, Detail::PointerType<T>>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
 
     /// \brief Smart pointer internal pointer type.
-    using PointerType = Pointer<T>;
+    using PointerType = Detail::PointerType<T>;
 
     /// \brief Constructs a null pointer. Default constructor.
     WeakPointer() noexcept = default;
@@ -422,12 +440,12 @@ AXIS_NODISCARD SharedPointer<T> MakeShared(Size elementCount) requires(std::is_d
 
 /// \brief Constructs a new instance of shared pointer of the specific type.
 ///        this is the preferred way to create shared object as it's more efficient.
-template <SmartPointerType T, AllocatorType Allocator, class... Args, typename = std::enable_if_t<!std::is_unbounded_array_v<T>, Int32>>
+template <SmartPointerType T, MemoryResourceType MemRes, class... Args, typename = std::enable_if_t<!std::is_unbounded_array_v<T>, Int32>>
 AXIS_NODISCARD SharedPointer<T> AllocatedMakeShared(Args&&... args) requires(std::is_constructible_v<T, Args...>);
 
 /// \brief Constructs a new instance of shared pointer of the specific type.
 ///        this is the preferred way to create shared object as it's more efficient.
-template <SmartPointerType T, AllocatorType Allocator, typename = std::enable_if_t<std::is_unbounded_array_v<T>, Int32>>
+template <SmartPointerType T, MemoryResourceType MemRes, typename = std::enable_if_t<std::is_unbounded_array_v<T>, Int32>>
 AXIS_NODISCARD SharedPointer<T> AllocatedMakeShared(Size elementCount) requires(std::is_default_constructible_v<std::remove_all_extents_t<T>>);
 
 /// \brief Inherits this class to be able to generate \a `SharedPointer`
@@ -479,10 +497,10 @@ private:
     template <SmartPointerType T>
     friend class SharedPointer; // Friend class
 
-    template <SmartPointerType U, AllocatorType Allocator, class... Args, typename>
+    template <SmartPointerType U, MemoryResourceType MemRes, class... Args, typename>
     friend SharedPointer<U> AllocatedMakeShared(Args&&...) requires(std::is_constructible_v<U, Args...>); // friend function to allow the AllocatedMakeShared function to access the private members
 
-    template <SmartPointerType U, AllocatorType Allocator, typename>
+    template <SmartPointerType U, MemoryResourceType MemRes, typename>
     friend SharedPointer<U> AllocatedMakeShared(Size) requires(std::is_default_constructible_v<std::remove_all_extents_t<U>>); // friend function to allow the AllocatedMakeShared function to access the private members
 };
 

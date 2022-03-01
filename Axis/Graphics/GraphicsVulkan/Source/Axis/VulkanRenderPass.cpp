@@ -46,26 +46,26 @@ VulkanRenderPass::VulkanRenderPass(const RenderPassDescription& description,
         System::List<VkSubpassDescription>    subpassDescriptions             = {};
         System::List<VkSubpassDependency>     subpassDependenciesDescriptions = {};
 
-        attachmentDescriptions.ReserveFor(description.Attachments.GetLength());
-        subpassDescriptions.ReserveFor(description.Subpasses.GetLength());
-        subpassDependenciesDescriptions.ReserveFor(description.Dependencies.GetLength());
+        attachmentDescriptions.ReserveFor(description.Attachments.GetSize());
+        subpassDescriptions.ReserveFor(description.Subpasses.GetSize());
+        subpassDependenciesDescriptions.ReserveFor(description.Dependencies.GetSize());
 
-        System::List<System::List<VkAttachmentReference>> allColorAttachmentReferences(description.Subpasses.GetLength());
-        System::List<System::List<VkAttachmentReference>> allInputAttachmentReferences(description.Subpasses.GetLength());
-        System::List<VkAttachmentReference>               allDepthStencilAttachmentReferences(description.Subpasses.GetLength());
+        System::List<System::List<VkAttachmentReference>> allColorAttachmentReferences(description.Subpasses.GetSize());
+        System::List<System::List<VkAttachmentReference>> allInputAttachmentReferences(description.Subpasses.GetSize());
+        System::List<VkAttachmentReference>               allDepthStencilAttachmentReferences(description.Subpasses.GetSize());
 
-        for (Size i = 0; i < description.Subpasses.GetLength(); i++)
+        for (Size i = 0; i < description.Subpasses.GetSize(); i++)
         {
             if (description.Subpasses[i].RenderTargetReferences)
             {
-                allColorAttachmentReferences[i] = System::List<VkAttachmentReference>(description.Subpasses[i].RenderTargetReferences.GetLength());
+                allColorAttachmentReferences[i] = System::List<VkAttachmentReference>(description.Subpasses[i].RenderTargetReferences.GetSize());
 
                 ConvertAttachmentsReferences(allColorAttachmentReferences[i], description.Subpasses[i].RenderTargetReferences);
             }
 
             if (description.Subpasses[i].InputReferences)
             {
-                allInputAttachmentReferences[i] = System::List<VkAttachmentReference>(description.Subpasses[i].InputReferences.GetLength());
+                allInputAttachmentReferences[i] = System::List<VkAttachmentReference>(description.Subpasses[i].InputReferences.GetSize());
 
                 ConvertAttachmentsReferences(allInputAttachmentReferences[i], description.Subpasses[i].InputReferences);
             }
@@ -93,8 +93,8 @@ VulkanRenderPass::VulkanRenderPass(const RenderPassDescription& description,
 
         for (auto& subpass : description.Subpasses)
         {
-            Uint32 colorAttachmentCount = (Uint32)allColorAttachmentReferences[i].GetLength();
-            Uint32 inputAttachmentCount = (Uint32)allInputAttachmentReferences[i].GetLength();
+            Uint32 colorAttachmentCount = (Uint32)allColorAttachmentReferences[i].GetSize();
+            Uint32 inputAttachmentCount = (Uint32)allInputAttachmentReferences[i].GetSize();
 
             VkAttachmentReference* pColorAttachments       = colorAttachmentCount == 0 ? nullptr : allColorAttachmentReferences[i].GetData();
             VkAttachmentReference* pInputAttachments       = inputAttachmentCount == 0 ? nullptr : allInputAttachmentReferences[i].GetData();
@@ -133,12 +133,12 @@ VulkanRenderPass::VulkanRenderPass(const RenderPassDescription& description,
 
         VkRenderPassCreateInfo renderPassCreateInfo = {};
         renderPassCreateInfo.sType                  = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        renderPassCreateInfo.attachmentCount        = (Uint32)description.Attachments.GetLength();
+        renderPassCreateInfo.attachmentCount        = (Uint32)description.Attachments.GetSize();
         renderPassCreateInfo.pAttachments           = attachmentDescriptions.GetData();
-        renderPassCreateInfo.subpassCount           = (Uint32)description.Subpasses.GetLength();
+        renderPassCreateInfo.subpassCount           = (Uint32)description.Subpasses.GetSize();
         renderPassCreateInfo.pSubpasses             = subpassDescriptions.GetData();
-        renderPassCreateInfo.dependencyCount        = (Uint32)description.Dependencies.GetLength();
-        renderPassCreateInfo.pDependencies          = description.Dependencies.GetLength() == 0 ? nullptr : subpassDependenciesDescriptions.GetData();
+        renderPassCreateInfo.dependencyCount        = (Uint32)description.Dependencies.GetSize();
+        renderPassCreateInfo.pDependencies          = description.Dependencies.GetSize() == 0 ? nullptr : subpassDependenciesDescriptions.GetData();
 
         auto vkResult = vkCreateRenderPass(vulkanGraphicsDevice.GetVkDeviceHandle(), &renderPassCreateInfo, nullptr, &vkRenderPass);
 

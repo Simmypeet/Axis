@@ -57,13 +57,13 @@ SpriteFont::SpriteFont(System::FileStream&           fileStream,
     // Copies file data
     {
         // Copies all the data from the file stream to the buffer
-        _fontByte = System::UniquePointer<Byte[]>(Axis::System::NewArray<Byte>(fileStream.GetLength()));
+        _fontByte = System::UniquePointer<Byte[]>(Axis::System::NewArray<Byte>(fileStream.GetSize()));
 
         // Stores the font byte size
-        _fontByteSize = fileStream.GetLength();
+        _fontByteSize = fileStream.GetSize();
 
         // Reads the file stream into the buffer
-        fileStream.Read(_fontByte.GetPointer(), 0, fileStream.GetLength());
+        fileStream.Read(_fontByte.GetPointer(), 0, fileStream.GetSize());
     }
 
     Initialize();
@@ -123,7 +123,7 @@ SpriteFont::FontFaceRAII& SpriteFont::FontFaceRAII::operator=(FontFaceRAII&& oth
 
 System::Vector2UI SpriteFont::MeasureString(const System::StringView<WChar>& string) const noexcept
 {
-    if (string.GetLength() == 0)
+    if (string.GetSize() == 0)
         return {0.0f, 0.0f};
 
     Bool firstGlyphOfLine = true;

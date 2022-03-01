@@ -13,6 +13,7 @@ set(AXIS_SYSTEM_TEST_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/HashSet.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/HashMap.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/Event.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/LeakTester.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/StaticArray.cpp")
 
 # Targets to link with system test target

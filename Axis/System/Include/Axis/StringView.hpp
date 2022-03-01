@@ -45,12 +45,12 @@ public:
     /// \brief Constructs the StringView object from the string object.
     ///
     /// \param[in] string String to view
-    template <AllocatorType Allocator>
-    constexpr StringView(const String<T, Allocator>& string) noexcept;
+    template <MemoryResourceType MemRes>
+    constexpr StringView(const String<T, MemRes>& string) noexcept;
 
     /// \brief Gets the length of the string. The length was cached into the object
     ///        since the construction.
-    AXIS_NODISCARD constexpr Size GetLength() const noexcept;
+    AXIS_NODISCARD constexpr Size GetSize() const noexcept;
 
     /// \brief Gets the internal string buffer.
     AXIS_NODISCARD constexpr const T* GetCString() const noexcept;
@@ -80,8 +80,8 @@ public:
     AXIS_NODISCARD constexpr Bool IsNullTerminated() const noexcept;
 
     /// \brief Constructs a new string object from the view.
-    template <AllocatorType Allocator = DefaultAllocator>
-    AXIS_NODISCARD constexpr operator String<T, Allocator>() const;
+    template <MemoryResourceType MemRes = DefaultMemoryResource>
+    AXIS_NODISCARD constexpr operator String<T, MemRes>() const;
 
 private:
     const T*     _stringBuffer       = nullptr; // Pointer to null terminated string
@@ -97,8 +97,8 @@ private:
 ///
 /// \param[in] LHS Left hand side string to be appended.
 /// \param[in] RHS Right hand side string to append.
-template <Axis::System::CharType T, Axis::System::CharType U, Axis::System::AllocatorType Allocator>
-Axis::System::String<T, Allocator>& operator+=(Axis::System::String<T, Allocator>& LHS, const Axis::System::StringView<U>& RHS);
+template <Axis::System::CharType T, Axis::System::CharType U, Axis::System::MemoryResourceType MemRes>
+Axis::System::String<T, MemRes>& operator+=(Axis::System::String<T, MemRes>& LHS, const Axis::System::StringView<U>& RHS);
 
 #include "../../Private/Axis/StringViewImpl.inl"
 

@@ -101,7 +101,7 @@ System::Pair<System::SharedPointer<Graphics::IGraphicsDevice>, System::List<Syst
 
     auto GetBestGraphicsAdapterIndex = [&](const System::SharedPointer<Graphics::IGraphicsSystem>& graphicsSystem) {
         System::List<Uint32> adapterIndexRatingPair;
-        adapterIndexRatingPair.ReserveFor(graphicsAdapters.GetLength());
+        adapterIndexRatingPair.ReserveFor(graphicsAdapters.GetSize());
 
         for (const auto& adapter : graphicsAdapters)
         {

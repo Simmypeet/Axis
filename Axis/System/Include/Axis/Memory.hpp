@@ -6,9 +6,10 @@
 #define AXIS_SYSTEM_MEMORY_HPP
 #pragma once
 
-#include "SystemExport.hpp"
+#include "Config.hpp"
 #include "Trait.hpp"
-#include <concepts>
+#include "Utility.hpp"
+#include "SystemExport.hpp"
 
 namespace Axis
 {
@@ -16,142 +17,146 @@ namespace Axis
 namespace System
 {
 
-/// \brief Concept for checking if a type is capable being an allocator
-///        for the memory management system.
+/// \brief The type which handles memory allocation and deallocation
 ///
-/// The type should have public static function `Allocate` and `Deallocate`
-template <class T>
-concept AllocatorType = requires(T t)
+/// Constraints:
+/// - have public static member function with give signature:
+///   - `Axis::PVoid Allocate(Axis::Size byteSize, Axis::Size alignment) noexcept(/*optional*/)`
+///   - `void Deallocate(Axis::PVoid allocatedMemory) noexcept(true)`
+template <typename T>
+concept MemoryResourceType = requires(PVoid allocatedMemory,
+                                      Size  byteSize,
+                                      Size  alignment)
 {
     {
-        // Allocates memory with the given size and alignment
-        T::Allocate((Size)0, (Size)0)
-        } -> SameAs<PVoid>;
-
+        // Allocates the memory with the given size and alignment
+        T::Allocate(byteSize,
+                    alignment)
+        } -> IsSame<PVoid>;
     {
-        // Deallocates the given memory pointer
-        T::Deallocate((PVoid) nullptr)
-        } -> SameAs<PVoid>;
-};
+        // Deallocates the memory for the allocated pointer (must be noexcept!)
+        T::Deallocate(allocatedMemory)
+        } -> IsSame<void>;
+}
+&&noexcept(T::Deallocate(MakeValue<PVoid>()));
 
-/// \brief Allocator class which satisfies the concept `AllocatorType`.
-///        It uses the standard `std::malloc` and `std::free` functions to
-///        allocate and deallocate memory.
-struct AXIS_SYSTEM_API MallocAllocator
+/// \brief MemoryResource class which uses operator new and delete
+///        for memory allocation and deallocation
+struct AXIS_SYSTEM_API MemoryResource
 {
-    /// \brief Allocates memory with the given size and alignment
-    ///
-    /// \param[in] size The size of the memory to allocate
-    /// \param[in] alignment The alignment of the memory to allocate
-    AXIS_NODISCARD static PVoid Allocate(Size size, Size alignment);
+public:
+    /// \brief Can't be instantiated
+    MemoryResource() = delete;
 
-    /// \brief Deallocates the given memory pointer
+    /// \brief Allocates the memory with the given size and alignment
     ///
-    /// \param[in] ptr The pointer to deallocate
-    static void Deallocate(PVoid ptr) noexcept;
+    /// \param[in] byteSize  The size of the memory to allocate
+    /// \param[in] alignment The alignment of the memory to allocate
+    ///
+    /// \returns The pointer to the allocated memory
+    AXIS_NODISCARD static PVoid Allocate(Size byteSize,
+                                         Size alignment);
+
+    /// \brief Deallocates the memory for the allocated pointer
+    ///
+    /// \param[in] allocatedMemory The allocated memory
+    static void Deallocate(PVoid allocatedMemory) noexcept;
 };
 
-/// \brief Allocator class which satisfies the concept `AllocatorType`.
-///        the allocator pools the memory when it is deallocated for the next
-///        allocation.
-struct AXIS_SYSTEM_API PoolAllocator
+/// \brief MemoryResource class which uses operator new and delete
+///        for memory allocation and deallocation, but pools the memory
+///        when deallocates the memory.
+struct AXIS_SYSTEM_API PoolMemoryResource
 {
-    /// \brief Allocates / retrieves memory with the given size and alignment
-    ///
-    /// \param[in] size The size of the memory to allocate
-    /// \param[in] alignment The alignment of the memory to allocate
-    AXIS_NODISCARD static PVoid Allocate(Size size, Size alignment);
+public:
+    /// \brief Can't be instantiated
+    PoolMemoryResource() = delete;
 
-    /// \brief Returns the given memory pointer back to the pool
+    /// \brief Allocates the memory with the given size and alignment
     ///
-    /// \param[in] ptr The pointer to deallocate
-    static void Deallocate(PVoid ptr) noexcept;
+    /// \param[in] byteSize  The size of the memory to allocate
+    /// \param[in] alignment The alignment of the memory to allocate
+    ///
+    /// \returns The pointer to the allocated memory
+    AXIS_NODISCARD static PVoid Allocate(Size byteSize,
+                                         Size alignment);
+
+    /// \brief Deallocates the memory for the allocated pointer
+    ///
+    /// \param[in] allocatedMemory The allocated memory
+    static void Deallocate(PVoid allocatedMemory) noexcept;
 };
 
-/// \brief Axis's default container type memory allocator.
-using DefaultAllocator = MallocAllocator;
+/// \brief Axis's default memory resource type
+using DefaultMemoryResource = PoolMemoryResource;
 
 /// \brief Creates a new instance of the specified type using the
-///        specified allocator on the heap. Uses \a `Delete` to delete
+///        specified memory resource on the heap. Uses \a `Delete` to delete
 ///        the instance.
 ///
-/// \tparam T Type of the instance to create.
-/// \tparam Allocator Type of the allocator to use.
+/// \param[in] args The arguments to pass to the constructor.
 ///
 /// \return A new instance of the specified type.
-template <AllocatorType Allocator, RawType T, class... Args>
-AXIS_NODISCARD T* AllocatedNew(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>) requires(std::is_constructible_v<T, Args...>);
+template <MemoryResourceType MemoryResource, RawType T, class... Args>
+AXIS_NODISCARD T* MemoryNew(Args&&... args) noexcept(IsNothrowConstructible<T, Args...>);
 
 /// \brief Creates the array of new instances of the specified type using
-///        the specified allocator on the heap. Uses \a `DeleteArray` to
+///        the specified memory resource on the heap. Uses \a `DeleteArray` to
 ///        delete the array.
 ///
-/// \tparam T Type of the instance to create.
-/// \tparam AllocatorType Type of the allocator to use.
-///
 /// \param[in] elementCount Number of elements to allocate.
+/// \param[in] args         The arguments to pass to the constructor.
 ///
 /// \return A new array of the specified type.
-template <AllocatorType Allocator, RawType T>
-AXIS_NODISCARD T* AllocatedNewArray(Size elementCount) noexcept(std::is_nothrow_default_constructible_v<T>) requires(std::is_default_constructible_v<T>);
+template <MemoryResourceType MemoryResource, RawType T, class... Args>
+AXIS_NODISCARD T* MemoryNewArray(Size elementCount, Args&&... args) noexcept(IsNothrowConstructible<T, Args...>);
 
 /// \brief Deletes the instance and frees the memory, must use the
-///        same allocator type as the one used to allocate the instance.
-///
-/// \tparam T Type of the instance to delete.
-/// \tparam AllocatorType Type of the allocator to use.
+///        same memory resource type as the one used to allocate the instance.
 ///
 /// \param[in] instance Pointer to the instance to delete.
-template <AllocatorType Allocator, RawConstableType T>
-void AllocatedDelete(T* instance) noexcept;
+template <MemoryResourceType MemoryResource, RawConstableType T>
+void MemoryDelete(T* instance) noexcept;
 
 /// \brief Deletes the array and frees the memory, must use the
-///        same allocator type as the one used to allocate the array.
-///
-/// \tparam T Type of the instance to delete.
-/// \tparam AllocatorType Type of the allocator to use.
+///        same memory resource type as the one used to allocate the array.
 ///
 /// \param[in] array Pointer to the array to delete.
-template <AllocatorType Allocator, RawConstableType T>
-void AllocatedDeleteArray(T* array) noexcept;
+template <MemoryResourceType MemoryResource, RawConstableType T>
+void MemoryDeleteArray(T* array) noexcept;
 
 /// \brief Creates a new instance of the specified type using the
-///        default allocator on the heap. Uses \a `Delete` to delete
+///        default memory resource on the heap. Uses \a `Delete` to delete
 ///        the instance.
 ///
-/// \tparam T Type of the instance to create.
+/// \param[in] args The arguments to pass to the constructor.
 ///
 /// \return A new instance of the specified type.
 template <RawType T, class... Args>
-AXIS_NODISCARD inline T* New(Args&&... args) { return AllocatedNew<DefaultAllocator, T>(std::forward<Args>(args)...); }
+AXIS_NODISCARD inline T* New(Args&&... args) noexcept(noexcept(MemoryNew<DefaultMemoryResource, T, Args...>(Forward<Args>(args)...)));
 
 /// \brief Creates the array of new instances of the specified type using
-///        the default allocator on the heap. Uses \a `DeleteArray` to
+///        the default memory resource on the heap. Uses \a `DeleteArray` to
 ///        delete the array.
 ///
-/// \tparam T Type of the instance to create.
-///
 /// \param[in] elementCount Number of elements to allocate.
+/// \param[in] args         The arguments to pass to the constructor.
 ///
 /// \return A new array of the specified type.
-template <RawType T>
-AXIS_NODISCARD inline T* NewArray(Size elementCount) { return AllocatedNewArray<DefaultAllocator, T>(elementCount); }
+template <RawType T, class... Args>
+AXIS_NODISCARD inline T* NewArray(Size elementCount, Args&&... args) noexcept(noexcept(MemoryNewArray<DefaultMemoryResource, T, Args...>(elementCount, Forward<Args>(args)...)));
 
 /// \brief Deletes the instance and frees the memory
 ///
-/// \tparam T Type of the instance to delete.
-///
 /// \param[in] instance Pointer to the instance to delete.
 template <RawConstableType T>
-inline void Delete(T* instance) noexcept { AllocatedDelete<DefaultAllocator, T>(instance); }
+inline void Delete(T* instance) noexcept;
 
 /// \brief Deletes the array and frees the memory.
 ///
-/// \tparam T Type of the instance to delete.
-///
 /// \param[in] array Pointer to the array to delete.
 template <RawConstableType T>
-inline void DeleteArray(T* array) noexcept { AllocatedDeleteArray<DefaultAllocator, T>(array); }
+inline void DeleteArray(T* array) noexcept;
 
 } // namespace System
 
