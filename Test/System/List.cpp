@@ -202,9 +202,9 @@ DOCTEST_TEST_CASE("Axis list : [Axis::System]")
                     list.Reserve(reserveSize);
                 }
                 catch (...)
-                {
-                    AXIS_DEBUG_TRAP();
-                }
+                {}
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 6);
 
                 DOCTEST_CHECK(list.GetSize() == 6);
 
@@ -224,6 +224,9 @@ DOCTEST_TEST_CASE("Axis list : [Axis::System]")
 
             // Reserves for more than the current size
             CheckReserve(10);
+
+            // Reserves more than the maximum size
+            CheckReserve(std::numeric_limits<List<LeakTesterType>::SizeType>::max());
         }
 
         DOCTEST_SUBCASE("Append")
@@ -231,6 +234,8 @@ DOCTEST_TEST_CASE("Axis list : [Axis::System]")
             List<LeakTesterType> list = {0, 1, 2, 3, 4};
 
             list.Append(5);
+
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 6);
 
             DOCTEST_CHECK(list.GetSize() == 6);
 
@@ -240,6 +245,56 @@ DOCTEST_TEST_CASE("Axis list : [Axis::System]")
             DOCTEST_CHECK(list[3].Instance == 3);
             DOCTEST_CHECK(list[4].Instance == 4);
             DOCTEST_CHECK(list[5].Instance == 5);
+        }
+
+        DOCTEST_SUBCASE("AppendRange")
+        {
+            List<LeakTesterType> list  = {0, 1, 2, 3, 4};
+            List<LeakTesterType> list2 = {};
+
+            list2.AppendRange(list.begin(), list.end());
+
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 10);
+
+            DOCTEST_CHECK(list2.GetSize() == 5);
+
+            DOCTEST_CHECK(list2[0].Instance == 0);
+            DOCTEST_CHECK(list2[1].Instance == 1);
+            DOCTEST_CHECK(list2[2].Instance == 2);
+            DOCTEST_CHECK(list2[3].Instance == 3);
+            DOCTEST_CHECK(list2[4].Instance == 4);
+        }
+
+        DOCTEST_SUBCASE("RemoveAt")
+        {
+            List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
+
+            list.RemoveAt(5);
+
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 5);
+
+            DOCTEST_CHECK(list.GetSize() == 5);
+
+            DOCTEST_CHECK(list[0].Instance == 0);
+            DOCTEST_CHECK(list[1].Instance == 1);
+            DOCTEST_CHECK(list[2].Instance == 2);
+            DOCTEST_CHECK(list[3].Instance == 3);
+            DOCTEST_CHECK(list[4].Instance == 4);
+
+            list.RemoveAt(1, 3);
+
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 2);
+
+            DOCTEST_CHECK(list.GetSize() == 2);
+
+            DOCTEST_CHECK(list[0].Instance == 0);
+            DOCTEST_CHECK(list[1].Instance == 4);
+
+            list.RemoveAt(0, 2);
+
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+            DOCTEST_CHECK(list.GetSize() == 0);
         }
     }
 }

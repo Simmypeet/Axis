@@ -6,6 +6,7 @@
 #define AXIS_SYSTEM_MEMORYIMPL_INL
 #pragma once
 
+#include "../../Include/Axis/Exception.hpp"
 #include "../../Include/Axis/Memory.hpp"
 #include <new>
 
@@ -19,20 +20,54 @@ namespace System
 namespace Detail
 {
 
+namespace Memory
+{
+
+template <Size PaddingSize>
+inline constexpr Size GetPaddingSize(Size alignment) noexcept
+{
+    // Calculates the padding Size.
+    return alignment - 1 + PaddingSize;
+}
+
+template <Size PaddingSize, Bool CheckOverflow = true>
+inline constexpr void ValidateArguments(Size memorySize,
+                                        Size alignment)
+{
+    if (alignment == 0)
+        throw InvalidArgumentException("`alignment` was zero!");
+
+    if (memorySize == 0)
+        throw InvalidArgumentException("`memorySize` was zero!");
+
+    if ((alignment & (alignment - 1)) != 0)
+        throw InvalidArgumentException("`alignment` was not a power of two!");
+
+    if constexpr (CheckOverflow)
+    {
+        // Calculates the padding Size.
+        Size offset = ::Axis::System::Detail::Memory::GetPaddingSize<PaddingSize>(alignment);
+
+        // Checks if the memory size will overflow with the padding Size.
+        if (memorySize > (std::numeric_limits<Size>::max() - offset))
+            throw InvalidArgumentException("Couldn't allocate memory with the given `memorySize` and `alignment`!");
+    }
+}
+
 // The data structure contained in the array
-struct Memory_ArrayMemoryHeader
+struct ArrayMemoryHeader
 {
     Size  ElementCount;
     PVoid OriginalPtr;
 };
 
 template <class T, MemoryResourceType MemRes>
-struct Memory_TidyGuard // Calls function `Tidy()` on the target on destruction
+struct TidyGuard // Calls function `Tidy()` on the target on destruction
 {
     T*   Targets      = nullptr;
     Size ElementCount = 0;
 
-    ~Memory_TidyGuard()
+    ~TidyGuard()
     {
         if (Targets)
         {
@@ -44,12 +79,14 @@ struct Memory_TidyGuard // Calls function `Tidy()` on the target on destruction
     }
 };
 
+} // namespace Memory
+
 } // namespace Detail
 
 template <MemoryResourceType MemoryResource, RawType T, class... Args>
-inline T* MemoryNew(Args&&... args) noexcept(IsNothrowConstructible<T, Args...>)
+inline T* MemoryNew(Args&&... args)
 {
-    Detail::Memory_TidyGuard<T, MemoryResource> guard = {(T*)MemoryResource::Allocate(sizeof(T), alignof(T)), 0};
+    Detail::Memory::TidyGuard<T, MemoryResource> guard = {(T*)MemoryResource::Allocate(sizeof(T), alignof(T)), 0};
 
     new (guard.Targets) T(Forward<Args>(args)...);
 
@@ -61,10 +98,22 @@ inline T* MemoryNew(Args&&... args) noexcept(IsNothrowConstructible<T, Args...>)
 }
 
 template <MemoryResourceType MemoryResource, RawType T, class... Args>
-inline T* MemoryNewArray(Size elementCount, Args&&... args) noexcept(IsNothrowConstructible<T, Args...>)
+inline T* MemoryNewArray(Size elementCount, Args&&... args)
 {
+    if (elementCount == 0)
+        throw InvalidArgumentException("`elementCount` was zero!");
+
+    constexpr Size MaxElementCount = std::numeric_limits<Size>::max() / sizeof(T);
+    constexpr Size PaddingSize     = sizeof(Detail::Memory::ArrayMemoryHeader);
+
+    if (elementCount > MaxElementCount)
+        throw InvalidArgumentException("`elementCount` was too large!");
+
+    // Validates the arguments
+    Detail::Memory::ValidateArguments<PaddingSize>(elementCount * sizeof(T), alignof(T));
+
     // Calculates the padding size.
-    Int64 offset = alignof(T) - 1 + sizeof(Detail::Memory_ArrayMemoryHeader);
+    Size offset = Detail::Memory::GetPaddingSize<sizeof(Detail::Memory::ArrayMemoryHeader)>(alignof(T));
 
     // size of memory to allocate for the array
     auto memorySize = (elementCount * sizeof(T)) + offset;
@@ -76,7 +125,7 @@ inline T* MemoryNewArray(Size elementCount, Args&&... args) noexcept(IsNothrowCo
     PVoid* alignedMemory = (PVoid*)(((UintPtr)(originalMemory) + offset) & ~(alignof(T) - 1)); // Aligned block
 
     // Stores the size of array in the first bytes of the memory block.
-    Detail::Memory_ArrayMemoryHeader* header = ((Detail::Memory_ArrayMemoryHeader*)alignedMemory) - 1;
+    Detail::Memory::ArrayMemoryHeader* header = ((Detail::Memory::ArrayMemoryHeader*)alignedMemory) - 1;
 
     // Stores the original memory address before the aligned memory address.
     header->OriginalPtr  = originalMemory;
@@ -84,7 +133,7 @@ inline T* MemoryNewArray(Size elementCount, Args&&... args) noexcept(IsNothrowCo
 
     T* objectArray = (T*)alignedMemory;
 
-    Detail::Memory_TidyGuard<T, MemoryResource> guard = {objectArray, 0};
+    Detail::Memory::TidyGuard<T, MemoryResource> guard = {objectArray, 0};
 
     for (Size i = 0; i < elementCount; ++i)
     {
@@ -114,7 +163,7 @@ void MemoryDeleteArray(T* array) noexcept
     PVoid rawMemoryPointer = (PVoid) const_cast<std::remove_const_t<T*>>(array);
 
     // Gets the header of the array
-    Detail::Memory_ArrayMemoryHeader* header = ((Detail::Memory_ArrayMemoryHeader*)rawMemoryPointer) - 1;
+    Detail::Memory::ArrayMemoryHeader* header = ((Detail::Memory::ArrayMemoryHeader*)rawMemoryPointer) - 1;
 
     // Gets the original memory pointer
     PVoid originalMemory = header->OriginalPtr;
@@ -131,13 +180,13 @@ void MemoryDeleteArray(T* array) noexcept
 }
 
 template <RawType T, class... Args>
-inline T* New(Args&&... args) noexcept(noexcept(MemoryNew<DefaultMemoryResource, T, Args...>(Forward<Args>(args)...)))
+inline T* New(Args&&... args)
 {
     return MemoryNew<DefaultMemoryResource, T, Args...>(Forward<Args>(args)...);
 }
 
 template <RawType T, class... Args>
-inline T* NewArray(Size elementCount, Args&&... args) noexcept(noexcept(MemoryNewArray<DefaultMemoryResource, T, Args...>(elementCount, Forward<Args>(args)...)))
+inline T* NewArray(Size elementCount, Args&&... args)
 {
     return MemoryNewArray<DefaultMemoryResource, T, Args...>(elementCount, Forward<Args>(args)...);
 }

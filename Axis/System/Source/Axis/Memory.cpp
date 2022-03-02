@@ -2,7 +2,7 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-#include "Axis/Assert.hpp"
+#include <Axis/Assert.hpp>
 #include <Axis/Exception.hpp>
 #include <Axis/Memory.hpp>
 #include <memory>
@@ -18,20 +18,24 @@ namespace System
 
 PVoid MemoryResource::Allocate(Size byteSize, Size alignment)
 {
-    // Arguments validation
-    if ((alignment & (alignment - 1)) != 0) throw InvalidArgumentException("`alignment` was not a power of two!");
+    constexpr auto PaddingSize = sizeof(PVoid);
+
+    // Validates the arguments.
+    Detail::Memory::ValidateArguments<PaddingSize>(byteSize, alignment);
 
     // Calculates the padding Size.
-    Int64 offset = alignment - 1 + sizeof(PVoid);
+    auto memoryPaddingSize = Detail::Memory::GetPaddingSize<PaddingSize>(alignment);
 
-    // Malloc'ed memory
-    PVoid originalMemory = ::operator new(byteSize + offset, std::nothrow);
+    // Calculates the total size to allocate.
+    auto memorySizeToAllocate = memoryPaddingSize + byteSize;
+
+    PVoid originalMemory = ::operator new(memorySizeToAllocate, std::nothrow);
 
     // Failed to allocate memory
     if (originalMemory == nullptr) throw OutOfMemoryException();
 
     // Calculates the aligned memory address.
-    PVoid* alignedMemory = (PVoid*)(((UintPtr)(originalMemory) + offset) & ~(alignment - 1)); // Aligned block
+    PVoid* alignedMemory = (PVoid*)(((UintPtr)(originalMemory) + memoryPaddingSize) & ~(alignment - 1)); // Aligned block
 
     // Stores the original memory address before the aligned memory address.
     alignedMemory[-1] = originalMemory;
@@ -80,21 +84,20 @@ public:
         }
         else
         {
-            // Calculates the padding Size.
-            Int64 offset = _alignment - 1 + sizeof(MemoryBlockHeader);
+            // Padding size (size of the header)
+            constexpr auto PaddingSize = sizeof(MemoryBlockHeader);
+
+            Size offset = Detail::Memory::GetPaddingSize<PaddingSize>(_alignment);
 
             // Malloc'ed memory
             PVoid originalMemory = ::operator new(_byteSize, std::nothrow);
 
             // Failed to allocate memory
             if (originalMemory == nullptr)
-            {
-                AXIS_DEBUG_TRAP();
                 throw OutOfMemoryException();
-            }
 
             // Calculates the aligned memory address.
-            PVoid* alignedMemory = (PVoid*)(((Size)(originalMemory) + offset) & ~(_alignment - 1)); // Aligned block
+            PVoid* alignedMemory = (PVoid*)(((UintPtr)(originalMemory) + offset) & ~(_alignment - 1)); // Aligned block
 
             ((MemoryBlockHeader*)alignedMemory)[-1].Next                     = nullptr;
             ((MemoryBlockHeader*)alignedMemory)[-1].AllocatedOriginalPointer = originalMemory;
@@ -108,7 +111,7 @@ public:
     void Return(PVoid userPtr) noexcept
     {
         // Backwards the userPtr to the memory block header
-        auto block = (MemoryBlockHeader*)((Size)userPtr - sizeof(MemoryBlockHeader));
+        auto block = (MemoryBlockHeader*)((UintPtr)userPtr - sizeof(MemoryBlockHeader));
 
         // Assigns it to the free list
         block->Next = _memoryBlockHeader;
@@ -160,18 +163,26 @@ static std::mutex       s_poolAllocatorMapMutex = {}; // Mutex for accessing the
 
 PVoid PoolMemoryResource::Allocate(Size byteSize, Size alignment)
 {
-    // Arguments validation
-    if ((alignment & (alignment - 1)) != 0) throw InvalidArgumentException("`alignment` was not a power of two!");
+    constexpr auto PaddingSize = sizeof(FixedPoolAllocator::MemoryBlockHeader);
+
+    // Basic arguments validation
+    Detail::Memory::ValidateArguments<PaddingSize>(byteSize, alignment);
+
+    constexpr auto RoundToNextPowerOfTwo = [](Size num) constexpr noexcept->Size
+    {
+        num--;
+
+        for (Size i = 1; i < sizeof(Size) * 8; i <<= 1)
+            num |= (num >> i);
+
+        return num + 1;
+    };
 
     // Calculates the actual Size to allocate
-    Size actualSize = byteSize + sizeof(FixedPoolAllocator::MemoryBlockHeader) + alignment - 1;
+    Size actualSize = RoundToNextPowerOfTwo(byteSize + Detail::Memory::GetPaddingSize<PaddingSize>(alignment));
 
-    // Round to the next nearest power of 2
-    actualSize--;
-
-    for (Size i = 1; i < sizeof(Size) * CHAR_BIT; i <<= 1) actualSize |= (actualSize >> i);
-
-    actualSize = actualSize + 1;
+    if (actualSize == 0)
+        throw InvalidArgumentException("Couldn't allocate memory for the given byte size and alignment");
 
     // Gets the key
     PoolAllocatorKey key = {actualSize, alignment};
@@ -203,7 +214,7 @@ void PoolMemoryResource::Deallocate(PVoid ptr) noexcept
     if (ptr == nullptr) return;
 
     // Backwards the userPtr to the memory block header
-    auto block = (FixedPoolAllocator::MemoryBlockHeader*)((Size)ptr - sizeof(FixedPoolAllocator::MemoryBlockHeader));
+    auto block = (FixedPoolAllocator::MemoryBlockHeader*)((UintPtr)ptr - sizeof(FixedPoolAllocator::MemoryBlockHeader));
 
     // Gets the allocator
     auto allocator = block->Pool;

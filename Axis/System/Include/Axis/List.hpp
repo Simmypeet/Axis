@@ -23,8 +23,8 @@ namespace System
 ///
 /// All the functions in this class are categorized as `strong exception guarantee`. Which means that
 /// if an exception is thrown, the state of the object is rolled back to the state before the function.
-template <RawType T, AllocatorType Alloc = Allocator<T, DefaultMemoryResource>, bool IteratorDebugging = Detail::DefaultIteratorDebug>
-class List final : private ConditionalType<IteratorDebugging, Detail::DebugIteratorContainer, Detail::Empty>
+template <RawType T, AllocatorType Alloc = Allocator<T, DefaultMemoryResource>, bool IteratorDebugging = Detail::CoreContainer::DefaultIteratorDebug>
+class List final : private ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>
 {
 public:
     using ThisType             = List<T, Alloc, IteratorDebugging>;          // Type of this class
@@ -42,7 +42,7 @@ public:
     static_assert(IsSame<ValueType, T>, "Allocator's value type mismatch");
 
 private:
-    using BaseType = ConditionalType<IteratorDebugging, Detail::DebugIteratorContainer, Detail::Empty>;
+    using BaseType = ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>;
 
     struct Data // Data structure for the container
     {
@@ -209,8 +209,8 @@ public:
     /// \param[in] begin Random access iterator to the first element of the range.
     /// \param[in] end   Random access iterator to the element after the last element of the range.
     template <RandomAccessReadIterator<T> IteratorType>
-    void Append(const IteratorType& begin,
-                const IteratorType& end);
+    void AppendRange(const IteratorType& begin,
+                     const IteratorType& end);
 
     /// \brief Removes the element at the end of the list.
     void PopBack() noexcept;
@@ -223,7 +223,14 @@ public:
                   SizeType count = 1);
 
     /// \brief Gets the capacity of the list (number of elements that have been allocated for).
+    ///
+    /// \return Capacity of the list.
     SizeType GetCapacity() const noexcept;
+
+    /// \brief Gets the maximum number of elements that can be stored in the list.
+    ///
+    /// \return Maximum number of elements that can be stored in the list.
+    SizeType GetMaxSize() const noexcept;
 
 private:
     void Tidy() noexcept;
@@ -239,8 +246,12 @@ private:
     Pair<Data, Bool> CreateSpace(SizeType index,
                                  SizeType elementCount);
 
+    /// Checks for the maximum number of elements that can be stored in the list.
+    /// and returns the new number of elements to pre-allocate for.
+    SizeType CheckNewElement(SizeType newElementCount);
+
     template <class>
-    friend struct Detail::TidyGuard;
+    friend struct Detail::CoreContainer::TidyGuard;
 
     struct ContainerHolder;
 };

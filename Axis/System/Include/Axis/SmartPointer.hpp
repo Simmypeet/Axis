@@ -32,6 +32,9 @@ concept SmartPointerDeleterType = Callable<std::remove_const_t<T>, void, std::de
 namespace Detail
 {
 
+namespace SmartPointer
+{
+
 template <class T, class Deleter, class = void>
 struct PointerTypeFromDeleter
 {
@@ -44,6 +47,8 @@ struct PointerTypeFromDeleter<T, Deleter, std::void_t<typename Deleter::PointerT
     using Type = typename Deleter::PointerType;
 };
 
+} // namespace SmartPointer
+
 } // namespace Detail
 
 template <SmartPointerType T>
@@ -55,11 +60,11 @@ class UniquePointer final
 {
 public:
     /// \brief Smart pointer internal pointer type.
-    using PointerType = typename Detail::PointerTypeFromDeleter<T, Deleter>::Type;
+    using PointerType = typename Detail::SmartPointer::PointerTypeFromDeleter<T, Deleter>::Type;
 
     /// \brief Checks if the template parameter U's pointer can be converted to the template parameter T's pointer.
     template <SmartPointerType U>
-    static constexpr Bool ConvertibleFrom = std::is_convertible_v<typename Detail::PointerTypeFromDeleter<U, Deleter>::Type, typename Detail::PointerTypeFromDeleter<T, Deleter>::Type>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
+    static constexpr Bool ConvertibleFrom = std::is_convertible_v<typename Detail::SmartPointer::PointerTypeFromDeleter<U, Deleter>::Type, typename Detail::SmartPointer::PointerTypeFromDeleter<T, Deleter>::Type>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
 
     /// \brief Constructs a null pointer. Default constructor.
     UniquePointer() noexcept = default;
@@ -159,11 +164,16 @@ class WeakPointer;
 namespace Detail
 {
 
+namespace SmartPointer
+{
+
 /// Forward declaration of the internal reference counter.
 class IReferenceCounter;
 
 template <class T>
 using PointerType = std::remove_all_extents_t<T>*;
+
+} // namespace SmartPointer
 
 } // namespace Detail
 
@@ -175,7 +185,7 @@ class SharedPointer final
 public:
     /// \brief Checks if the template parameter U's pointer can be converted to the template parameter T's pointer.
     template <SmartPointerType U>
-    static constexpr Bool ConvertibleFrom = std::is_convertible_v<Detail::PointerType<U>, Detail::PointerType<T>>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
+    static constexpr Bool ConvertibleFrom = std::is_convertible_v<Detail::SmartPointer::PointerType<U>, Detail::SmartPointer::PointerType<T>>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
 
     /// \brief Smart pointer internal pointer type.
     using PointerType = std::remove_all_extents_t<T>*;
@@ -284,10 +294,9 @@ public:
     template <SmartPointerType U>
     AXIS_NODISCARD explicit operator U*() const noexcept requires(!std::is_unbounded_array_v<T> && !std::is_unbounded_array_v<U>);
 
-
 private:
-    PointerType                _objectPointer    = nullptr; ///< Pointer to the object.
-    Detail::IReferenceCounter* _referenceCounter = nullptr; ///< Pointer to the reference counter.
+    PointerType                              _objectPointer    = nullptr; ///< Pointer to the object.
+    Detail::SmartPointer::IReferenceCounter* _referenceCounter = nullptr; ///< Pointer to the reference counter.
 
     template <SmartPointerType U, SmartPointerDeleterType<U>>
     friend class UniquePointer;
@@ -315,10 +324,10 @@ class WeakPointer final
 public:
     /// \brief Checks if the template parameter U's pointer can be converted to the template parameter T's pointer.
     template <SmartPointerType U>
-    static constexpr Bool ConvertibleFrom = std::is_convertible_v<Detail::PointerType<U>, Detail::PointerType<T>>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
+    static constexpr Bool ConvertibleFrom = std::is_convertible_v<Detail::SmartPointer::PointerType<U>, Detail::SmartPointer::PointerType<T>>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
 
     /// \brief Smart pointer internal pointer type.
-    using PointerType = Detail::PointerType<T>;
+    using PointerType = Detail::SmartPointer::PointerType<T>;
 
     /// \brief Constructs a null pointer. Default constructor.
     WeakPointer() noexcept = default;
@@ -413,8 +422,8 @@ public:
     SharedPointer<T> Generate() const noexcept;
 
 private:
-    PointerType                _objectPointer    = nullptr; ///< Pointer to the object.
-    Detail::IReferenceCounter* _referenceCounter = nullptr; ///< Pointer to the reference counter.
+    PointerType                              _objectPointer    = nullptr; ///< Pointer to the object.
+    Detail::SmartPointer::IReferenceCounter* _referenceCounter = nullptr; ///< Pointer to the reference counter.
 
     friend class ISharedFromThis;
 

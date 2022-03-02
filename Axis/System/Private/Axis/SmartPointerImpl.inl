@@ -157,6 +157,9 @@ inline void UniquePointer<T, Deleter>::Reset() noexcept
 namespace Detail
 {
 
+namespace SmartPointer
+{
+
 class IReferenceCounter // base class for all reference counter
 {
 public:
@@ -278,6 +281,8 @@ private:
     std::remove_all_extents_t<T>* _objectPointer = nullptr; // pointer to the original object
 };
 
+} // namespace SmartPointer
+
 } // namespace Detail
 
 template <SmartPointerType T>
@@ -288,7 +293,7 @@ template <SmartPointerDeleterType<T> Deleter>
 inline SharedPointer<T>::SharedPointer(PointerType ptr,
                                        Deleter     deleter) noexcept :
     _objectPointer(ptr),
-    _referenceCounter(Axis::System::New<Detail::ReferenceCounterConstructor<T, DefaultDeleter<T>>>(ptr, std::move(deleter)))
+    _referenceCounter(Axis::System::New<Detail::SmartPointer::ReferenceCounterConstructor<T, DefaultDeleter<T>>>(ptr, std::move(deleter)))
 {
     if constexpr (!std::is_array_v<T> && std::is_base_of_v<ISharedFromThis, T> && std::is_convertible_v<T*, ISharedFromThis*>)
     {
@@ -782,7 +787,7 @@ template <SmartPointerType T, MemoryResourceType MemRes, class... Args, typename
 inline SharedPointer<T> AllocatedMakeShared(Args&&... args) requires(std::is_constructible_v<T, Args...>)
 {
     // Allocates the memory to accommodate the object and reference counter in the same allocation
-    PVoid memory = MemRes::Allocate(sizeof(T) + sizeof(Detail::ReferenceCounterMakeShared<T, MemRes>), alignof(T));
+    PVoid memory = MemRes::Allocate(sizeof(T) + sizeof(Detail::SmartPointer::ReferenceCounterMakeShared<T, MemRes>), alignof(T));
 
     // Constructs the object
     if constexpr (IsNothrowConstructible<T, Args...>)
@@ -803,9 +808,9 @@ inline SharedPointer<T> AllocatedMakeShared(Args&&... args) requires(std::is_con
     }
 
     // Constructs the reference counter
-    auto referenceCounterPointer = (Detail::ReferenceCounterMakeShared<T, MemRes>*)((PVoid)(((T*)memory) + 1));
+    auto referenceCounterPointer = (Detail::SmartPointer::ReferenceCounterMakeShared<T, MemRes>*)((PVoid)(((T*)memory) + 1));
 
-    new (referenceCounterPointer) Detail::ReferenceCounterMakeShared<T, MemRes>((T*)memory);
+    new (referenceCounterPointer) Detail::SmartPointer::ReferenceCounterMakeShared<T, MemRes>((T*)memory);
 
     SharedPointer<T> sharedPointer;
 
@@ -832,10 +837,10 @@ inline SharedPointer<T> AllocatedMakeShared(Size elementCount) requires(std::is_
     using Type                  = std::remove_all_extents_t<T>;
 
     // Calculates the padding size.
-    Int64 offset = ElementAlign - 1 + sizeof(Detail::MakeSharedHeaderArray);
+    Int64 offset = ElementAlign - 1 + sizeof(Detail::SmartPointer::MakeSharedHeaderArray);
 
     // Size of memory to allocate for the array
-    auto memorySize = (elementCount * ElementSize) + offset + sizeof(Detail::ReferenceCounterMakeShared<T, MemRes>);
+    auto memorySize = (elementCount * ElementSize) + offset + sizeof(Detail::SmartPointer::ReferenceCounterMakeShared<T, MemRes>);
 
     // Malloc'ed memory
     PVoid originalMemory = MemRes::Allocate(memorySize, 1);
@@ -844,7 +849,7 @@ inline SharedPointer<T> AllocatedMakeShared(Size elementCount) requires(std::is_
     PVoid* alignedMemory = (PVoid*)(((Size)(originalMemory) + offset) & ~(alignof(T) - 1)); // Aligned block
 
     // Stores the size of array in the first bytes of the memory block.
-    Detail::MakeSharedHeaderArray* header = ((Detail::MakeSharedHeaderArray*)alignedMemory) - 1;
+    Detail::SmartPointer::MakeSharedHeaderArray* header = ((Detail::SmartPointer::MakeSharedHeaderArray*)alignedMemory) - 1;
 
     // Stores the original memory address before the aligned memory address.
     header->ElementCount   = elementCount;
@@ -890,9 +895,9 @@ inline SharedPointer<T> AllocatedMakeShared(Size elementCount) requires(std::is_
     }
 
     // Constructs the reference counter
-    auto referenceCounterPointer = (Detail::ReferenceCounterMakeShared<T, MemRes>*)((PVoid)(objectArray + elementCount));
+    auto referenceCounterPointer = (Detail::SmartPointer::ReferenceCounterMakeShared<T, MemRes>*)((PVoid)(objectArray + elementCount));
 
-    new (referenceCounterPointer) Detail::ReferenceCounterMakeShared<T, MemRes>((PointerType)objectArray);
+    new (referenceCounterPointer) Detail::SmartPointer::ReferenceCounterMakeShared<T, MemRes>((PointerType)objectArray);
 
     SharedPointer<T> sharedPointer;
     sharedPointer._objectPointer    = objectArray;
@@ -909,7 +914,7 @@ SharedPointer<T> ISharedFromThis::CreateSharedPointerFromThis(T& object) noexcep
 
     SharedPointer<T> sharedPointer  = {};
     sharedPointer._objectPointer    = (T*)sharedFromThis->_objectPtr;
-    sharedPointer._referenceCounter = (Detail::IReferenceCounter*)sharedFromThis->_referenceCounter;
+    sharedPointer._referenceCounter = (Detail::SmartPointer::IReferenceCounter*)sharedFromThis->_referenceCounter;
 
     if (sharedPointer._referenceCounter)
         sharedPointer._referenceCounter->AddStrongCount();
@@ -924,7 +929,7 @@ WeakPointer<T> ISharedFromThis::CreateWeakPointerFromThis(T& object) noexcept re
 
     WeakPointer<T> weakPointer    = {};
     weakPointer._objectPointer    = (T*)sharedFromThis->_objectPtr;
-    weakPointer._referenceCounter = (Detail::IReferenceCounter*)sharedFromThis->_referenceCounter;
+    weakPointer._referenceCounter = (Detail::SmartPointer::IReferenceCounter*)sharedFromThis->_referenceCounter;
 
     if (weakPointer._referenceCounter)
         weakPointer._referenceCounter->AddWeakCount();

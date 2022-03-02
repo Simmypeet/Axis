@@ -1,7 +1,9 @@
+/// \copyright Simmypeet - Copyright (C)
+///            This file is subject to the terms and conditions defined in
+///            file 'LICENSE', which is part of this source code package.
+
 #ifndef AXIS_SYSTEM_LISTIMPL_INL
 #define AXIS_SYSTEM_LISTIMPL_INL
-#include "Axis/Trait.hpp"
-#include "Axis/Utility.hpp"
 #pragma once
 
 #include "../../Include/Axis/Exception.hpp"
@@ -31,10 +33,10 @@ struct List<T, Alloc, IteratorDebugging>::ContainerHolder
 
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
 template <class IteratorPointerType, class IteratorReferenceType>
-class List<T, Alloc, IteratorDebugging>::BaseIterator final : private ConditionalType<IteratorDebugging, Detail::BaseDebugIterator, Detail::Empty>
+class List<T, Alloc, IteratorDebugging>::BaseIterator final : private ConditionalType<IteratorDebugging, Detail::CoreContainer::BaseDebugIterator, Detail::CoreContainer::Empty>
 {
 private:
-    using BaseType = ConditionalType<IteratorDebugging, Detail::BaseDebugIterator, Detail::Empty>;
+    using BaseType = ConditionalType<IteratorDebugging, Detail::CoreContainer::BaseDebugIterator, Detail::CoreContainer::Empty>;
     using ListType = List<T, Alloc, IteratorDebugging>;
 
 public:
@@ -200,6 +202,9 @@ inline void List<T, Alloc, IteratorDebugging>::Reserve(SizeType elementCount)
     if (elementCount <= _dataAllocPair.GetFirst().AllocatedSize)
         return;
 
+    if (elementCount > GetMaxSize())
+        throw InvalidOperationException("The container exceeded its maximum size!");
+
     auto newDataCopy = CreateCopy(elementCount);
 
     if (newDataCopy.Second)
@@ -222,8 +227,8 @@ inline T& List<T, Alloc, IteratorDebugging>::Append(T&& value)
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
 template <RandomAccessReadIterator<T> IteratorType>
-inline void List<T, Alloc, IteratorDebugging>::Append(const IteratorType& begin,
-                                                      const IteratorType& end)
+inline void List<T, Alloc, IteratorDebugging>::AppendRange(const IteratorType& begin,
+                                                           const IteratorType& end)
 {
     if (begin == end)
         return;
@@ -231,12 +236,12 @@ inline void List<T, Alloc, IteratorDebugging>::Append(const IteratorType& begin,
     if (begin > end)
         throw InvalidArgumentException("`begin` was greater than `end`!");
 
-    SizeType elementToInsert = (SizeType)(end - begin);
+    DifferenceType count = end - begin;
 
-    auto& data  = _dataAllocPair.GetFirst();
-    auto& alloc = _dataAllocPair.GetSecond();
+    if (count < 0)
+        throw InvalidArgumentException("Iterators `begin` or `end` were invalid!");
 
-    Reserve(Detail::RoundToNextPowerOfTwo(data.InitializedSize + elementToInsert));
+    Reserve(CheckNewElement(count));
 
     struct AppendGuard
     {
@@ -253,12 +258,15 @@ inline void List<T, Alloc, IteratorDebugging>::Append(const IteratorType& begin,
         }
     };
 
+    auto& data  = _dataAllocPair.GetFirst();
+    auto& alloc = _dataAllocPair.GetSecond();
+
     AppendGuard appendGuard = {
         AddressOf(data),
         AddressOf(alloc),
         data.InitializedSize};
 
-    Detail::TidyGuard<AppendGuard*> guard = {AddressOf(appendGuard)};
+    Detail::CoreContainer::TidyGuard<AppendGuard> guard = {AddressOf(appendGuard)};
 
     for (auto it = begin; it != end; ++it)
     {
@@ -297,7 +305,7 @@ inline void List<T, Alloc, IteratorDebugging>::RemoveAt(SizeType index,
     auto& alloc = _dataAllocPair.GetSecond();
 
     // Uses move / copy assign to move the elements (if nothrow)
-    constexpr bool Assign = IsNoThrowMoveConstructible<T> || IsNoThrowCopyAssignable<T>;
+    constexpr bool Assign = IsNoThrowMoveAssignable<T> || IsNoThrowCopyAssignable<T>;
 
     // Uses move / copy construct to move the elements (if nothrow)
     constexpr bool Construct = IsNoThrowMoveConstructible<T> || IsNoThrowCopyConstructible<T>;
@@ -348,7 +356,7 @@ inline void List<T, Alloc, IteratorDebugging>::RemoveAt(SizeType index,
              0},
             AddressOf(alloc)};
 
-        Detail::TidyGuard<ContainerHolder*> guard = {AddressOf(newDataHolder)};
+        Detail::CoreContainer::TidyGuard guard = {AddressOf(newDataHolder)};
 
         // Copies / moves the old elements that are before the ones to remove
         for (SizeType i = 0; i < index; ++i)
@@ -414,7 +422,7 @@ inline Pair<typename List<T, Alloc, IteratorDebugging>::Data, Bool> List<T, Allo
     ContainerHolder containerHolder = {AddressOf(alloc),
                                        {AllocTraits::Allocate(alloc, elementCount), elementCount, 0}};
 
-    Detail::TidyGuard<ContainerHolder*> guard = {AddressOf(containerHolder)};
+    Detail::CoreContainer::TidyGuard<ContainerHolder> guard = {AddressOf(containerHolder)};
 
     for (SizeType i = 0; i < data.InitializedSize; ++i)
     {
@@ -434,6 +442,17 @@ inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, Itera
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, IteratorDebugging>::GetMaxSize() const noexcept
+{
+    auto& alloc = _dataAllocPair.GetSecond();
+
+    SizeType allocMaxSize      = AllocTraits::GetMaxSize(alloc);
+    SizeType differenceTypeMax = static_cast<SizeType>(std::numeric_limits<DifferenceType>::max());
+
+    return Detail::CoreContainer::Min(allocMaxSize, differenceTypeMax);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
 template <Bool ForceNewAllocation>
 inline Pair<typename List<T, Alloc, IteratorDebugging>::Data, Bool> List<T, Alloc, IteratorDebugging>::CreateSpace(SizeType index,
                                                                                                                    SizeType elementCount)
@@ -449,8 +468,20 @@ inline Pair<typename List<T, Alloc, IteratorDebugging>::Data, Bool> List<T, Allo
     if (allocateNewMemory)
     {
         Data newData = {
-            AllocTraits::Allocate(alloc, Detail::RoundToNextPowerOfTwo(data.InitializedSize + elementCount))};
+            AllocTraits::Allocate(alloc, Detail::CoreContainer::RoundToNextPowerOfTwo(data.InitializedSize + elementCount))};
     }
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, IteratorDebugging>::CheckNewElement(SizeType newElementCount)
+{
+    auto& data = _dataAllocPair.GetFirst();
+
+    Detail::CoreContainer::ThrowIfOverflow<SizeType, InvalidOperationException>(newElementCount,
+                                                                                data.InitializedSize,
+                                                                                "Couldn't append more elements to the container!");
+
+    return Detail::CoreContainer::Min(Detail::CoreContainer::RoundToNextPowerOfTwo(data.InitializedSize + newElementCount), GetMaxSize());
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
@@ -460,7 +491,7 @@ inline T& List<T, Alloc, IteratorDebugging>::EmplaceBack(Args&&... args)
     auto& data  = _dataAllocPair.GetFirst();
     auto& alloc = _dataAllocPair.GetSecond();
 
-    Reserve(Detail::RoundToNextPowerOfTwo(data.InitializedSize + 1));
+    Reserve(Detail::CoreContainer::RoundToNextPowerOfTwo(data.InitializedSize + 1));
 
     AllocTraits::Construct(alloc, data.Begin + data.InitializedSize, Forward<Args>(args)...);
 
@@ -473,7 +504,7 @@ template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
 template <class Lambda>
 inline void List<T, Alloc, IteratorDebugging>::ConstructContinuousContainer(SizeType elementCount, const Lambda& construct)
 {
-    Detail::TidyGuard<ThisType*> guard = {this};
+    Detail::CoreContainer::TidyGuard<ThisType> guard = {this};
 
     // Allocate memory
     Data&      dataInstance  = _dataAllocPair.GetFirst();
@@ -659,7 +690,7 @@ inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::ope
             AddressOf(_dataAllocPair.GetSecond()),
             newThisData};
 
-        Detail::TidyGuard<ContainerHolder*> guard = {AddressOf(containerHolder)};
+        Detail::CoreContainer::TidyGuard<ContainerHolder> guard = {AddressOf(containerHolder)};
 
         // Constructs all the elements
         for (SizeType i = SizeType(0); i < otherData.InitializedSize; ++i)
@@ -771,7 +802,7 @@ inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::ope
                 newThisData};
 
 
-            Detail::TidyGuard<ContainerHolder*> guard = {AddressOf(containerHolder)};
+            Detail::CoreContainer::TidyGuard<ContainerHolder> guard = {AddressOf(containerHolder)};
 
             // Constructs all the elements
             for (SizeType i = SizeType(0); i < otherData.InitializedSize; ++i)

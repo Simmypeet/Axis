@@ -4,10 +4,10 @@
 
 #ifndef AXIS_SYSTEM_ALLOCATORIMPL_INL
 #define AXIS_SYSTEM_ALLOCATORIMPL_INL
-#include <limits>
 #pragma once
 
 #include "../../Include/Axis/Allocator.hpp"
+#include <limits>
 
 namespace Axis
 {
@@ -21,13 +21,14 @@ inline constexpr typename AllocatorTraits<T>::PointerType AllocatorTraits<T>::Al
 {
     return allocator.Allocate(elementCount);
 }
+
 template <DefaultType T>
 inline constexpr void AllocatorTraits<T>::Deallocate(T&                                       allocator,
                                                      typename AllocatorTraits<T>::PointerType ptr,
                                                      SizeType                                 elementCount) noexcept
 {
-    return allocator.Deallocate(ptr,
-                                elementCount);
+    allocator.Deallocate(ptr,
+                         elementCount);
 }
 
 
@@ -90,6 +91,10 @@ inline constexpr typename AllocatorTraits<T>::SizeType AllocatorTraits<T>::GetMa
 template <RawType T, MemoryResourceType MemoryResource>
 inline constexpr typename Allocator<T, MemoryResource>::PointerType Allocator<T, MemoryResource>::Allocate(typename Allocator<T, MemoryResource>::SizeType elementCount)
 {
+    // Maximum element count
+    if (elementCount > GetMaxSize())
+        throw InvalidArgumentException("`elementCount` was too large for allocation");
+
     return (PointerType)MemoryResource::Allocate(elementCount * sizeof(T), alignof(T));
 }
 
@@ -112,6 +117,15 @@ template <RawType T, MemoryResourceType MemoryResource>
 inline constexpr void Allocator<T, MemoryResource>::Destruct(typename Allocator<T, MemoryResource>::PointerType pointer) noexcept
 {
     pointer->~T();
+}
+
+template <RawType T, MemoryResourceType MemoryResource>
+inline constexpr typename Allocator<T, MemoryResource>::SizeType Allocator<T, MemoryResource>::GetMaxSize() const noexcept
+{
+    constexpr SizeType MaximumElementCount = std::numeric_limits<SizeType>::max() / sizeof(T);
+    constexpr SizeType MaximumDifference   = std::numeric_limits<DifferenceType>::max();
+
+    return MaximumElementCount < MaximumDifference ? MaximumElementCount : MaximumDifference;
 }
 
 template <RawType T, MemoryResourceType MemoryResource>

@@ -469,11 +469,11 @@ public:
     /// \param[in] allocator The allocator to copy.
     static constexpr T SelectOnContainerCopyConstruction(const T& allocator) noexcept(NoThrowSelectOnContainerCopyConstruction);
 
-    /// \brief Gets the maximum number of elements that can be allocated once.
+    /// \brief Gets the maximum number of elements that can be allocated.
     ///
     /// \param[in] allocator The allocator to use.
     ///
-    /// \return The maximum number of elements that can be allocated once.
+    /// \return The maximum number of elements that can be allocated.
     static constexpr SizeType GetMaxSize(const T& allocator) noexcept;
 };
 
@@ -524,6 +524,9 @@ public:
     /// \brief Gets the size type of `T` type.
     using SizeType = Size;
 
+    /// \brief The difference type of the pointer.
+    using DifferenceType = PointerDifference;
+
     /// \brief Allocates the memory for the specified type `T` and returns a pointer to it.
     ///
     /// \param[in] elementCount The number of elements to allocate.
@@ -549,6 +552,11 @@ public:
     ///
     /// \param[in] pointer The pointer to the memory to destruct.
     constexpr void Destruct(PointerType pointer) noexcept;
+
+    /// \brief Gets the maximum number of elements that can be allocated.
+    ///
+    /// \return The maximum number of elements that can be allocated.
+    constexpr SizeType GetMaxSize() const noexcept;
 
     /// \brief Equality operator
     ///

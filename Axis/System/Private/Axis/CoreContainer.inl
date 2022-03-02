@@ -21,6 +21,9 @@ namespace System
 namespace Detail
 {
 
+namespace CoreContainer
+{
+
 #if defined(AXIS_ENABLE_ITERATOR_DEBUG)
 static_assert(IsSame<decltype(AXIS_ENABLE_ITERATOR_DEBUG), bool>, "AXIS_ENABLE_ITERATOR_DEBUG must be a boolean");
 constexpr bool DefaultIteratorDebug = AXIS_ENABLE_ITERATOR_DEBUG;
@@ -32,11 +35,11 @@ constexpr bool DefaultIteratorDebug = false;
 #    endif
 #endif
 
-template <class PointerType>
+template <class T>
 struct TidyGuard // Calls function `Tidy()` on the target on destruction
 {
     // Target to call `Tidy()` on (if not null)
-    PointerType Target = nullptr;
+    T* Target = nullptr;
 
     // Calls `Tidy()` on the target
     ~TidyGuard() noexcept
@@ -154,6 +157,25 @@ inline constexpr T RoundToNextPowerOfTwo(T num) noexcept
 
     return num + 1;
 }
+
+template <class T>
+inline constexpr T Min(T a, T b) noexcept
+{
+    return a < b ? a : b;
+}
+
+/// Checks if adding `a` and `b` will overflow. if overflow is detected throws an exception
+/// with the given message.
+template <class SizeType, class ThrowClass>
+inline void ThrowIfOverflow(SizeType    a,
+                            SizeType    b,
+                            const Char* message)
+{
+    if (a > (std::numeric_limits<SizeType>::max() - b))
+        throw ThrowClass(message);
+}
+
+} // namespace CoreContainer
 
 } // namespace Detail
 
