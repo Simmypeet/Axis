@@ -3,12 +3,19 @@
 #include <Axis/List.hpp>
 #include <doctest.h>
 
-using namespace Axis;
-using namespace Axis::System;
-
-DOCTEST_TEST_CASE("Axis list : [Axis::System]")
+namespace Axis
 {
-    using LeakTesterType = LeakTester<Size, false, false>;
+
+namespace System
+{
+
+namespace Test
+{
+
+template <bool EnableCopyAssignment, bool EnableMoveAssignment>
+inline void RunTestList()
+{
+    using LeakTesterType = LeakTester<Size, EnableCopyAssignment, EnableMoveAssignment>;
 
     DOCTEST_SUBCASE("Constructors")
     {
@@ -177,8 +184,6 @@ DOCTEST_TEST_CASE("Axis list : [Axis::System]")
             {
                 List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
 
-                List<LeakTesterType>::Iterator it;
-
                 Size i = 0;
                 for (auto& item : list)
                 {
@@ -194,26 +199,30 @@ DOCTEST_TEST_CASE("Axis list : [Axis::System]")
     {
         DOCTEST_SUBCASE("Reserve")
         {
-            constexpr auto CheckReserve = [](List<LeakTesterType>::SizeType reserveSize) {
-                List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
-
-                try
+            constexpr auto CheckReserve = [](typename List<LeakTesterType>::SizeType reserveSize) {
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
                 {
-                    list.Reserve(reserveSize);
+                    List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
+
+                    try
+                    {
+                        list.Reserve(reserveSize);
+                    }
+                    catch (...)
+                    {}
+
+                    DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 6);
+
+                    DOCTEST_CHECK(list.GetSize() == 6);
+
+                    DOCTEST_CHECK(list[0].Instance == 0);
+                    DOCTEST_CHECK(list[1].Instance == 1);
+                    DOCTEST_CHECK(list[2].Instance == 2);
+                    DOCTEST_CHECK(list[3].Instance == 3);
+                    DOCTEST_CHECK(list[4].Instance == 4);
+                    DOCTEST_CHECK(list[5].Instance == 5);
                 }
-                catch (...)
-                {}
-
-                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 6);
-
-                DOCTEST_CHECK(list.GetSize() == 6);
-
-                DOCTEST_CHECK(list[0].Instance == 0);
-                DOCTEST_CHECK(list[1].Instance == 1);
-                DOCTEST_CHECK(list[2].Instance == 2);
-                DOCTEST_CHECK(list[3].Instance == 3);
-                DOCTEST_CHECK(list[4].Instance == 4);
-                DOCTEST_CHECK(list[5].Instance == 5);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             };
 
             // Reserves for 0 elements
@@ -226,75 +235,118 @@ DOCTEST_TEST_CASE("Axis list : [Axis::System]")
             CheckReserve(10);
 
             // Reserves more than the maximum size
-            CheckReserve(std::numeric_limits<List<LeakTesterType>::SizeType>::max());
+            CheckReserve(std::numeric_limits<typename List<LeakTesterType>::SizeType>::max());
         }
 
         DOCTEST_SUBCASE("Append")
         {
-            List<LeakTesterType> list = {0, 1, 2, 3, 4};
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                List<LeakTesterType> list = {0, 1, 2, 3, 4};
 
-            list.Append(5);
+                list.Append(5);
 
-            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 6);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 6);
 
-            DOCTEST_CHECK(list.GetSize() == 6);
+                DOCTEST_CHECK(list.GetSize() == 6);
 
-            DOCTEST_CHECK(list[0].Instance == 0);
-            DOCTEST_CHECK(list[1].Instance == 1);
-            DOCTEST_CHECK(list[2].Instance == 2);
-            DOCTEST_CHECK(list[3].Instance == 3);
-            DOCTEST_CHECK(list[4].Instance == 4);
-            DOCTEST_CHECK(list[5].Instance == 5);
+                DOCTEST_CHECK(list[0].Instance == 0);
+                DOCTEST_CHECK(list[1].Instance == 1);
+                DOCTEST_CHECK(list[2].Instance == 2);
+                DOCTEST_CHECK(list[3].Instance == 3);
+                DOCTEST_CHECK(list[4].Instance == 4);
+                DOCTEST_CHECK(list[5].Instance == 5);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
 
         DOCTEST_SUBCASE("AppendRange")
         {
-            List<LeakTesterType> list  = {0, 1, 2, 3, 4};
-            List<LeakTesterType> list2 = {};
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                List<LeakTesterType> list  = {0, 1, 2, 3, 4};
+                List<LeakTesterType> list2 = {};
 
-            list2.AppendRange(list.begin(), list.end());
+                list2.AppendRange(list.begin(), list.end());
 
-            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 10);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 10);
 
-            DOCTEST_CHECK(list2.GetSize() == 5);
+                DOCTEST_CHECK(list2.GetSize() == 5);
 
-            DOCTEST_CHECK(list2[0].Instance == 0);
-            DOCTEST_CHECK(list2[1].Instance == 1);
-            DOCTEST_CHECK(list2[2].Instance == 2);
-            DOCTEST_CHECK(list2[3].Instance == 3);
-            DOCTEST_CHECK(list2[4].Instance == 4);
+                DOCTEST_CHECK(list2[0].Instance == 0);
+                DOCTEST_CHECK(list2[1].Instance == 1);
+                DOCTEST_CHECK(list2[2].Instance == 2);
+                DOCTEST_CHECK(list2[3].Instance == 3);
+                DOCTEST_CHECK(list2[4].Instance == 4);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
 
         DOCTEST_SUBCASE("RemoveAt")
         {
-            List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
-
-            list.RemoveAt(5);
-
-            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 5);
-
-            DOCTEST_CHECK(list.GetSize() == 5);
-
-            DOCTEST_CHECK(list[0].Instance == 0);
-            DOCTEST_CHECK(list[1].Instance == 1);
-            DOCTEST_CHECK(list[2].Instance == 2);
-            DOCTEST_CHECK(list[3].Instance == 3);
-            DOCTEST_CHECK(list[4].Instance == 4);
-
-            list.RemoveAt(1, 3);
-
-            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 2);
-
-            DOCTEST_CHECK(list.GetSize() == 2);
-
-            DOCTEST_CHECK(list[0].Instance == 0);
-            DOCTEST_CHECK(list[1].Instance == 4);
-
-            list.RemoveAt(0, 2);
-
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
 
-            DOCTEST_CHECK(list.GetSize() == 0);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 6);
+
+                list.RemoveAt(5);
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 5);
+
+                DOCTEST_CHECK(list.GetSize() == 5);
+
+                DOCTEST_CHECK(list[0].Instance == 0);
+                DOCTEST_CHECK(list[1].Instance == 1);
+                DOCTEST_CHECK(list[2].Instance == 2);
+                DOCTEST_CHECK(list[3].Instance == 3);
+                DOCTEST_CHECK(list[4].Instance == 4);
+
+                list.RemoveAt(1, 3);
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 2);
+
+                DOCTEST_CHECK(list.GetSize() == 2);
+
+                DOCTEST_CHECK(list[0].Instance == 0);
+                DOCTEST_CHECK(list[1].Instance == 4);
+
+                list.RemoveAt(0, 2);
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+                DOCTEST_CHECK(list.GetSize() == 0);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
+    }
+}
+
+} // namespace Test
+
+} // namespace System
+
+} // namespace Axis
+
+DOCTEST_TEST_CASE("Axis list : [Axis::System]")
+{
+    DOCTEST_SUBCASE("EnableCopyAssignment: true, EnableMoveAssignment: true")
+    {
+        Axis::System::Test::RunTestList<true, true>();
+    }
+
+    DOCTEST_SUBCASE("EnableCopyAssignment: false, EnableMoveAssignment: true")
+    {
+        Axis::System::Test::RunTestList<false, true>();
+    }
+
+    DOCTEST_SUBCASE("EnableCopyAssignment: true, EnableMoveAssignment: false")
+    {
+        Axis::System::Test::RunTestList<true, false>();
+    }
+
+    DOCTEST_SUBCASE("EnableCopyAssignment: false, EnableMoveAssignment: false")
+    {
+        Axis::System::Test::RunTestList<false, false>();
     }
 }

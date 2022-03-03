@@ -66,15 +66,17 @@ private:
     // Contains both the data and the allocator
     CompressedPair<Data, AllocType> _dataAllocPair;
 
-    template <class IteratorPointerType, class IteratorReferenceType>
     class BaseIterator; // Base iterator class
+
+    template <Bool IsConst>
+    class IteratorTemplate; // Iterator template class
 
 public:
     /// \brief List's iterator class.
-    using Iterator = BaseIterator<PointerType, ValueType&>;
+    using Iterator = IteratorTemplate<false>;
 
     /// \brief List's const iterator class.
-    using ConstIterator = BaseIterator<ConstPointerType, const ValueType&>;
+    using ConstIterator = IteratorTemplate<true>;
 
     /// \brief Default constructor
     List() noexcept(DefaultConstructorNoexcept);
