@@ -532,7 +532,7 @@ inline Pair<typename List<T, Alloc, IteratorDebugging>::SpacedContainerHolder, B
         // Moves / copies the old elements that are before the ones to insert
         for (SizeType i = 0; i < index; ++i)
         {
-            AllocTraits::Construct(alloc, spacedContainerHolder.Data.Begin + i, ::Axis::System::MoveConstructIfNoThrow(data.Begin + i));
+            AllocTraits::Construct(alloc, spacedContainerHolder.Data.Begin + i, ::Axis::System::MoveConstructIfNoThrow(data.Begin[i]));
             ++spacedContainerHolder.Data.InitializedSize;
         }
 
@@ -540,7 +540,7 @@ inline Pair<typename List<T, Alloc, IteratorDebugging>::SpacedContainerHolder, B
         for (SizeType i = index; i < data.InitializedSize; ++i)
         {
             AllocTraits::Construct(alloc, spacedContainerHolder.Data.Begin + i + elementCount,
-                                   ::Axis::System::MoveConstructIfNoThrow(data.Begin + i));
+                                   ::Axis::System::MoveConstructIfNoThrow(data.Begin[i]));
             ++spacedContainerHolder.Data.InitializedSize;
         }
 
@@ -550,30 +550,55 @@ inline Pair<typename List<T, Alloc, IteratorDebugging>::SpacedContainerHolder, B
     }
     else
     {
+        SpacedContainerHolder spacedContainerHolder = {
+            AddressOf(alloc),
+            data,
+            index,
+            elementCount,
+            0};
+
         if constexpr (AssignNoExcept)
         {
-        }
-        else if constexpr (ConstructNoExcept)
-        {
-            SpacedContainerHolder spacedContainerHolder = {
-                AddressOf(alloc),
-                data,
-                index,
-                elementCount,
-                0};
+            spacedContainerHolder.SpaceConstructed = elementCount;
 
-            for (SizeType i = 0; i < count; ++i)
+            // Source index
+            SizeType currentSouceIndex = spacedContainerHolder.Data.InitializedSize - 1;
+
+            // Moves / copies elements to uninitialized memory
+            for (SizeType i = 0; i < elementCount; i++)
+            {
+                AllocTraits::Construct(alloc,
+                                       spacedContainerHolder.Data.Begin + currentSouceIndex + elementCount,
+                                       ::Axis::System::MoveConstructIfNoThrow(spacedContainerHolder.Data.Begin[currentSouceIndex]));
+
+                currentSouceIndex--;
+            }
+
+            // Moves / copies assign elements to initialized memory
+            SizeType moveAssignCount = spacedContainerHolder.Data.InitializedSize - (index + elementCount);
+            for (SizeType i = 0; i < moveAssignCount; i++)
+            {
+                spacedContainerHolder.Data.Begin[currentSouceIndex + elementCount] = ::Axis::System::MoveAssignIfNoThrow(spacedContainerHolder.Data.Begin[currentSouceIndex]);
+
+                currentSouceIndex--;
+            }
+
+            return {spacedContainerHolder, false};
+        }
+        else
+        {
+            for (SizeType i = 0; i < elementCount; ++i)
             {
                 const SizeType sourceIndex = data.InitializedSize - i;
-                const SizeType targetIndex = sourceIndex + count;
+                const SizeType targetIndex = sourceIndex + elementCount;
 
                 // Moves / copies the element from source to target
                 AllocTraits::Construct(alloc,
-                                       spacedContainerHolder.Data + targetIndex,
-                                       ::Axis::System::MoveConstructIfNoThrow(spacedContainerHolder.Data[sourceIndex]));
+                                       spacedContainerHolder.Data.Begin + targetIndex,
+                                       ::Axis::System::MoveConstructIfNoThrow(spacedContainerHolder.Data.Begin[sourceIndex]));
 
                 // Destructs the source
-                AllocTraits::Destruct(alloc, spacedContainerHolder.Data + sourceIndex);
+                AllocTraits::Destruct(alloc, spacedContainerHolder.Data.Begin + sourceIndex);
             }
 
             return {spacedContainerHolder, false};
@@ -597,7 +622,7 @@ inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, Itera
     Detail::CoreContainer::TidyGuard<SpacedContainerHolder> tidyGuard;
     tidyGuard.Target = spacedDataPair.Second ? nullptr : AddressOf(spacedDataPair.First);
 
-    if (spacedDataPair.First.Data.SpaceConstructed)
+    if (spacedDataPair.First.SpaceConstructed)
     {
         AllocTraits::Destruct(alloc, spacedDataPair.First.Data.Begin + spacedDataPair.First.SpaceIndex);
         spacedDataPair.First.SpaceConstructed = 0;
@@ -609,6 +634,8 @@ inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, Itera
     tidyGuard.Target = nullptr;
 
     data = spacedDataPair.First.Data;
+
+    return GetIterator<false>(index);
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
@@ -621,6 +648,22 @@ inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, Itera
                                                                                 "Couldn't append more elements to the container!");
 
     return Detail::CoreContainer::Min(Detail::CoreContainer::RoundToNextPowerOfTwo(data.InitializedSize + newElementCount), GetMaxSize());
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+template <bool IsConst>
+inline typename List<T, Alloc, IteratorDebugging>::template IteratorTemplate<IsConst> List<T, Alloc, IteratorDebugging>::GetIterator(typename List<T, Alloc, IteratorDebugging>::SizeType index) const noexcept
+{
+    if constexpr (IteratorDebugging)
+    {
+        auto it = IteratorTemplate<IsConst>(_dataAllocPair.GetFirst().Begin + index);
+
+        BaseType::AssignIterator(it);
+
+        return it;
+    }
+    else
+        return IteratorTemplate<IsConst>(_dataAllocPair.GetFirst().Begin + index);
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>

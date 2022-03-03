@@ -252,8 +252,7 @@ private:
     void ConstructContinuousContainer(SizeType      elementCount,
                                       const Lambda& construct);
 
-    Pair<Data, Bool>
-    CreateCopy(SizeType elementCount);
+    Pair<Data, Bool> CreateCopy(SizeType elementCount);
 
     template <Bool ForceNewAllocation>
     Pair<SpacedContainerHolder, Bool> CreateSpace(SizeType index,
@@ -262,6 +261,10 @@ private:
     /// Checks for the maximum number of elements that can be stored in the list.
     /// and returns the new number of elements to pre-allocate for.
     SizeType CheckNewElement(SizeType newElementCount);
+
+    /// Gets the iterator at the specified index
+    template <bool IsConst>
+    inline IteratorTemplate<IsConst> GetIterator(SizeType index) const noexcept;
 
     template <class>
     friend struct Detail::CoreContainer::TidyGuard;
