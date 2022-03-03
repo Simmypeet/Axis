@@ -66,10 +66,10 @@ private:
     // Contains both the data and the allocator
     CompressedPair<Data, AllocType> _dataAllocPair;
 
-public:
     template <class IteratorPointerType, class IteratorReferenceType>
     class BaseIterator; // Base iterator class
 
+public:
     /// \brief List's iterator class.
     using Iterator = BaseIterator<PointerType, ValueType&>;
 
@@ -232,7 +232,17 @@ public:
     /// \return Maximum number of elements that can be stored in the list.
     SizeType GetMaxSize() const noexcept;
 
+    /// \brief Emplace the element at the specified index.
+    ///
+    /// \param[in] index Index of the element to emplace.
+    /// \param[in] args  Arguments to pass to the constructor.
+    template <class... Args>
+    Iterator Emplace(SizeType index, Args&&... args);
+
 private:
+    struct ContainerHolder;
+    struct SpacedContainerHolder;
+
     void Tidy() noexcept;
     void TidyData(const Data& data) noexcept;
 
@@ -240,11 +250,12 @@ private:
     void ConstructContinuousContainer(SizeType      elementCount,
                                       const Lambda& construct);
 
-    Pair<Data, Bool> CreateCopy(SizeType elementCount);
+    Pair<Data, Bool>
+    CreateCopy(SizeType elementCount);
 
     template <Bool ForceNewAllocation>
-    Pair<Data, Bool> CreateSpace(SizeType index,
-                                 SizeType elementCount);
+    Pair<SpacedContainerHolder, Bool> CreateSpace(SizeType index,
+                                                  SizeType elementCount);
 
     /// Checks for the maximum number of elements that can be stored in the list.
     /// and returns the new number of elements to pre-allocate for.
@@ -252,8 +263,6 @@ private:
 
     template <class>
     friend struct Detail::CoreContainer::TidyGuard;
-
-    struct ContainerHolder;
 };
 
 } // namespace System

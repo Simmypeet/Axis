@@ -32,6 +32,31 @@ struct List<T, Alloc, IteratorDebugging>::ContainerHolder
 };
 
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+struct List<T, Alloc, IteratorDebugging>::SpacedContainerHolder
+{
+    AllocType* AllocatorPointer = nullptr;
+    Data       Data             = {};
+    SizeType   SpaceIndex       = {};
+    SizeType   SpaceSize        = {};
+    SizeType   SpaceConstructed = {};
+
+    inline void Tidy() noexcept
+    {
+        for (SizeType i = 0; i < Data.InitializedSize; ++i)
+        {
+            const SizeType extraIndex = i < SpaceIndex ? 0 : SpaceSize;
+
+            AllocTraits::Destruct(*AllocatorPointer, Data.Begin + i + extraIndex);
+        }
+
+        for (SizeType i = 0; i < SpaceConstructed; ++i)
+            AllocTraits::Destruct(*AllocatorPointer, Data.Begin + i + SpaceIndex);
+
+        AllocTraits::Deallocate(*AllocatorPointer, Data.Begin, Data.AllocatedSize);
+    }
+};
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
 template <class IteratorPointerType, class IteratorReferenceType>
 class List<T, Alloc, IteratorDebugging>::BaseIterator final : private ConditionalType<IteratorDebugging, Detail::CoreContainer::BaseDebugIterator, Detail::CoreContainer::Empty>
 {
@@ -454,11 +479,13 @@ inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, Itera
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
 template <Bool ForceNewAllocation>
-inline Pair<typename List<T, Alloc, IteratorDebugging>::Data, Bool> List<T, Alloc, IteratorDebugging>::CreateSpace(SizeType index,
-                                                                                                                   SizeType elementCount)
+inline Pair<typename List<T, Alloc, IteratorDebugging>::SpacedContainerHolder, Bool> List<T, Alloc, IteratorDebugging>::CreateSpace(SizeType index,
+                                                                                                                                    SizeType elementCount)
 {
     constexpr bool constructNoExcept = IsNoThrowCopyConstructible<T> || IsNoThrowMoveConstructible<T>;
     constexpr bool assignNoExcept    = IsNoThrowCopyAssignable<T> || IsNoThrowMoveAssignable<T>;
+
+    auto newElementCount = CheckNewElement(elementCount);
 
     auto& data  = _dataAllocPair.GetFirst();
     auto& alloc = _dataAllocPair.GetSecond();
@@ -467,9 +494,64 @@ inline Pair<typename List<T, Alloc, IteratorDebugging>::Data, Bool> List<T, Allo
 
     if (allocateNewMemory)
     {
-        Data newData = {
-            AllocTraits::Allocate(alloc, Detail::CoreContainer::RoundToNextPowerOfTwo(data.InitializedSize + elementCount))};
+        SpacedContainerHolder spacedContainerHolder = {
+            AddressOf(alloc),
+            {AllocTraits::Allocate(alloc, Detail::CoreContainer::RoundToNextPowerOfTwo(data.InitializedSize + elementCount)),
+             newElementCount,
+             0},
+            index,
+            elementCount};
+
+        Detail::CoreContainer::TidyGuard<SpacedContainerHolder> guard = {AddressOf(spacedContainerHolder)};
+
+        // Moves / copies the old elements that are before the ones to insert
+        for (SizeType i = 0; i < index; ++i)
+        {
+            AllocTraits::Construct(alloc, spacedContainerHolder.Data.Begin + i, ::Axis::System::MoveConstructIfNoThrow(data.Begin + i));
+            ++spacedContainerHolder.Data.InitializedSize;
+        }
+
+        // Moves / copies the old elements that are after the ones to insert
+        for (SizeType i = index; i < data.InitializedSize; ++i)
+        {
+            AllocTraits::Construct(alloc, spacedContainerHolder.Data.Begin + i + elementCount,
+                                   ::Axis::System::MoveConstructIfNoThrow(data.Begin + i));
+            ++spacedContainerHolder.Data.InitializedSize;
+        }
+
+        guard.Target = nullptr;
+
+        return {
+            spacedContainerHolder,
+            true};
     }
+    else
+    {
+    }
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+template <class... Args>
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Emplace(SizeType index,
+                                                                                                       Args&&... args)
+{
+    constexpr auto ConstructNoThrow = IsNothrowConstructible<T, Args...>;
+
+    auto& data  = _dataAllocPair.GetFirst();
+    auto& alloc = _dataAllocPair.GetSecond();
+
+    auto createData = CreateSpace<!ConstructNoThrow>(index,
+                                                     1);
+
+    Detail::CoreContainer::TidyGuard<SpacedContainerHolder> tidyGuard;
+    tidyGuard.Target = createData.Second ? nullptr : AddressOf(createData.First);
+
+    AllocTraits::Construct(alloc, createData.First.Data.Begin + index, ::Axis::System::Forward<Args>(args)...);
+    ++createData.First.Data.InitializedSize;
+
+    tidyGuard.Target = nullptr;
+
+    data = createData.First.Data;
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
