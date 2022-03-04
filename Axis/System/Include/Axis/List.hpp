@@ -188,31 +188,33 @@ public:
     ///
     /// \param[in] args Arguments to pass to the constructor.
     ///
-    /// \return Reference to the emplaced element.
+    /// \return The iterator to the newly appended element.
     template <class... Args>
-    T& EmplaceBack(Args&&... args);
+    Iterator EmplaceBack(Args&&... args);
 
     /// \brief Appends the element at the end of the list.
     ///
     /// \param[in] value Value to append.
     ///
-    /// \return Reference to the appended element.
-    T& Append(const T& value);
+    /// \return The iterator to the newly appended element.
+    Iterator Append(const T& value);
 
     /// \brief Appends the element at the end of the list.
     ///
     /// \param[in] value Value to append.
     ///
-    /// \return Reference to the appended element.
-    T& Append(T&& value);
+    /// \return The iterator to the newly appended element.
+    Iterator Append(T&& value);
 
     /// \brief Appends the range of elements at the end of the list.
     ///
     /// \param[in] begin Random access iterator to the first element of the range.
     /// \param[in] end   Random access iterator to the element after the last element of the range.
+    ///
+    /// \return The iterator to the first appended element range.
     template <RandomAccessReadIterator<T> IteratorType>
-    void AppendRange(const IteratorType& begin,
-                     const IteratorType& end);
+    Iterator AppendRange(const IteratorType& begin,
+                         const IteratorType& end);
 
     /// \brief Removes the element at the end of the list.
     void PopBack() noexcept;
@@ -221,8 +223,10 @@ public:
     ///
     /// \param[in] index Index of the element to remove.
     /// \param[in] count The number of elements to remove.
-    void RemoveAt(SizeType index,
-                  SizeType count = 1);
+    ///
+    /// \return The iterator to the element after the last removed element.
+    Iterator RemoveAt(SizeType index,
+                      SizeType count = 1);
 
     /// \brief Gets the capacity of the list (number of elements that have been allocated for).
     ///
@@ -238,8 +242,45 @@ public:
     ///
     /// \param[in] index Index of the element to emplace.
     /// \param[in] args  Arguments to pass to the constructor.
+    ///
+    /// \return The iterator to the newly emplaced element.
     template <class... Args>
     Iterator Emplace(SizeType index, Args&&... args);
+
+    /// \brief Inserts the element at the specified index.
+    ///
+    /// \param[in] index Index of the element to insert.
+    /// \param[in] value Value to insert.
+    ///
+    /// \return The iterator to the newly inserted element.
+    Iterator Insert(SizeType index, const T& value);
+
+    /// \brief Inserts the element at the specified index.
+    ///
+    /// \param[in] index Index of the element to insert.
+    /// \param[in] value Value to insert.
+    ///
+    /// \return The iterator to the newly inserted element.
+    Iterator Insert(SizeType index, T&& value);
+
+    /// \brief Inserts the range of elements at the specified index.
+    ///
+    /// \param[in] index Index of the element to insert.
+    /// \param[in] begin Random access iterator to the first element of the range.
+    /// \param[in] end   Random access iterator to the element after the last element of the range.
+    ///
+    /// \return The iterator to the first inserted element range.
+    template <RandomAccessReadIterator<T> IteratorType>
+    Iterator InsertRange(SizeType            index,
+                         const IteratorType& begin,
+                         const IteratorType& end);
+
+    /// \brief Destroys all of the elements in the array.
+    ///
+    /// \tparam DeallocateMemory specifies whether to deallocate the
+    ///                          memory also.
+    template <Bool DeallocateMemory = false>
+    void Clear() noexcept;
 
 private:
     struct ContainerHolder;

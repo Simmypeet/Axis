@@ -8,6 +8,7 @@
 
 #include "../../Include/Axis/Exception.hpp"
 #include "../../Include/Axis/List.hpp"
+#include "../../Include/Axis/Utility.hpp"
 
 namespace Axis
 {
@@ -209,6 +210,21 @@ public:
     template <bool OtherIsConst>
     inline DifferenceType operator-(const IteratorTemplate<OtherIsConst>& other) const noexcept // Difference
     {
+        // Checks if the other iterator is from the same container
+        if constexpr (IteratorDebugging)
+        {
+            if (!Detail::CoreContainer::BaseDebugIterator::_skipValidation)
+            {
+                BaseIterator::BasicValidate();
+
+                auto thisContaienr  = Detail::CoreContainer::BaseDebugIterator::_debuggingTracker->DebugContainer;
+                auto otherContainer = other._debuggingTracker->DebugContainer;
+
+                // Checks whether if they are the from the same container
+                AXIS_VALIDATE(thisContaienr == otherContainer, "Attempted to find the differences between the iterators there weren't from the same container!");
+            }
+        }
+
         return BaseIterator::_currentPointer - other._currentPointer;
     }
 
@@ -263,24 +279,24 @@ inline void List<T, Alloc, IteratorDebugging>::Reserve(SizeType elementCount)
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
-inline T& List<T, Alloc, IteratorDebugging>::Append(const T& value)
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Append(const T& value)
 {
     return EmplaceBack<const T&>(value);
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
-inline T& List<T, Alloc, IteratorDebugging>::Append(T&& value)
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Append(T&& value)
 {
     return EmplaceBack<T&&>(Axis::System::Move(value));
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
 template <RandomAccessReadIterator<T> IteratorType>
-inline void List<T, Alloc, IteratorDebugging>::AppendRange(const IteratorType& begin,
-                                                           const IteratorType& end)
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::AppendRange(const IteratorType& begin,
+                                                                                                           const IteratorType& end)
 {
     if (begin == end)
-        return;
+        throw InvalidArgumentException("The range is empty!");
 
     if (begin > end)
         throw InvalidArgumentException("`begin` was greater than `end`!");
@@ -325,6 +341,8 @@ inline void List<T, Alloc, IteratorDebugging>::AppendRange(const IteratorType& b
     }
 
     guard.Target = nullptr;
+
+    return GetIterator<false>(data.InitializedSize - count);
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
@@ -338,11 +356,11 @@ inline void List<T, Alloc, IteratorDebugging>::PopBack() noexcept
 }
 
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
-inline void List<T, Alloc, IteratorDebugging>::RemoveAt(SizeType index,
-                                                        SizeType count)
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::RemoveAt(SizeType index,
+                                                                                                        SizeType count)
 {
     if (count == 0)
-        return;
+        throw InvalidArgumentException("`count` was zero!");
 
     if (index >= _dataAllocPair.GetFirst().InitializedSize)
         throw ArgumentOutOfRangeException("`index` was out of range!");
@@ -427,6 +445,8 @@ inline void List<T, Alloc, IteratorDebugging>::RemoveAt(SizeType index,
 
         data = newDataHolder.Data;
     }
+
+    return GetIterator<false>(index);
 }
 
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
@@ -506,10 +526,9 @@ template <Bool ForceNewAllocation>
 inline Pair<typename List<T, Alloc, IteratorDebugging>::SpacedContainerHolder, Bool> List<T, Alloc, IteratorDebugging>::CreateSpace(SizeType index,
                                                                                                                                     SizeType elementCount)
 {
+
     constexpr bool ConstructNoExcept = IsNoThrowCopyConstructible<T> || IsNoThrowMoveConstructible<T>;
     constexpr bool AssignNoExcept    = IsNoThrowCopyAssignable<T> || IsNoThrowMoveAssignable<T>;
-
-    auto newElementCount = CheckNewElement(elementCount);
 
     auto& data  = _dataAllocPair.GetFirst();
     auto& alloc = _dataAllocPair.GetSecond();
@@ -518,6 +537,8 @@ inline Pair<typename List<T, Alloc, IteratorDebugging>::SpacedContainerHolder, B
 
     if (allocateNewMemory)
     {
+        auto newElementCount = CheckNewElement(elementCount);
+
         SpacedContainerHolder spacedContainerHolder = {
             AddressOf(alloc),
             {AllocTraits::Allocate(alloc, Detail::CoreContainer::RoundToNextPowerOfTwo(data.InitializedSize + elementCount)),
@@ -587,9 +608,11 @@ inline Pair<typename List<T, Alloc, IteratorDebugging>::SpacedContainerHolder, B
         }
         else
         {
-            for (SizeType i = 0; i < elementCount; ++i)
+            const SizeType moveConstructCount = spacedContainerHolder.Data.InitializedSize - index;
+
+            for (SizeType i = 0; i < moveConstructCount; ++i)
             {
-                const SizeType sourceIndex = data.InitializedSize - i;
+                const SizeType sourceIndex = data.InitializedSize - i - 1;
                 const SizeType targetIndex = sourceIndex + elementCount;
 
                 // Moves / copies the element from source to target
@@ -611,10 +634,15 @@ template <class... Args>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Emplace(SizeType index,
                                                                                                        Args&&... args)
 {
-    constexpr auto ConstructNoThrow = IsNothrowConstructible<T, Args...>;
-
     auto& data  = _dataAllocPair.GetFirst();
     auto& alloc = _dataAllocPair.GetSecond();
+
+    if (index == data.InitializedSize)
+    {
+        return EmplaceBack(Forward<Args>(args)...);
+    }
+
+    constexpr auto ConstructNoThrow = IsNothrowConstructible<T, Args...>;
 
     auto spacedDataPair = CreateSpace<!ConstructNoThrow>(index,
                                                          1);
@@ -633,9 +661,125 @@ inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, Itera
 
     tidyGuard.Target = nullptr;
 
+    if (spacedDataPair.Second)
+        Tidy();
+
     data = spacedDataPair.First.Data;
 
     return GetIterator<false>(index);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Insert(typename List<T, Alloc, IteratorDebugging>::SizeType index,
+                                                                                                      const T&                                             element)
+{
+    return Emplace<const T&>(index, element);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Insert(typename List<T, Alloc, IteratorDebugging>::SizeType index,
+                                                                                                      T&&                                                  element)
+{
+    return Emplace<T&&>(index, ::Axis::System::Move(element));
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+template <RandomAccessReadIterator<T> IteratorType>
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::InsertRange(typename List<T, Alloc, IteratorDebugging>::SizeType index,
+                                                                                                           const IteratorType&                                  begin,
+                                                                                                           const IteratorType&                                  end)
+{
+    auto& data  = _dataAllocPair.GetFirst();
+    auto& alloc = _dataAllocPair.GetSecond();
+
+    if (index == data.InitializedSize)
+    {
+        return AppendRange(begin,
+                           end);
+    }
+
+    constexpr auto CopyConstructNoThrow = IsNoThrowCopyConstructible<T>;
+    constexpr auto CopyAssignNoThrow    = IsNoThrowCopyAssignable<T>;
+
+    DifferenceType elementCountSigned = end - begin;
+
+    if (elementCountSigned <= 0)
+        throw InvalidArgumentException("`begin` or `end` iterators were invalid!");
+
+    SizeType elementCount = (SizeType)elementCountSigned;
+
+    auto spacedDataPair = CreateSpace<!CopyConstructNoThrow>(index,
+                                                             elementCount);
+
+    Detail::CoreContainer::TidyGuard<SpacedContainerHolder> tidyGuard;
+    tidyGuard.Target = spacedDataPair.Second ? nullptr : AddressOf(spacedDataPair.First);
+
+    const auto useAssign = CopyAssignNoThrow && (Bool)(spacedDataPair.First.SpaceConstructed);
+
+    if (useAssign)
+    {
+        if constexpr (CopyAssignNoThrow)
+        {
+            // Uses copy assign at the initialized elements.
+
+            for (SizeType i = 0; i < elementCount; ++i)
+                spacedDataPair.First.Data.Begin[index + i] = *(begin + i);
+        }
+    }
+    else
+    {
+        if ((Bool)spacedDataPair.First.SpaceConstructed)
+        {
+            // If there are initialized elements there, destruct them
+            for (SizeType i = 0; i < elementCount; ++i)
+                AllocTraits::Destruct(alloc, spacedDataPair.First.Data.Begin + spacedDataPair.First.SpaceIndex + i);
+
+            spacedDataPair.First.SpaceConstructed = 0;
+        }
+
+        auto currentIterator = begin;
+
+        // Uses copy construct at the uninitialized elements.
+        for (SizeType i = 0; i < elementCount; ++i)
+        {
+            AllocTraits::Construct(alloc, spacedDataPair.First.Data.Begin + index + i, *currentIterator);
+            ++spacedDataPair.First.SpaceConstructed;
+
+            ++currentIterator;
+        }
+
+        if ((Bool)spacedDataPair.First.SpaceConstructed)
+            spacedDataPair.First.Data.InitializedSize += elementCount;
+    }
+
+    tidyGuard.Target = nullptr;
+
+    if (spacedDataPair.Second)
+        Tidy();
+
+    data = spacedDataPair.First.Data;
+
+    return GetIterator<false>(index);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+template <Bool DeallocateMemory>
+inline void List<T, Alloc, IteratorDebugging>::Clear() noexcept
+{
+    if constexpr (DeallocateMemory)
+    {
+        Tidy();
+    }
+    else
+    {
+        auto& data  = _dataAllocPair.GetFirst();
+        auto& alloc = _dataAllocPair.GetSecond();
+
+        for (SizeType i = 0; i < data.InitializedSize; ++i)
+            AllocTraits::Destruct(alloc, data.Begin + i);
+
+        data.InitializedSize = 0;
+    }
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
@@ -668,7 +812,7 @@ inline typename List<T, Alloc, IteratorDebugging>::template IteratorTemplate<IsC
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
 template <class... Args>
-inline T& List<T, Alloc, IteratorDebugging>::EmplaceBack(Args&&... args)
+inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::EmplaceBack(Args&&... args)
 {
     auto& data  = _dataAllocPair.GetFirst();
     auto& alloc = _dataAllocPair.GetSecond();
@@ -679,7 +823,7 @@ inline T& List<T, Alloc, IteratorDebugging>::EmplaceBack(Args&&... args)
 
     ++data.InitializedSize;
 
-    return data.Begin[data.InitializedSize - 1];
+    return GetIterator<false>(data.InitializedSize - 1);
 }
 
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>

@@ -320,15 +320,45 @@ inline void RunTestList()
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
 
-        DOCTEST_SUBCASE("Emplace")
+        DOCTEST_SUBCASE("Insert and Emplace")
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list = {0, 1, 3, 4, 5};
+                List<LeakTesterType> list = {0, 1, 4, 5};
 
-                DOCTEST_CHECK(list.GetSize() == 5);
+                DOCTEST_CHECK(list.GetSize() == 4);
+
+                list.Insert(2, 3); /// This function will be redirected to the Emplace function using the copy / move constructor as
+                                   /// variadic template arguments
 
                 list.Emplace(2, 2);
+
+                list.Emplace(6, 6); // Typically this function will be redirected to Append / EmplaceBack
+
+                DOCTEST_CHECK(list.GetSize() == 7);
+
+                DOCTEST_CHECK(list[0].Instance == 0);
+                DOCTEST_CHECK(list[1].Instance == 1);
+                DOCTEST_CHECK(list[2].Instance == 2);
+                DOCTEST_CHECK(list[3].Instance == 3);
+                DOCTEST_CHECK(list[4].Instance == 4);
+                DOCTEST_CHECK(list[5].Instance == 5);
+                DOCTEST_CHECK(list[6].Instance == 6);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
+
+        DOCTEST_SUBCASE("InsertRange")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                List<LeakTesterType> list  = {0, 5};
+                List<LeakTesterType> list1 = {1, 2};
+                List<LeakTesterType> list2 = {3, 4};
+
+                list.InsertRange(1, list2.cbegin(), list2.cend());
+
+                list.InsertRange(1, list1.cbegin(), list1.cend());
 
                 DOCTEST_CHECK(list.GetSize() == 6);
 
@@ -338,6 +368,30 @@ inline void RunTestList()
                 DOCTEST_CHECK(list[3].Instance == 3);
                 DOCTEST_CHECK(list[4].Instance == 4);
                 DOCTEST_CHECK(list[5].Instance == 5);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
+
+        DOCTEST_SUBCASE("Clear")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                constexpr auto RunTest = [](Bool deallocateMemory) {
+                    List<LeakTesterType> list = {0, 1, 2, 3, 4};
+
+                    auto capacity = list.GetCapacity();
+
+                    if (deallocateMemory)
+                        list.template Clear<true>();
+                    else
+                        list.template Clear<false>();
+
+                    DOCTEST_CHECK(list.GetSize() == 0);
+                    DOCTEST_CHECK(list.GetCapacity() == (deallocateMemory ? 0 : capacity));
+                };
+
+                RunTest(true);
+                RunTest(false);
             }
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
