@@ -46,13 +46,13 @@ inline constexpr Bool Color<T>::operator!=(const Color<T>& rhs) const noexcept
 }
 
 template <System::ArithmeticType T>
-inline constexpr Color<T> Color<T>::GetWhite() noexcept requires(System::SameAs<T, Float32> || System::SameAs<T, Uint8>)
+inline constexpr Color<T> Color<T>::GetWhite() noexcept requires(System::IsSame<T, Float32> || System::IsSame<T, Uint8>)
 {
-    if constexpr (System::SameAs<T, Float32>)
+    if constexpr (System::IsSame<T, Float32>)
     {
         return Color<T>(1.0f, 1.0f, 1.0f, 1.0f);
     }
-    else if constexpr (System::SameAs<T, Uint8>)
+    else if constexpr (System::IsSame<T, Uint8>)
     {
         return Color<T>(255, 255, 255, 255);
     }
@@ -60,39 +60,39 @@ inline constexpr Color<T> Color<T>::GetWhite() noexcept requires(System::SameAs<
 
 
 template <System::ArithmeticType T>
-inline constexpr Color<T> Color<T>::GetBlack() noexcept requires(System::SameAs<T, Float32> || System::SameAs<T, Uint8>)
+inline constexpr Color<T> Color<T>::GetBlack() noexcept requires(System::IsSame<T, Float32> || System::IsSame<T, Uint8>)
 {
-    if constexpr (System::SameAs<T, Float32>)
+    if constexpr (System::IsSame<T, Float32>)
     {
         return Color<T>(0.0f, 0.0f, 0.0f, 1.0f);
     }
-    else if constexpr (System::SameAs<T, Uint8>)
+    else if constexpr (System::IsSame<T, Uint8>)
     {
         return Color<T>(0, 0, 0, 255);
     }
 }
 
 template <System::ArithmeticType T>
-inline constexpr Color<T> Color<T>::GetRed() noexcept requires(System::SameAs<T, Float32> || System::SameAs<T, Uint8>)
+inline constexpr Color<T> Color<T>::GetRed() noexcept requires(System::IsSame<T, Float32> || System::IsSame<T, Uint8>)
 {
-    if constexpr (System::SameAs<T, Float32>)
+    if constexpr (System::IsSame<T, Float32>)
     {
         return Color<T>(1.0f, 0.0f, 0.0f, 1.0f);
     }
-    else if constexpr (System::SameAs<T, Uint8>)
+    else if constexpr (System::IsSame<T, Uint8>)
     {
         return Color<T>(255, 0, 0, 255);
     }
 }
 
 template <System::ArithmeticType T>
-inline constexpr Color<T> Color<T>::GetGreen() noexcept requires(System::SameAs<T, Float32> || System::SameAs<T, Uint8>)
+inline constexpr Color<T> Color<T>::GetGreen() noexcept requires(System::IsSame<T, Float32> || System::IsSame<T, Uint8>)
 {
-    if constexpr (System::SameAs<T, Float32>)
+    if constexpr (System::IsSame<T, Float32>)
     {
         return Color<T>(0.0f, 1.0f, 0.0f, 1.0f);
     }
-    else if constexpr (System::SameAs<T, Uint8>)
+    else if constexpr (System::IsSame<T, Uint8>)
     {
         return Color<T>(0, 255, 0, 255);
     }
@@ -100,65 +100,65 @@ inline constexpr Color<T> Color<T>::GetGreen() noexcept requires(System::SameAs<
 
 
 template <System::ArithmeticType T>
-inline constexpr Color<T> Color<T>::GetBlue() noexcept requires(System::SameAs<T, Float32> || System::SameAs<T, Uint8>)
+inline constexpr Color<T> Color<T>::GetBlue() noexcept requires(System::IsSame<T, Float32> || System::IsSame<T, Uint8>)
 {
-    if constexpr (System::SameAs<T, Float32>)
+    if constexpr (System::IsSame<T, Float32>)
     {
         return Color<T>(0.0f, 0.0f, 1.0f, 1.0f);
     }
-    else if constexpr (System::SameAs<T, Uint8>)
+    else if constexpr (System::IsSame<T, Uint8>)
     {
         return Color<T>(0, 0, 255, 255);
     }
 }
 
 template <System::ArithmeticType T>
-inline constexpr Color<T> Color<T>::GetYellow() noexcept requires(System::SameAs<T, Float32> || System::SameAs<T, Uint8>)
+inline constexpr Color<T> Color<T>::GetYellow() noexcept requires(System::IsSame<T, Float32> || System::IsSame<T, Uint8>)
 {
-    if constexpr (System::SameAs<T, Float32>)
+    if constexpr (System::IsSame<T, Float32>)
     {
         return Color<T>(1.0f, 1.0f, 0.0f, 1.0f);
     }
-    else if constexpr (System::SameAs<T, Uint8>)
+    else if constexpr (System::IsSame<T, Uint8>)
     {
         return Color<T>(255, 255, 0, 255);
     }
 }
 
 template <System::ArithmeticType T>
-inline constexpr Color<T> Color<T>::GetCyan() noexcept requires(System::SameAs<T, Float32> || System::SameAs<T, Uint8>)
+inline constexpr Color<T> Color<T>::GetCyan() noexcept requires(System::IsSame<T, Float32> || System::IsSame<T, Uint8>)
 {
-    if constexpr (System::SameAs<T, Float32>)
+    if constexpr (System::IsSame<T, Float32>)
     {
         return Color<T>(0.0f, 1.0f, 1.0f, 1.0f);
     }
-    else if constexpr (System::SameAs<T, Uint8>)
+    else if constexpr (System::IsSame<T, Uint8>)
     {
         return Color<T>(0, 255, 255, 255);
     }
 }
 
 template <System::ArithmeticType T>
-inline constexpr Color<T> Color<T>::GetMagenta() noexcept requires(System::SameAs<T, Float32> || System::SameAs<T, Uint8>)
+inline constexpr Color<T> Color<T>::GetMagenta() noexcept requires(System::IsSame<T, Float32> || System::IsSame<T, Uint8>)
 {
-    if constexpr (System::SameAs<T, Float32>)
+    if constexpr (System::IsSame<T, Float32>)
     {
         return Color<T>(1.0f, 0.0f, 1.0f, 1.0f);
     }
-    else if constexpr (System::SameAs<T, Uint8>)
+    else if constexpr (System::IsSame<T, Uint8>)
     {
         return Color<T>(255, 0, 255, 255);
     }
 }
 
 template <System::ArithmeticType T>
-inline constexpr Color<T> Color<T>::GetCornflowerBlue() noexcept requires(System::SameAs<T, Float32> || System::SameAs<T, Uint8>)
+inline constexpr Color<T> Color<T>::GetCornflowerBlue() noexcept requires(System::IsSame<T, Float32> || System::IsSame<T, Uint8>)
 {
-    if constexpr (System::SameAs<T, Float32>)
+    if constexpr (System::IsSame<T, Float32>)
     {
         return Color<T>((100.0f / 255.0f), (149.0f / 255.0f), (237.0f / 255.0f), 1.0f);
     }
-    else if constexpr (System::SameAs<T, Uint8>)
+    else if constexpr (System::IsSame<T, Uint8>)
     {
         return Color<T>(100, 149, 237, 255);
     }

@@ -114,7 +114,7 @@ void IDeviceContext::BindPipeline(const System::SharedPointer<IPipeline>& pipeli
     }
 
     _bindingResourceHeaps.Clear();
-    _bindingResourceHeaps.ReserveFor(resourceHeapLayoutCount);
+    _bindingResourceHeaps.Reserve(resourceHeapLayoutCount);
 
     _currentBindingPipeline = pipeline;
 }

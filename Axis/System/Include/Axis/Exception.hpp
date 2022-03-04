@@ -124,6 +124,13 @@ public:
     using IOException::IOException;
 };
 
+/// \brief The exception that is thrown when the container exceeds their maximum size
+class AXIS_SYSTEM_API ContainerExceededMaxSizeException : public Exception
+{
+public:
+    ContainerExceededMaxSizeException() = default;
+};
+
 } // namespace System
 
 } // namespace Axis

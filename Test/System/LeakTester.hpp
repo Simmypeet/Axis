@@ -6,6 +6,9 @@ struct LeakTester
 public:
     using ThisType = LeakTester<T, EnableCopyAssignment, EnableMoveAssignment>;
 
+    // Default constructor
+    LeakTester() noexcept(Axis::System::IsDefaultConstructible<T>) = default;
+
     // Constructor increments; the counter
     LeakTester(const T& arg) noexcept(Axis::System::IsNoThrowCopyConstructible<T>) :
         Instance(arg)

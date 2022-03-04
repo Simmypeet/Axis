@@ -44,12 +44,7 @@ public:
 private:
     using BaseType = ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>;
 
-    struct Data // Data structure for the container
-    {
-        PointerType Begin           = PointerType(nullptr); // Pointer to the first element
-        SizeType    AllocatedSize   = SizeType(0);          // Number of elements allocated
-        SizeType    InitializedSize = SizeType(0);          // Number of elements initialized
-    };
+    struct Data; // Data structure for the container
 
     // Checks if default constructor is nooexcept
     static constexpr bool DefaultConstructorNoexcept = IsNoThrowDefaultConstructible<AllocType>;
@@ -282,6 +277,35 @@ public:
     template <Bool DeallocateMemory = false>
     void Clear() noexcept;
 
+    /// \brief Resizes the container to the specified element count.
+    ///
+    /// If the new size is smaller than the current size, the elements at the
+    /// end of the container are removed. If the new size is larger than the
+    /// current size, the container is extended by constructing (default constructor) new elements
+    /// at the end.
+    ///
+    /// \param[in] newSize The new size of the container.
+    void Resize(SizeType newSize);
+
+    /// \brief Resizes the container to the specified element count.
+    ///
+    /// If the new size is smaller than the current size, the elements at the
+    /// end of the container are removed. If the new size is larger than the
+    /// current size, the container is extended by copying the given value into the new elements.
+    ///
+    /// \param[in] newSize The new size of the container.
+    /// \param[in] value   Value to copy into the new elements.
+    void Resize(SizeType newSize,
+                const T& value);
+
+    /// \brief Implicit conversion to boolean, returns true if the list is not empty.
+    ///
+    /// \return True if the list is not empty.
+    operator Bool() const noexcept;
+
+    /// \brief Resets the elements in the list (destructs and default constructs them).
+    void Reset() noexcept(IsNoThrowDefaultConstructible<T>);
+
 private:
     struct ContainerHolder;
     struct SpacedContainerHolder;
@@ -293,6 +317,7 @@ private:
     void ConstructContinuousContainer(SizeType      elementCount,
                                       const Lambda& construct);
 
+    template <Bool ForceNewAllocation>
     Pair<Data, Bool> CreateCopy(SizeType elementCount);
 
     template <Bool ForceNewAllocation>
@@ -305,7 +330,11 @@ private:
 
     /// Gets the iterator at the specified index
     template <bool IsConst>
-    inline IteratorTemplate<IsConst> GetIterator(SizeType index) const noexcept;
+    IteratorTemplate<IsConst> GetIterator(SizeType index) const noexcept;
+
+    /// Resizes the container to the specified element count.
+    template <class Lambda>
+    void ResizeInternal(SizeType newSize, const Lambda& construct);
 
     template <class>
     friend struct Detail::CoreContainer::TidyGuard;

@@ -33,6 +33,14 @@ struct List<T, Alloc, IteratorDebugging>::ContainerHolder
 };
 
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+struct List<T, Alloc, IteratorDebugging>::Data
+{
+    PointerType Begin           = PointerType(nullptr); // Pointer to the first element
+    SizeType    AllocatedSize   = SizeType(0);          // Number of elements allocated
+    SizeType    InitializedSize = SizeType(0);          // Number of elements initialized
+};
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
 struct List<T, Alloc, IteratorDebugging>::SpacedContainerHolder
 {
     AllocType* AllocatorPointer = nullptr;
@@ -221,7 +229,7 @@ public:
                 auto otherContainer = other._debuggingTracker->DebugContainer;
 
                 // Checks whether if they are the from the same container
-                AXIS_VALIDATE(thisContaienr == otherContainer, "Attempted to find the differences between the iterators there weren't from the same container!");
+                AXIS_VALIDATE(thisContaienr == otherContainer, "Attempted to find the differences between the  iterators there weren't from the same container!");
             }
         }
 
@@ -268,9 +276,9 @@ inline void List<T, Alloc, IteratorDebugging>::Reserve(SizeType elementCount)
         return;
 
     if (elementCount > GetMaxSize())
-        throw InvalidOperationException("The container exceeded its maximum size!");
+        throw ContainerExceededMaxSizeException();
 
-    auto newDataCopy = CreateCopy(elementCount);
+    auto newDataCopy = CreateCopy<false>(elementCount);
 
     if (newDataCopy.Second)
         Tidy();
@@ -480,13 +488,17 @@ inline void List<T, Alloc, IteratorDebugging>::TidyData(const Data& data) noexce
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+template <Bool ForceNewAllocation>
 inline Pair<typename List<T, Alloc, IteratorDebugging>::Data, Bool> List<T, Alloc, IteratorDebugging>::CreateCopy(SizeType elementCount)
 {
     auto& data  = _dataAllocPair.GetFirst();
     auto& alloc = _dataAllocPair.GetSecond();
 
-    if (elementCount <= data.AllocatedSize)
-        return {data, false};
+    if constexpr (!ForceNewAllocation)
+    {
+        if (elementCount <= data.AllocatedSize)
+            return {data, false};
+    }
 
     ContainerHolder containerHolder = {AddressOf(alloc),
                                        {AllocTraits::Allocate(alloc, elementCount), elementCount, 0}};
@@ -783,6 +795,27 @@ inline void List<T, Alloc, IteratorDebugging>::Clear() noexcept
 }
 
 template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline void List<T, Alloc, IteratorDebugging>::Resize(typename List<T, Alloc, IteratorDebugging>::SizeType newSize)
+{
+    const auto Construct = [this](typename List<T, Alloc, IteratorDebugging>::PointerType ptr) {
+        AllocTraits::Construct(_dataAllocPair.GetSecond(), ptr);
+    };
+
+    ResizeInternal(newSize, Construct);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline void List<T, Alloc, IteratorDebugging>::Resize(typename List<T, Alloc, IteratorDebugging>::SizeType newSize,
+                                                      const T&                                             value)
+{
+    const auto Construct = [&](typename List<T, Alloc, IteratorDebugging>::PointerType ptr) {
+        AllocTraits::Construct(_dataAllocPair.GetSecond(), ptr, value);
+    };
+
+    ResizeInternal(newSize, Construct);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, IteratorDebugging>::CheckNewElement(SizeType newElementCount)
 {
     auto& data = _dataAllocPair.GetFirst();
@@ -807,6 +840,7 @@ inline typename List<T, Alloc, IteratorDebugging>::template IteratorTemplate<IsC
         return it;
     }
     else
+
         return IteratorTemplate<IsConst>(_dataAllocPair.GetFirst().Begin + index);
 }
 
@@ -1037,6 +1071,68 @@ inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::ope
 }
 
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+template <class Lambda>
+inline void List<T, Alloc, IteratorDebugging>::ResizeInternal(SizeType      newSize,
+                                                              const Lambda& construct)
+{
+    if (newSize > GetMaxSize())
+        throw InvalidArgumentException("`newSize` exceeded max size!");
+
+    if (newSize == GetSize())
+        return;
+
+    auto& data  = _dataAllocPair.GetFirst();
+    auto& alloc = _dataAllocPair.GetSecond();
+
+    if (newSize > data.InitializedSize)
+    {
+        const bool createCopy = IsNoThrowDefaultConstructible<T> || newSize > data.AllocatedSize;
+
+        if (createCopy)
+        {
+            ContainerHolder containerHolder = {
+                AddressOf(alloc),
+                CreateCopy<true>(newSize).First};
+
+            auto constructCount = newSize - data.InitializedSize;
+
+            Detail::CoreContainer::TidyGuard<ContainerHolder> tidyGuard = {AddressOf(containerHolder)};
+
+            for (SizeType i = 0; i < constructCount; ++i)
+            {
+                construct(containerHolder.Data.Begin + containerHolder.Data.InitializedSize);
+                ++containerHolder.Data.InitializedSize;
+            }
+
+            tidyGuard.Target = nullptr;
+
+            Tidy();
+
+            data = containerHolder.Data;
+        }
+        else
+        {
+            auto constructCount = newSize - data.InitializedSize;
+
+            for (SizeType i = 0; i < constructCount; ++i)
+            {
+                // Default constructor should always nothrow
+                construct(data.Begin + data.InitializedSize);
+                ++data.InitializedSize;
+            }
+        }
+    }
+    else
+    {
+        // If there are initialized elements there, destruct them
+        for (SizeType i = newSize; i < data.InitializedSize; ++i)
+            AllocTraits::Destruct(alloc, data.Begin + i);
+
+        data.InitializedSize = newSize;
+    }
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::operator=(List<T, Alloc, IteratorDebugging>&& other) noexcept(MoveAssignmentNoexcept)
 {
     if (this == AddressOf(other))
@@ -1260,6 +1356,43 @@ inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, 
     }
     else
         return ConstIterator(_dataAllocPair.GetFirst().Begin + _dataAllocPair.GetFirst().InitializedSize);
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline List<T, Alloc, IteratorDebugging>::operator bool() const noexcept
+{
+    return (Bool)_dataAllocPair.GetFirst().InitializedSize;
+}
+
+template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
+inline void List<T, Alloc, IteratorDebugging>::Reset() noexcept(IsNoThrowDefaultConstructible<T>)
+{
+    if constexpr (IsNoThrowDefaultConstructible<T>)
+    {
+        for (SizeType i = 0; i < _dataAllocPair.GetFirst().InitializedSize; ++i)
+        {
+            AllocTraits::Destruct(_dataAllocPair.GetSecond(), _dataAllocPair.GetFirst().Begin + i);
+            AllocTraits::Construct(_dataAllocPair.GetSecond(), _dataAllocPair.GetFirst().Begin + i);
+        }
+    }
+    else
+    {
+        auto& data  = _dataAllocPair.GetFirst();
+        auto& alloc = _dataAllocPair.GetSecond();
+
+        ContainerHolder containerHolder = {AddressOf(alloc), {AllocTraits::Allocate(alloc, data.InitializedSize), data.InitializedSize, 0}};
+
+        Detail::CoreContainer::TidyGuard<ContainerHolder> tidyGuard = {AddressOf(containerHolder)};
+
+        for (SizeType i = 0; i < data.InitializedSize; ++i)
+            AllocTraits::Construct(alloc, containerHolder.Data.Begin + i);
+
+        tidyGuard.Target = nullptr;
+
+        Tidy();
+
+        data = containerHolder.Data;
+    }
 }
 
 } // namespace System
