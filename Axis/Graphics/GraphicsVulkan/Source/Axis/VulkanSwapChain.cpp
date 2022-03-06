@@ -110,12 +110,12 @@ static void CreateSwapChain(const SwapChainDescription&                        d
 
         if (vSync)
         {
-            preferredPresentModes.ReserveFor(2);
+            preferredPresentModes.Reserve(2);
             preferredPresentModes.Append(VK_PRESENT_MODE_FIFO_KHR);
         }
         else
         {
-            preferredPresentModes.ReserveFor(3);
+            preferredPresentModes.Reserve(3);
             preferredPresentModes.Append(VK_PRESENT_MODE_MAILBOX_KHR);   // Tipple buffering
             preferredPresentModes.Append(VK_PRESENT_MODE_IMMEDIATE_KHR); // Simple Vsync disabled
             preferredPresentModes.Append(VK_PRESENT_MODE_FIFO_KHR);      // FIFO is guaranteed to support in all devices

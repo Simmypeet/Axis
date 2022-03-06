@@ -30,7 +30,18 @@ struct DefaultDeleter
 // ===> UniquePointer vvv
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
-inline UniquePointer<T, Deleter>::UniquePointer(NullptrType) noexcept {}
+inline UniquePointer<T, Deleter>::UniquePointer() noexcept :
+    _pair()
+{
+    _pair.GetFirst() = nullptr;
+}
+
+template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
+inline UniquePointer<T, Deleter>::UniquePointer(NullptrType) noexcept :
+    _pair()
+{
+    _pair.GetFirst() = nullptr;
+}
 
 template <SmartPointerType T, SmartPointerDeleterType<T> Deleter>
 inline UniquePointer<T, Deleter>::UniquePointer(PointerType    ptr,
@@ -68,8 +79,8 @@ inline UniquePointer<T, Deleter>& UniquePointer<T, Deleter>::operator=(UniquePoi
     if (_pair.GetFirst() != nullptr)
         _pair.GetSecond()(_pair.GetFirst());
 
-    _pair.GetFirst()  = MoveAssignIfNoThrow(_pair.GetFirst());
-    _pair.GetSecond() = MoveAssignIfNoThrow(_pair.GetSecond());
+    _pair.GetFirst()  = MoveAssignIfNoThrow(other._pair.GetFirst());
+    _pair.GetSecond() = MoveAssignIfNoThrow(other._pair.GetSecond());
 
     other._pair.GetFirst() = nullptr;
 

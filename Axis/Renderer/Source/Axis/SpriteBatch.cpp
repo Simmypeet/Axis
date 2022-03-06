@@ -821,7 +821,7 @@ void SpriteBatch::AppendBatch(const System::Vector3F& position,
                               const Graphics::ColorF& colorMask)
 
 {
-    _vertices.ReserveFor(_vertices.GetSize() + 4);
+    _vertices.Reserve(_vertices.GetSize() + 4);
 
     // Top left vertex
     _vertices.EmplaceBack(System::Vector3F(position.X, position.Y, position.Z),
@@ -845,7 +845,7 @@ void SpriteBatch::AppendBatch(const System::Vector3F& position,
 
     try
     {
-        _indices.ReserveFor(_indices.GetSize() + 6);
+        _indices.Reserve(_indices.GetSize() + 6);
     }
     catch (...)
     {
@@ -875,7 +875,7 @@ void SpriteBatch::AppendBatch(const System::Vector3F& position,
                               const System::Vector2F& texCoordBR,
                               const Graphics::ColorF& colorMask)
 {
-    _vertices.ReserveFor(_vertices.GetSize() + 4);
+    _vertices.Reserve(_vertices.GetSize() + 4);
 
     // Top left vertex
     _vertices.EmplaceBack(System::Vector3F(position.X + delta.X * cos - delta.Y * sin, position.Y + delta.X * sin + delta.Y * cos, position.Z),
@@ -899,7 +899,7 @@ void SpriteBatch::AppendBatch(const System::Vector3F& position,
 
     try
     {
-        _indices.ReserveFor(_indices.GetSize() + 6);
+        _indices.Reserve(_indices.GetSize() + 6);
     }
     catch (...)
     {

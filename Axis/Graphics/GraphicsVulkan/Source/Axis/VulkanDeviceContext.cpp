@@ -1137,8 +1137,8 @@ void VulkanDeviceContext::CommitVertexBufferBinding()
         System::List<Uint64>          bufferBindingOffset;
         System::List<GraphicsAdapter> graphicsAdapters = GetCreatorDevice()->GraphicsSystem->GetGraphicsAdapters();
 
-        bufferBinding.ReserveFor(GetCurrentBindingVertexBuffers().GetSize());
-        bufferBindingOffset.ReserveFor(GetCurrentBindingVertexBuffers().GetSize());
+        bufferBinding.Reserve(GetCurrentBindingVertexBuffers().GetSize());
+        bufferBindingOffset.Reserve(GetCurrentBindingVertexBuffers().GetSize());
 
         for (const auto& bindingBuffer : GetCurrentBindingVertexBuffers())
         {

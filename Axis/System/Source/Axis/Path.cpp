@@ -73,7 +73,7 @@ WString CombinePath(const Span<WString>& paths)
     }
 
     // Reserve heap memory
-    combinedPath.ReserveFor(pathSizeToReserve);
+    combinedPath.Reserve(pathSizeToReserve);
 
     for (const auto& path : paths)
     {

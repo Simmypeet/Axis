@@ -29,7 +29,7 @@ class IGraphicsDevice;
 struct VulkanFramebufferCacheKey final
 {
     // Render target texture views
-    System::List<System::WeakPointer<ITextureView>> RenderTargetViews = nullptr;
+    System::List<System::WeakPointer<ITextureView>> RenderTargetViews = {};
 
     // Depth stencil texture view
     System::WeakPointer<ITextureView> DepthStencilView = nullptr;

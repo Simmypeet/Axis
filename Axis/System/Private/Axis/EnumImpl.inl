@@ -29,7 +29,7 @@ namespace Operator
 template <EnumType T>
 inline constexpr T operator|(T LHS, T RHS) noexcept
 {
-    return static_cast<T>(static_cast<std::underlying_type_t<T>>(LHS) | static_cast<std::underlying_type_t<T>>(RHS));
+    return static_cast<T>((static_cast<std::underlying_type_t<T>>(LHS) | static_cast<std::underlying_type_t<T>>(RHS)));
 }
 
 template <EnumType T>

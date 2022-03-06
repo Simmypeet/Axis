@@ -119,7 +119,7 @@ private :
         BaseIterator::_currentPointer = pointer;
     }
 
-    inline void Validate() const noexcept
+    inline void ValidateRange() const noexcept requires(IteratorDebugging)
     {
         if constexpr (IteratorDebugging)
         {
@@ -127,7 +127,7 @@ private :
             {
                 BaseIterator::BasicValidate();
 
-                auto& listData = ((ListType*)Detail::CoreContainer::BaseDebugIterator::_debuggingTracker.GetPointer())->_dataAllocPair.GetFirst();
+                auto& listData = ((ListType*)Detail::CoreContainer::BaseDebugIterator::_debuggingTracker->DebugContainer)->_dataAllocPair.GetFirst();
 
                 // Checks if _currentPointer is within the bounds of the list
                 AXIS_VALIDATE(BaseIterator::_currentPointer >= listData.Begin && BaseIterator::_currentPointer < listData.Begin + listData.InitializedSize, "Iterator was out of bounds!");
@@ -135,18 +135,40 @@ private :
         }
     }
 
-public:
-    // Operators
-    inline ReferenceType operator*() const noexcept
+    template <Bool OtherIsConst>
+    inline void ValidateContainer(const IteratorTemplate<OtherIsConst>& other) const noexcept requires(IteratorDebugging)
     {
-        Validate();
+        // Checks if the other iterator is from the same container
+        if constexpr (IteratorDebugging)
+        {
+            if (!Detail::CoreContainer::BaseDebugIterator::_skipValidation)
+            {
+                BaseIterator::BasicValidate();
+
+                auto thisContaienr  = Detail::CoreContainer::BaseDebugIterator::_debuggingTracker->DebugContainer;
+                auto otherContainer = other._debuggingTracker->DebugContainer;
+
+                // Checks whether if they are the from the same container
+                AXIS_VALIDATE(thisContaienr == otherContainer, "Attempted to do comparisons between the iterators there weren't from the same container!");
+            }
+        }
+    }
+
+public :
+    // Operators
+    inline ReferenceType
+    operator*() const noexcept
+    {
+        if constexpr (IteratorDebugging)
+            ValidateRange();
 
         return *BaseIterator::_currentPointer;
     }
 
     inline ConditionalType<IsConst, typename List<T, Alloc, IteratorDebugging>::ConstPointerType, typename List<T, Alloc, IteratorDebugging>::PointerType> operator->() const noexcept
     {
-        Validate();
+        if constexpr (IteratorDebugging)
+            ValidateRange();
 
         return BaseIterator::_currentPointer;
     }
@@ -155,36 +177,54 @@ public:
     template <bool OtherIsConst>
     inline bool operator==(const IteratorTemplate<OtherIsConst>& other) const noexcept
     {
+        if constexpr (IteratorDebugging)
+            ValidateContainer(other);
+
         return BaseIterator::_currentPointer == other._currentPointer;
     }
 
     template <bool OtherIsConst>
     inline bool operator!=(const IteratorTemplate<OtherIsConst>& other) const noexcept
     {
+        if constexpr (IteratorDebugging)
+            ValidateContainer(other);
+
         return BaseIterator::_currentPointer != other._currentPointer;
     }
 
     template <bool OtherIsConst>
     inline bool operator<(const IteratorTemplate<OtherIsConst>& other) const noexcept
     {
+        if constexpr (IteratorDebugging)
+            ValidateContainer(other);
+
         return BaseIterator::_currentPointer < other._currentPointer;
     }
 
     template <bool OtherIsConst>
     inline bool operator>(const IteratorTemplate<OtherIsConst>& other) const noexcept
     {
+        if constexpr (IteratorDebugging)
+            ValidateContainer(other);
+
         return BaseIterator::_currentPointer > other._currentPointer;
     }
 
     template <bool OtherIsConst>
     inline bool operator<=(const IteratorTemplate<OtherIsConst>& other) const noexcept
     {
+        if constexpr (IteratorDebugging)
+            ValidateContainer(other);
+
         return BaseIterator::_currentPointer <= other._currentPointer;
     }
 
     template <bool OtherIsConst>
     inline bool operator>=(const IteratorTemplate<OtherIsConst>& other) const noexcept
     {
+        if constexpr (IteratorDebugging)
+            ValidateContainer(other);
+
         return BaseIterator::_currentPointer >= other._currentPointer;
     }
 
@@ -218,20 +258,8 @@ public:
     template <bool OtherIsConst>
     inline DifferenceType operator-(const IteratorTemplate<OtherIsConst>& other) const noexcept // Difference
     {
-        // Checks if the other iterator is from the same container
         if constexpr (IteratorDebugging)
-        {
-            if (!Detail::CoreContainer::BaseDebugIterator::_skipValidation)
-            {
-                BaseIterator::BasicValidate();
-
-                auto thisContaienr  = Detail::CoreContainer::BaseDebugIterator::_debuggingTracker->DebugContainer;
-                auto otherContainer = other._debuggingTracker->DebugContainer;
-
-                // Checks whether if they are the from the same container
-                AXIS_VALIDATE(thisContaienr == otherContainer, "Attempted to find the differences between the  iterators there weren't from the same container!");
-            }
-        }
+            ValidateContainer(other);
 
         return BaseIterator::_currentPointer - other._currentPointer;
     }
@@ -864,6 +892,9 @@ template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
 template <class Lambda>
 inline void List<T, Alloc, IteratorDebugging>::ConstructContinuousContainer(SizeType elementCount, const Lambda& construct)
 {
+    if (elementCount == 0)
+        return;
+
     Detail::CoreContainer::TidyGuard<ThisType> guard = {this};
 
     // Allocate memory
@@ -1132,6 +1163,40 @@ inline void List<T, Alloc, IteratorDebugging>::ResizeInternal(SizeType      newS
     }
 }
 
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+template <Bool ForceNewAllocation, class Lambda>
+inline void List<T, Alloc, IteratorDebugging>::ResetInternal(const Lambda& construct)
+{
+    if constexpr (!ForceNewAllocation)
+    {
+        for (SizeType i = 0; i < _dataAllocPair.GetFirst().InitializedSize; ++i)
+        {
+            AllocTraits::Destruct(_dataAllocPair.GetSecond(), _dataAllocPair.GetFirst().Begin + i);
+            construct(_dataAllocPair.GetFirst().Begin + i);
+        }
+    }
+    else
+    {
+        auto& data  = _dataAllocPair.GetFirst();
+        auto& alloc = _dataAllocPair.GetSecond();
+
+        ContainerHolder containerHolder = {AddressOf(alloc), {AllocTraits::Allocate(alloc, data.InitializedSize), data.InitializedSize, 0}};
+
+        Detail::CoreContainer::TidyGuard<ContainerHolder> tidyGuard = {AddressOf(containerHolder)};
+
+        for (SizeType i = 0; i < data.InitializedSize; ++i)
+        {
+            construct(containerHolder.Data.Begin + i);
+            ++containerHolder.Data.InitializedSize;
+        }
+        tidyGuard.Target = nullptr;
+
+        Tidy();
+
+        data = containerHolder.Data;
+    }
+}
+
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::operator=(List<T, Alloc, IteratorDebugging>&& other) noexcept(MoveAssignmentNoexcept)
 {
@@ -1359,7 +1424,7 @@ inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, 
 }
 
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
-inline List<T, Alloc, IteratorDebugging>::operator bool() const noexcept
+inline List<T, Alloc, IteratorDebugging>::operator Bool() const noexcept
 {
     return (Bool)_dataAllocPair.GetFirst().InitializedSize;
 }
@@ -1367,32 +1432,43 @@ inline List<T, Alloc, IteratorDebugging>::operator bool() const noexcept
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>
 inline void List<T, Alloc, IteratorDebugging>::Reset() noexcept(IsNoThrowDefaultConstructible<T>)
 {
-    if constexpr (IsNoThrowDefaultConstructible<T>)
+    const auto constructLambda = [this](PointerType ptr) {
+        AllocTraits::Construct(_dataAllocPair.GetSecond(), ptr);
+    };
+
+    ResetInternal<!IsNoThrowDefaultConstructible<T>, decltype(constructLambda)>(constructLambda);
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline void List<T, Alloc, IteratorDebugging>::Reset(const T& value) noexcept(IsNoThrowCopyConstructible<T>)
+{
+    if constexpr (IsNoThrowCopyAssignable<T>)
     {
         for (SizeType i = 0; i < _dataAllocPair.GetFirst().InitializedSize; ++i)
         {
-            AllocTraits::Destruct(_dataAllocPair.GetSecond(), _dataAllocPair.GetFirst().Begin + i);
-            AllocTraits::Construct(_dataAllocPair.GetSecond(), _dataAllocPair.GetFirst().Begin + i);
+            _dataAllocPair.GetFirst().Begin[i] = value;
         }
     }
     else
     {
-        auto& data  = _dataAllocPair.GetFirst();
-        auto& alloc = _dataAllocPair.GetSecond();
+        const auto constructLambda = [&](PointerType ptr) {
+            AllocTraits::Construct(_dataAllocPair.GetSecond(), ptr, value);
+        };
 
-        ContainerHolder containerHolder = {AddressOf(alloc), {AllocTraits::Allocate(alloc, data.InitializedSize), data.InitializedSize, 0}};
-
-        Detail::CoreContainer::TidyGuard<ContainerHolder> tidyGuard = {AddressOf(containerHolder)};
-
-        for (SizeType i = 0; i < data.InitializedSize; ++i)
-            AllocTraits::Construct(alloc, containerHolder.Data.Begin + i);
-
-        tidyGuard.Target = nullptr;
-
-        Tidy();
-
-        data = containerHolder.Data;
+        ResetInternal<!IsNoThrowCopyConstructible<T>, decltype(constructLambda)>(constructLambda);
     }
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::PointerType List<T, Alloc, IteratorDebugging>::GetData() noexcept
+{
+    return _dataAllocPair.GetFirst().Begin;
+}
+
+template <RawType T, AllocatorType Alloc, bool IteratorDebugging>
+inline typename List<T, Alloc, IteratorDebugging>::ConstPointerType List<T, Alloc, IteratorDebugging>::GetData() const noexcept
+{
+    return _dataAllocPair.GetFirst().Begin;
 }
 
 } // namespace System

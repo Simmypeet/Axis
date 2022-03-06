@@ -58,8 +58,8 @@ private:
     VkPtr<VkSwapchainKHR>                             _vulkanSwapchain           = {};             // The internal VkSwapchainKHR handle.
     VkSurfaceKHR                                      _vulkanSurface             = VK_NULL_HANDLE; // The surface handle from the Window.
     Bool                                              _vSyncEnabled              = true;           // The lastest sync interval
-    System::List<System::SharedPointer<ITextureView>> _renderTargetViews         = nullptr;        // Swapchain's render target back buffers
-    System::List<System::SharedPointer<ITextureView>> _depthStencilViews         = nullptr;        // Swapchain's depth stencil back buffers
+    System::List<System::SharedPointer<ITextureView>> _renderTargetViews         = {};             // Swapchain's render target back buffers
+    System::List<System::SharedPointer<ITextureView>> _depthStencilViews         = {};             // Swapchain's depth stencil back buffers
     System::List<VkPtr<VkSemaphore>>                  _imageAvailableSemaphores  = {};             // The semaphores to signal that image has acquired and is ready for rendering.
     System::List<System::SharedPointer<IFence>>       _inFlightFences            = {};             // In flight fences
     System::List<System::SharedPointer<IFence>>       _imagesInFlight            = {};             // Images in flight fences

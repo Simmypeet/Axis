@@ -142,7 +142,7 @@ private:
     System::SharedPointer<Window::DisplayWindow>                  _window                  = nullptr;                                       ///< Application's window
     System::SharedPointer<Graphics::IGraphicsSystem>              _graphicsSystem          = nullptr;                                       ///< Application's loaded graphics system
     System::SharedPointer<Graphics::IGraphicsDevice>              _graphicsDevice          = nullptr;                                       ///< Application's created graphics device
-    System::List<System::SharedPointer<Graphics::IDeviceContext>> _immediateDeviceContexts = nullptr;                                       ///< All created immediate device context
+    System::List<System::SharedPointer<Graphics::IDeviceContext>> _immediateDeviceContexts = {};                                       ///< All created immediate device context
     System::SharedPointer<Graphics::ISwapChain>                   _swapChain               = nullptr;                                       ///< Swap chain targetted to the application's window
     Bool                                                          _shouldExit              = false;                                         ///< Checks if the application requests to exit
     Bool                                                          _started                 = false;                                         ///< Indicates whether the application is already started or not.

@@ -219,7 +219,7 @@ VulkanGraphicsSystem::VulkanGraphicsSystem()
     vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, vkPhyiscalDevices.GetData());
 
     // Creates Axis's vulkan physical device wrapper
-    _vulkanPhysicalDevices.ReserveFor(physicalDeviceCount);
+    _vulkanPhysicalDevices.Reserve(physicalDeviceCount);
 
     for (const auto& vkPhyiscalDevice : vkPhyiscalDevices)
         _vulkanPhysicalDevices.EmplaceBack(vkPhyiscalDevice);
@@ -227,7 +227,7 @@ VulkanGraphicsSystem::VulkanGraphicsSystem()
 
 const System::List<VkLayerProperties>& VulkanGraphicsSystem::GetInstanceLayerProperties()
 {
-    static System::List<VkLayerProperties> s_InstanceLayers = nullptr;
+    static System::List<VkLayerProperties> s_InstanceLayers = {};
 
     if (!s_InstanceLayers)
     {
@@ -244,7 +244,7 @@ const System::List<VkLayerProperties>& VulkanGraphicsSystem::GetInstanceLayerPro
 
 const System::List<VkExtensionProperties>& VulkanGraphicsSystem::GetInstanceExtensionProperties()
 {
-    static System::List<VkExtensionProperties> s_InstanceExtensions = nullptr;
+    static System::List<VkExtensionProperties> s_InstanceExtensions = {};
 
     if (!s_InstanceExtensions)
     {

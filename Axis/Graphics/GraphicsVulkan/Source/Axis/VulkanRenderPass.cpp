@@ -46,9 +46,9 @@ VulkanRenderPass::VulkanRenderPass(const RenderPassDescription& description,
         System::List<VkSubpassDescription>    subpassDescriptions             = {};
         System::List<VkSubpassDependency>     subpassDependenciesDescriptions = {};
 
-        attachmentDescriptions.ReserveFor(description.Attachments.GetSize());
-        subpassDescriptions.ReserveFor(description.Subpasses.GetSize());
-        subpassDependenciesDescriptions.ReserveFor(description.Dependencies.GetSize());
+        attachmentDescriptions.Reserve(description.Attachments.GetSize());
+        subpassDescriptions.Reserve(description.Subpasses.GetSize());
+        subpassDependenciesDescriptions.Reserve(description.Dependencies.GetSize());
 
         System::List<System::List<VkAttachmentReference>> allColorAttachmentReferences(description.Subpasses.GetSize());
         System::List<System::List<VkAttachmentReference>> allInputAttachmentReferences(description.Subpasses.GetSize());

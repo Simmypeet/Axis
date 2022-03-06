@@ -67,7 +67,7 @@ public:
     static constexpr Bool ConvertibleFrom = std::is_convertible_v<typename Detail::SmartPointer::PointerTypeFromDeleter<U, Deleter>::Type, typename Detail::SmartPointer::PointerTypeFromDeleter<T, Deleter>::Type>&& std::is_unbounded_array_v<T> == std::is_unbounded_array_v<U>;
 
     /// \brief Constructs a null pointer. Default constructor.
-    UniquePointer() noexcept = default;
+    UniquePointer() noexcept;
 
     /// \brief Constructs a null pointer
     UniquePointer(NullptrType) noexcept;
@@ -138,7 +138,7 @@ public:
     void Reset() noexcept;
 
 private:
-    CompressedPair<PointerType, Deleter> _pair;
+    CompressedPair<PointerType, Deleter> _pair = {};
 
     template <SmartPointerType U, SmartPointerDeleterType<U>>
     friend class UniquePointer;

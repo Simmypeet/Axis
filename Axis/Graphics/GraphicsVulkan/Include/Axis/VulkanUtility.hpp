@@ -36,7 +36,7 @@ constexpr VkPipelineStageFlags AllShaderStages =
 inline System::List<Uint32> ExtractDeviceQueueFamilyIndices(Uint64 deviceQueueFamilyMask) noexcept
 {
     if ((deviceQueueFamilyMask & (deviceQueueFamilyMask - 1)) == 0)
-        return nullptr;
+        return {};
 
     // Device queue family indices
     System::List<Uint32> indices = {};

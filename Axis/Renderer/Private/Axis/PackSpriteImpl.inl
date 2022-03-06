@@ -172,7 +172,7 @@ inline SpritePackingResult<Key, Hasher> PackSprite(System::List<System::Pair<Key
     auto sortedSpriteList = std::move(spriteList);
 
     // Sorts the sprite list by the largest dimension
-    std::sort(sortedSpriteList.begin(), sortedSpriteList.end(), Detail::Predicate<Key>);
+    std::sort(sortedSpriteList.GetData(), sortedSpriteList.GetData() + sortedSpriteList.GetSize(), Detail::Predicate<Key>);
 
     // Packs the sprites
     return Detail::PackSpriteInternal<Key, Hasher>(sortedSpriteList);
@@ -188,7 +188,7 @@ inline SpritePackingResult<Key, Hasher> PackSprite(const System::List<System::Pa
     auto sortedSpriteList = spriteList;
 
     // Sorts the sprite list by the largest dimension
-    std::sort(sortedSpriteList.begin(), sortedSpriteList.end(), Detail::Predicate<Key>);
+    std::sort(sortedSpriteList.GetData(), sortedSpriteList.GetData() + sortedSpriteList.GetSize(), Detail::Predicate<Key>);
 
     // Packs the sprites
     return Detail::PackSpriteInternal<Key, Hasher>(sortedSpriteList);

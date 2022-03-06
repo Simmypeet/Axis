@@ -28,7 +28,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
         VkPipelineLayout vkPipelineLayout = VK_NULL_HANDLE;
 
         System::List<VkDescriptorSetLayout> descriptorSetLayouts;
-        descriptorSetLayouts.ReserveFor(description.ResourceHeapLayouts.GetSize());
+        descriptorSetLayouts.Reserve(description.ResourceHeapLayouts.GetSize());
 
         for (const auto& resourceHeapLayout : description.ResourceHeapLayouts)
         {
@@ -116,7 +116,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
         VkPipeline vkPipeline = VK_NULL_HANDLE;
 
         System::List<VkPipelineShaderStageCreateInfo> shaderStages = {};
-        shaderStages.ReserveFor(2);
+        shaderStages.Reserve(2);
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
         vertShaderStageInfo.sType                           = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -138,8 +138,8 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
 
         System::List<VkVertexInputBindingDescription>   inputBindingDescriptions;
         System::List<VkVertexInputAttributeDescription> inputAttributesDescriptions;
-        inputBindingDescriptions.ReserveFor(description.VertexBindingDescriptions.GetSize());
-        inputAttributesDescriptions.ReserveFor(description.VertexBindingDescriptions.GetSize());
+        inputBindingDescriptions.Reserve(description.VertexBindingDescriptions.GetSize());
+        inputAttributesDescriptions.Reserve(description.VertexBindingDescriptions.GetSize());
 
         if (description.VertexBindingDescriptions)
         {
@@ -235,7 +235,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineDescription
 
 
         System::List<VkPipelineColorBlendAttachmentState> attachmentBlendStates = {};
-        attachmentBlendStates.ReserveFor(description.Blend.RenderTargetBlendStates.GetSize());
+        attachmentBlendStates.Reserve(description.Blend.RenderTargetBlendStates.GetSize());
 
         for (const auto& attachmentBlendState : description.Blend.RenderTargetBlendStates)
         {

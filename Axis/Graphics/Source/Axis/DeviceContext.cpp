@@ -29,7 +29,9 @@ IDeviceContext::IDeviceContext(IGraphicsDevice&    graphicsDevice,
     DeviceQueueFamilyIndex(deviceQueueFamilyIndex),
     DeviceQueueIndex(deviceIndex),
     SupportedQueueOperations(supportedQueueOperations),
-    _bindingVertexBuffers(graphicsDevice.GraphicsSystem->GetGraphicsAdapters()[graphicsDevice.GraphicsAdapterIndex].Capability.MaxVertexInputBinding) {}
+    _bindingVertexBuffers(graphicsDevice.GraphicsSystem->GetGraphicsAdapters()[graphicsDevice.GraphicsAdapterIndex].Capability.MaxVertexInputBinding)
+{
+}
 
 void IDeviceContext::TransitTextureState(const System::SharedPointer<ITexture>& textureResource,
                                          ResourceState                          initialState,

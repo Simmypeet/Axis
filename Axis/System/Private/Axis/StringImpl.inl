@@ -78,14 +78,11 @@ constexpr Size String<T, MemRes>::GetStringLength(const T* strPtr) noexcept
 }
 
 template <CharType T, MemoryResourceType MemRes>
-inline String<T, MemRes>::String(NullptrType) noexcept {}
-
-template <CharType T, MemoryResourceType MemRes>
 template <CharType U>
 inline String<T, MemRes>::String(const U* str) :
     _stringLength(String<U, MemRes>::GetStringLength(str))
 {
-    auto pointer = Reserve(_stringLength);
+    auto pointer = ReserveInternal(_stringLength);
 
     Detail::CopyElement<true>(str, pointer, _stringLength);
 }
@@ -100,7 +97,7 @@ inline String<T, MemRes>::String(const U* begin,
     if (begin > end)
         throw InvalidArgumentException("`begin` was greater than `end`!");
 
-    auto pointer = Reserve(_stringLength);
+    auto pointer = ReserveInternal(_stringLength);
 
     Detail::CopyElement<true>(begin, pointer, _stringLength);
 }
@@ -109,7 +106,7 @@ template <CharType T, MemoryResourceType MemRes>
 inline String<T, MemRes>::String(const String<T, MemRes>& other) :
     _stringLength(other._stringLength)
 {
-    auto pointer = Reserve(_stringLength);
+    auto pointer = ReserveInternal(_stringLength);
 
     Detail::CopyElement<true>(other.GetCString(), pointer, _stringLength);
 }
@@ -138,7 +135,7 @@ template <CharType U, MemoryResourceType OtherMemRes>
 inline String<T, MemRes>::String(const String<U, OtherMemRes>& other) :
     _stringLength(other._stringLength)
 {
-    auto pointer = Reserve(_stringLength);
+    auto pointer = ReserveInternal(_stringLength);
 
     Detail::CopyElement<true>(other.GetCString(), pointer, _stringLength);
 }
@@ -156,7 +153,7 @@ String<T, MemRes>& String<T, MemRes>::operator=(const String<T, MemRes>& other)
     if (this == std::addressof(other))
         return *this;
 
-    auto pointer = Reserve(other._stringLength);
+    auto pointer = ReserveInternal(other._stringLength);
 
     Detail::CopyElement<true>(other.GetCString(), pointer, other._stringLength);
 
@@ -246,14 +243,14 @@ inline void String<T, MemRes>::RemoveAt(Size index,
 }
 
 template <CharType T, MemoryResourceType MemRes>
-inline void String<T, MemRes>::ReserveFor(Size count)
+inline void String<T, MemRes>::Reserve(Size count)
 {
-    Reserve<true>(count);
+    ReserveInternal<true>(count);
 }
 
 template <CharType T, MemoryResourceType MemRes>
 template <Bool Move>
-inline T* String<T, MemRes>::Reserve(Size size)
+inline T* String<T, MemRes>::ReserveInternal(Size size)
 {
     if (size <= SmallStringSize && _isSmallString)
     {
@@ -518,7 +515,7 @@ inline void String<T, MemRes>::Append(const U* begin,
     Size size = end - begin;
 
     // Reserves the memory for the string
-    auto pointer = Reserve(_stringLength + size);
+    auto pointer = ReserveInternal(_stringLength + size);
 
     // Copies the string to the string
     Detail::CopyElement<true>(begin, pointer + _stringLength, size);
@@ -531,7 +528,7 @@ template <CharType U>
 inline void String<T, MemRes>::Append(const U& character)
 {
     // Reserves the memory for the string
-    auto pointer = Reserve(_stringLength + 1);
+    auto pointer = ReserveInternal(_stringLength + 1);
 
     // Copies the string to the string
     Detail::CopyElement<true>(std::addressof(character), pointer + _stringLength, 1);
@@ -578,7 +575,7 @@ inline String<T, MemRes> String<T, MemRes>::ToString(const U& value)
     // Gets the integer digit count
     stringSize += (Size)std::ceil(std::log10(absIntegral));
 
-    stringToReturn.ReserveFor(stringSize);
+    stringToReturn.Reserve(stringSize);
 
     if constexpr (std::is_signed_v<U>)
     {

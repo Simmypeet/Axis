@@ -16,14 +16,14 @@ namespace Axis
 namespace System
 {
 
-/// \brief Template array container class which can contain multiple elements
-///        in a single container.
+/// \brief The container which stores the elements contiguously in the memory. It can be resized and
+///        manipulated.
 ///
-/// The array is dynamic which, can be resized to any specified size.
+/// The list is dynamic which, can be resized to any specified size.
 ///
 /// All the functions in this class are categorized as `strong exception guarantee`. Which means that
 /// if an exception is thrown, the state of the object is rolled back to the state before the function.
-template <RawType T, AllocatorType Alloc = Allocator<T, DefaultMemoryResource>, bool IteratorDebugging = Detail::CoreContainer::DefaultIteratorDebug>
+template <RawType T, AllocatorType Alloc = Allocator<T, DefaultMemoryResource>, Bool IteratorDebugging = Detail::CoreContainer::DefaultIteratorDebug>
 class List final : private ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>
 {
 public:
@@ -47,16 +47,16 @@ private:
     struct Data; // Data structure for the container
 
     // Checks if default constructor is nooexcept
-    static constexpr bool DefaultConstructorNoexcept = IsNoThrowDefaultConstructible<AllocType>;
+    static constexpr Bool DefaultConstructorNoexcept = IsNoThrowDefaultConstructible<AllocType>;
 
     // Checks if allocator copy constructor is noexcept
-    static constexpr bool AllocatorCopyConstructorNoexcept = IsNoThrowCopyConstructible<AllocType>;
+    static constexpr Bool AllocatorCopyConstructorNoexcept = IsNoThrowCopyConstructible<AllocType>;
 
     // Checks if move constructor is noexcept
-    static constexpr bool MoveConstructorNoexcept = IsNoThrowMoveConstructible<AllocType>;
+    static constexpr Bool MoveConstructorNoexcept = IsNoThrowMoveConstructible<AllocType>;
 
     // Checks if move assignment is noexcept
-    static constexpr bool MoveAssignmentNoexcept = AllocTraits::IsAlwaysEqual || AllocTraits::PropagateOnContainerMoveAssignment;
+    static constexpr Bool MoveAssignmentNoexcept = AllocTraits::IsAlwaysEqual || AllocTraits::PropagateOnContainerMoveAssignment;
 
     // Contains both the data and the allocator
     CompressedPair<Data, AllocType> _dataAllocPair;
@@ -85,22 +85,22 @@ public:
     /// \brief Constructs the container with defined size and custom allocator.
     ///
     /// \param[in] elementCount Number of elements to allocate memory for.
-    /// \param[in] allocator    Custom allocator to copy into the container.
+    /// \param[in] allocator Custom allocator to copy into the container.
     explicit List(SizeType         elementCount,
                   const AllocType& allocator = AllocType());
 
     /// \brief Constructs the container with defined size, custom allocator and initial value.
     ///
     /// \param[in] elementCount Number of elements to allocate memory for.
-    /// \param[in] value        Initial value for all the elements.
-    /// \param[in] allocator    Custom allocator to copy into the container.
+    /// \param[in] value Initial value for all the elements.
+    /// \param[in] allocator Custom allocator to copy into the container.
     explicit List(SizeType         elementCount,
                   const T&         value,
                   const AllocType& allocator = AllocType());
 
     /// \brief Constructs the container with initializer list and custom allocator.
     ///
-    /// \param[in] list      Initializer list to initialize the container.
+    /// \param[in] list Initializer list to initialize the container.
     /// \param[in] allocator Custom allocator to copy into the container.
     List(std::initializer_list<T> list,
          const AllocType&         allocator = AllocType());
@@ -204,7 +204,7 @@ public:
     /// \brief Appends the range of elements at the end of the list.
     ///
     /// \param[in] begin Random access iterator to the first element of the range.
-    /// \param[in] end   Random access iterator to the element after the last element of the range.
+    /// \param[in] end Random access iterator to the element after the last element of the range.
     ///
     /// \return The iterator to the first appended element range.
     template <RandomAccessReadIterator<T> IteratorType>
@@ -262,7 +262,7 @@ public:
     ///
     /// \param[in] index Index of the element to insert.
     /// \param[in] begin Random access iterator to the first element of the range.
-    /// \param[in] end   Random access iterator to the element after the last element of the range.
+    /// \param[in] end Random access iterator to the element after the last element of the range.
     ///
     /// \return The iterator to the first inserted element range.
     template <RandomAccessReadIterator<T> IteratorType>
@@ -270,7 +270,7 @@ public:
                          const IteratorType& begin,
                          const IteratorType& end);
 
-    /// \brief Destroys all of the elements in the array.
+    /// \brief Destroys all of the elements in the list.
     ///
     /// \tparam DeallocateMemory specifies whether to deallocate the
     ///                          memory also.
@@ -294,17 +294,33 @@ public:
     /// current size, the container is extended by copying the given value into the new elements.
     ///
     /// \param[in] newSize The new size of the container.
-    /// \param[in] value   Value to copy into the new elements.
+    /// \param[in] value Value to copy into the new elements.
     void Resize(SizeType newSize,
                 const T& value);
 
-    /// \brief Implicit conversion to boolean, returns true if the list is not empty.
+    /// \brief Implicit conversion to Boolean, returns true if the list is not empty.
     ///
     /// \return True if the list is not empty.
     operator Bool() const noexcept;
 
     /// \brief Resets the elements in the list (destructs and default constructs them).
     void Reset() noexcept(IsNoThrowDefaultConstructible<T>);
+
+    /// \brief Resets the elements in the list (destructs and copies construct them or copies assign them).
+    ///
+    /// \param[in] value The value used to reset the element in the list.
+    void Reset(const T& value) noexcept(IsNoThrowCopyConstructible<T>);
+
+    /// \brief Gets the underlying pointer to the list's buffer.
+    ///
+    /// \return The underlying pointer to the list's buffer.
+    PointerType GetData() noexcept;
+
+    /// \brief Gets the underlying pointer to the list's buffer.
+    ///
+    /// \return The underlying pointer to the list's buffer.
+    ConstPointerType GetData() const noexcept;
+
 
 private:
     struct ContainerHolder;
@@ -329,12 +345,15 @@ private:
     SizeType CheckNewElement(SizeType newElementCount);
 
     /// Gets the iterator at the specified index
-    template <bool IsConst>
+    template <Bool IsConst>
     IteratorTemplate<IsConst> GetIterator(SizeType index) const noexcept;
 
     /// Resizes the container to the specified element count.
     template <class Lambda>
     void ResizeInternal(SizeType newSize, const Lambda& construct);
+
+    template <Bool ForceNewAllocation, class Lambda>
+    void ResetInternal(const Lambda& construct);
 
     template <class>
     friend struct Detail::CoreContainer::TidyGuard;

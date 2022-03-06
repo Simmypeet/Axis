@@ -26,7 +26,7 @@ DOCTEST_TEST_CASE("Axis string data structure : [Axis-System]")
             DOCTEST_CHECK(helloWorld == "Hello World");
 
             // Constructs a string with a nullptr
-            String8 nullString = nullptr;
+            String8 nullString = {};
 
             // Checks if the string contains the correct amount of characters
             DOCTEST_CHECK(nullString.GetSize() == 0);

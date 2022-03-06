@@ -145,7 +145,7 @@ public:
 
 private:
     FILE*         _fileHandle = nullptr; ///< Low-level C file handle.
-    WString       _filePath   = nullptr; ///< File path.
+    WString       _filePath   = {};      ///< File path.
     FileModeFlags _fileModes  = {};      ///< File mode used during construction.
 };
 

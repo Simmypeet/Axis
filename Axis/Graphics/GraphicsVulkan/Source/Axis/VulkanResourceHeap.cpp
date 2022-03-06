@@ -158,9 +158,9 @@ void VulkanResourceHeap::InternalBindResources(VulkanDeviceContext&      vulkanD
 
     if (!descriptorSetGroup.UpToDate)
     {
-        writeDescriptorSets.ReserveFor(_vulkanBufferBindings.GetSize() + _vulkanSamplerBindings.GetSize());
-        descriptorBufferInfos.ReserveFor(_vulkanBufferBindings.GetSize());
-        descriptorImageInfos.ReserveFor(_vulkanSamplerBindings.GetSize());
+        writeDescriptorSets.Reserve(_vulkanBufferBindings.GetSize() + _vulkanSamplerBindings.GetSize());
+        descriptorBufferInfos.Reserve(_vulkanBufferBindings.GetSize());
+        descriptorImageInfos.Reserve(_vulkanSamplerBindings.GetSize());
     }
 
     for (const auto& resourceBindingInfo : _vulkanBufferBindings)

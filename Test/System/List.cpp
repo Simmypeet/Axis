@@ -434,6 +434,28 @@ inline void RunTestList()
             }
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
+
+        DOCTEST_SUBCASE("Reset")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
+
+                DOCTEST_CHECK(list.GetSize() == 6);
+
+                list.Reset(0);
+
+                DOCTEST_CHECK(list.GetSize() == 6);
+
+                DOCTEST_CHECK(list[0].Instance == 0);
+                DOCTEST_CHECK(list[1].Instance == 0);
+                DOCTEST_CHECK(list[2].Instance == 0);
+                DOCTEST_CHECK(list[3].Instance == 0);
+                DOCTEST_CHECK(list[4].Instance == 0);
+                DOCTEST_CHECK(list[5].Instance == 0);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
     }
 }
 

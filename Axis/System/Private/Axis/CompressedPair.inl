@@ -92,8 +92,8 @@ public:
     SecondConstReferenceType GetSecond() const noexcept { return _second; }
 
 private:
-    FirstType  _first;
-    SecondType _second;
+    FirstType  _first  = {};
+    SecondType _second = {};
 };
 
 /// \brief The class uses empty base optimization to reduce the size of
@@ -158,7 +158,7 @@ public:
     SecondConstReferenceType GetSecond() const noexcept { return _second; }
 
 private:
-    SecondType _second;
+    SecondType _second = {};
 };
 
 /// \brief The class uses empty base optimization to reduce the size of
@@ -223,7 +223,7 @@ public:
     SecondConstReferenceType GetSecond() const noexcept { return *this; }
 
 private:
-    FirstType _first;
+    FirstType _first = {};
 };
 
 /// \brief The class uses empty base optimization to reduce the size of

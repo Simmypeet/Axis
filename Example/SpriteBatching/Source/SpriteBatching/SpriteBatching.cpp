@@ -212,7 +212,7 @@ int main(int argc, char** argv)
             _spriteBatch->DrawString(_spriteFont, fpsString, Vector2F(0, 0), ColorF::GetBlack());
 
             WString spriteCountString = L"Sprite: ";
-            spriteCountString += WString::ToString(_sprites.GetLength());
+            spriteCountString += WString::ToString(_sprites.GetSize());
 
             _spriteBatch->DrawString(_spriteFont, spriteCountString, Vector2F(0, _spriteFont->GetLineHeight()), ColorF::GetBlack());
 

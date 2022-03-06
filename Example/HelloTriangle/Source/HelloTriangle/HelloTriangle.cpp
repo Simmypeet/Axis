@@ -53,7 +53,7 @@ void main(in  PSInput  PSIn,
           out PSOutput PSOut)
 {
     PSOut.Color = PSIn.Color; 
-}
+} 
 )""";
 
 int main()

@@ -31,9 +31,6 @@ public:
     ///        the small string optimization.
     static constexpr Size SmallStringSize = (Size)((sizeof(T*) + sizeof(Size)) / sizeof(T)) - 1;
 
-    /// \brief Constructs an empty string.
-    String(NullptrType) noexcept;
-
     /// \brief Default constructor, constructs an empty string.
     String() noexcept = default;
 
@@ -173,7 +170,7 @@ public:
                   Size count = 1);
 
     /// \brief Reseves the capacity of the string buffer for the specified number of elements.
-    void ReserveFor(Size count);
+    void Reserve(Size count);
 
     /// \brief Gets the number of elements in the string (null terminated character is not included).
     ///
@@ -215,7 +212,7 @@ public:
 
 private:
     template <Bool Move = true>
-    T* Reserve(Size size);
+    T* ReserveInternal(Size size);
 
     union
     {

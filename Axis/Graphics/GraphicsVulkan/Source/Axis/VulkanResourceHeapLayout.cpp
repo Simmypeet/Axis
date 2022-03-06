@@ -27,7 +27,7 @@ VulkanResourceHeapLayout::VulkanResourceHeapLayout(const ResourceHeapLayoutDescr
         VkDescriptorSetLayout vkDescriptorSetLayout = VK_NULL_HANDLE;
 
         System::List<VkDescriptorSetLayoutBinding> setLayoutBindings;
-        setLayoutBindings.ReserveFor(description.ResourceBindings.GetSize());
+        setLayoutBindings.Reserve(description.ResourceBindings.GetSize());
 
         for (const auto& resourceBinding : description.ResourceBindings)
         {

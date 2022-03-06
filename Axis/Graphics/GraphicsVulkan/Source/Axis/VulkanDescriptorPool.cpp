@@ -134,7 +134,7 @@ void VulkanDescriptorPool::AddPool()
 
     auto CreateVkDescriptorPool = [&]() -> VkDescriptorPool {
         System::List<VkDescriptorPoolSize> descriptorPoolSizes = {};
-        descriptorPoolSizes.ReserveFor(_resourceHeapDesc.ResourceHeapLayout->Description.ResourceBindings.GetSize());
+        descriptorPoolSizes.Reserve(_resourceHeapDesc.ResourceHeapLayout->Description.ResourceBindings.GetSize());
 
         for (const auto& resourceBinding : _resourceHeapDesc.ResourceHeapLayout->Description.ResourceBindings)
         {

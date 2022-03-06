@@ -33,7 +33,7 @@ public:
     TextureFormat DepthStencilViewFormat = TextureFormat::Unknown;
 
     // Render target view formats
-    System::List<TextureFormat> RenderTargetViewFormats = nullptr;
+    System::List<TextureFormat> RenderTargetViewFormats = {};
 
     // Gets hash key for this render pass key.
     Size GetHash() const noexcept;

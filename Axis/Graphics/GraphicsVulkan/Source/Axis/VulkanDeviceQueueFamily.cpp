@@ -144,7 +144,7 @@ VulkanDeviceQueueFamily::VulkanDeviceQueueFamily(Uint32                deviceQue
                                                  VulkanGraphicsDevice& vulkanGraphicsDevice) noexcept :
     _deviceQueueFamilyIndex(deviceQueueFamilyIndex)
 {
-    _deviceQueues.ReserveFor(deviceQueueCount);
+    _deviceQueues.Reserve(deviceQueueCount);
 
     for (Uint32 i = 0; i < deviceQueueCount; i++)
     {
