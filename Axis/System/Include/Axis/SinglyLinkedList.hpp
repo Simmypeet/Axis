@@ -9,7 +9,6 @@
 #include "../../Private/Axis/CoreContainer.inl"
 #include "Allocator.hpp"
 #include "Iterator.hpp"
-#include <list>
 
 namespace Axis
 {
@@ -24,8 +23,8 @@ namespace SinglyLinkedList
 {
 
 /// \note This class is not intended to be used directly
-template <RawType T, class VoidPointerType>
-struct Node // Singly linked list's node data structure
+template <RawType T, RawType IteratorType, Bool IteratorDebugging, RawType VoidPointerType>
+struct Node : public ConditionalType<IteratorDebugging, ::Axis::System::Detail::CoreContainer::IteratorTrackingBase<IteratorType, VoidPointerType>, CoreContainer::Empty> // Singly linked list's node data structure
 {
 public:
     using ThisType        = Node<T, VoidPointerType>;                            // Refers to this data structure's type
@@ -47,6 +46,9 @@ public:
 } // namespace Detail
 
 /// \brief Singly linked list container, stores the elements in the node manner, supports fast insertion and removal.
+///
+/// All the functions in this class are categorized as `strong exception guarantee`. Which means that
+/// if an exception is thrown, the state of the object is rolled back to the state before the function.
 template <RawType T, AllocatorType Alloc = Allocator<T, DefaultMemoryResource>, Bool IteratorDebugging = Detail::CoreContainer::DefaultIteratorDebug>
 class SinglyLinkedList final : private ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>
 {
@@ -66,10 +68,28 @@ public:
     static_assert(IsSame<ValueType, T>, "Allocator's value type mismatch");
 
 private:
-    using NodeType        = Detail::SinglyLinkedList::Node<T, VoidPointerType>; // underlying node type
-    using AllocNodeType   = typename AllocTraits::template Rebind<NodeType>;    // node type's allocator
-    using AllocNodeTraits = AllocatorTraits<AllocNodeType>;                     // node type's allocator traits
-    using NodePointerType = typename AllocNodeTraits::PointerType;              // node's pointer type.
+    // Base iterator class
+    class IteratorBase;
+
+    // Iterator template class
+    template <Bool IsConst>
+    class IteratorTemplate;
+
+    using NodeType        = Detail::SinglyLinkedList::Node<T, IteratorBase, IteratorDebugging, VoidPointerType>; // underlying node type
+    using AllocNodeType   = typename AllocTraits::template Rebind<NodeType>;                                     // node type's allocator
+    using AllocNodeTraits = AllocatorTraits<AllocNodeType>;                                                      // node type's allocator traits
+    using NodePointerType = typename AllocNodeTraits::PointerType;                                               // node's pointer type.
+
+    /* ==================================> Debugging <================================== */
+    using IteratorTrackerNodeType        = Detial::SinglyLinkedList::IteratorTrackerNode<IteratorBase, VoidPointerType>; // Iterator tracker node type
+    using AllocIteratorTrackerNodeType   = typename AllocTraits::template Rebind<IteratorTrackerNodeType>;               // Iterator tracker node's allocator
+    using AllocIteratorTrackerNodeTraits = AllocatorTraits<AllocIteratorTrackerNodeType>;                                // Iterator tracker node's allocator traits
+    using IteratorTrackerNodePointerType = typename AllocIteratorTrackerNodeTraits::PointerType;                         // Iterator tracker node's pointer type
+    /* ==================================> Debugging <================================== */
+
+    using PairNoDebugType = CompressedPair<NodePointerType, AllocNodeType>;                                               // Pair data for non-iterator debugging type
+    using PairDebugType   = CompressedPair<CompressedPair<NodePointerType, AllocIteratorTrackerNodeType>, AllocNodeType>; // Pair data for iterator debugging type
+    using PairType        = ConditionalType<IteratorDebugging, PairDebugType, PairNoDebugType>;                           // List's pair type
 
     // Node's pointer type check
     static_assert(IsSame<NodePointerType, typename NodeType::NodePointerType>, "Node's pointer type mismatch!");
@@ -78,7 +98,7 @@ private:
     using BaseType = ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>;
 
     // Checks if default constructor is nooexcept
-    static constexpr Bool DefaultConstructorNoexcept = IsNoThrowDefaultConstructible<AllocType>;
+    static constexpr Bool DefaultConstructorNoexcept = IsNoThrowDefaultConstructible<AllocNodeTraits> && (IteratorDebugging ? IsNoThrowDefaultConstructible<AllocIteratorTrackerNodeTyp> : true);
 
     // Checks if allocator copy constructor is noexcept
     static constexpr Bool AllocatorCopyConstructorNoexcept = IsNoThrowCopyConstructible<AllocType>;
@@ -89,23 +109,50 @@ private:
     // Checks if move assignment is noexcept
     static constexpr Bool MoveAssignmentNoexcept = AllocTraits::IsAlwaysEqual || AllocTraits::PropagateOnContainerMoveAssignment;
 
-    template <Bool IsConst>
-    struct IteratorTemplate;
-
 public:
     /// \brief Default constructor
     SinglyLinkedList() noexcept(DefaultConstructorNoexcept);
 
+    /// \brief Destructor
+    ~SinglyLinkedList() noexcept;
+
+    /// \brief Singly linked list's iterator
     using Iterator = IteratorTemplate<false>;
 
+    /// \brief Singly linked list's const iterator
     using ConstIterator = IteratorTemplate<true>;
 
+    /// \brief Emplaces the element at the front of the list
+    ///
+    /// \param[in] args Variadic template arguments used to construct the element.
+    ///
+    /// \return The iterator pointing to the inserted element.
     template <class... Args>
-    Iterator EmplaceFont(Args&&... args);
+    Iterator EmplaceFront(Args&&... args);
 
 private:
-    CompressedPair<NodePointerType, AllocNodeType> _nodeAllocPair = {};
+    // Tidies the container
+    void Tidy() noexcept;
+
+    // Gets the node pointer (for iterator debugging)
+    NodePointerType& GetNodePointer() const noexcept requires(IteratorDebugging);
+
+    // Gets the node pointer (for non-iterator debugging)
+    NodePointerType& GetNodePointer() const noexcept requires(!IteratorDebugging);
+
+    // Gets node's allocator
+    AllocNodeType& GetAllocNode() const noexcept;
+
+    // Node's tidier
+    struct NodeTidy;
+
+    // Stores the node head of the list
+    PairType _myPair = {};
+
+    // Friend to tidy guard
+    friend struct Detail::CoreContainer::TidyGuard<ThisType>;
 };
+
 } // namespace System
 
 } // namespace Axis

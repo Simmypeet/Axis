@@ -48,6 +48,49 @@ struct TidyGuard // Calls function `Tidy()` on the target on destruction
     }
 };
 
+/// \note This class is not intended to be used directly
+template <RawType IteratorType, RawType VoidPointerType>
+struct IteratorTrackerNode
+{
+    using ThisType        = IteratorTrackerNode<IteratorType, VoidPointerType>;
+    using NodePointerType = typename PointerTraits<VoidPointerType>::template Rebind<ThisType>;
+
+    IteratorType*   IteratorPointer = {}; // Pointer to the iterator instance
+    NodePointerType Next            = {}; // Pointer to the next node
+};
+
+/// \note This class is not intended to be used directly
+template <RawType IteratorType, RawType VoidPointerType>
+struct IteratorTrackingBase
+{
+    using NodeType        = IteratorTrackerNode<IteratorType, VoidPointerType>;                 // Iterator tracker node type
+    using NodePointerType = typename PointerTratis<VoidPointerType>::template Rebind<NodeType>; // NodeType's pointer type
+
+    static_assert(IsSame<NodePointerType, typename NodeType::NodePointerType>); // Ensure's that NodePointerType is the same as NodeType::NodePointerType
+
+    NodePointerType Head = {}; // Head of the singly linked list
+
+    template <AllocatorType Alloc>
+    inline void ClearAll(Alloc& alloc) // Allocator
+    {
+        using AllocTraits = AllocatorTraits<Alloc>;
+
+        auto current = Head;
+
+        while (current)
+        {
+            auto next = current->Next;
+
+            AllocTraits::Destroy(alloc, current);
+            AllocTraits::Deallocate(alloc, current, 1);
+
+            current = next;
+        }
+
+        Head = {};
+    }
+};
+
 class DebugIteratorContainer; // Container for the debugging iterators
 class BaseDebugIterator;
 
