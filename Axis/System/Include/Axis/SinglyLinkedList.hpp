@@ -41,6 +41,16 @@ public:
         Object(::Axis::System::Forward<Args>(args)...) {}
 };
 
+template <RawType AllocNodeTraits>
+struct IteratorDebugBase
+{
+};
+
+template <RawType AllocNodeTraits, Bool IteratorDebugging>
+struct IteratorBase : protected ConditionalType<IteratorDebugging, IteratorDebugBase<AllocNodeTraits>, ::Axis::System::Detail::CoreContainer::Empty>
+{
+};
+
 } // namespace SinglyLinkedList
 
 } // namespace Detail
@@ -142,6 +152,10 @@ private:
 
     // Gets node's allocator
     AllocNodeType& GetAllocNode() const noexcept;
+
+    // Gets the iterator to the specified node
+    template <Bool IsConst>
+    IteratorTemplate<IsConst> GetIterator(NodePointerType nodePointer);
 
     // Node's tidier
     struct NodeTidy;

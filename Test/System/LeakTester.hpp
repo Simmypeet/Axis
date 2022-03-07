@@ -1,5 +1,13 @@
 #include <Axis/Utility.hpp>
 
+namespace Axis
+{
+
+namespace System
+{
+
+namespace Test
+{
 template <typename T, bool EnableCopyAssignment, bool EnableMoveAssignment>
 struct LeakTester
 {
@@ -65,5 +73,11 @@ private:
     static Axis::Size s_InstanceCount;
 };
 
+} // namespace Test
+
+} // namespace System
+
+} // namespace Axis
+
 template <class T, bool EnableCopyAssignment, bool EnableMoveAssignment>
-Axis::Size LeakTester<T, EnableCopyAssignment, EnableMoveAssignment>::s_InstanceCount = 0;
+Axis::Size Axis::System::Test::LeakTester<T, EnableCopyAssignment, EnableMoveAssignment>::s_InstanceCount = 0;

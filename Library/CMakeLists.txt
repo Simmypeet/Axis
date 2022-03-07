@@ -19,7 +19,7 @@ if(${AXIS_VULKAN_SUPPORT})
     set(SPIRV_HEADERS_SKIP_INSTALL ON CACHE BOOL "Skip SPIRV headers installation")
 
     add_subdirectory("SPIRV-Headers")
-    axis_set_directory_root_folder("SPIRV-Headers" "Axis/Library/SPRIV-Headers")
+    axis_set_directory_root_folder("SPIRV-Headers" "Axis/Library/SPIRV-Headers")
 
     set(SPIRV_SKIP_TESTS ON CACHE BOOL "Skip SPIRV tests")
     set(SPIRV_SKIP_EXECUTABLES ON CACHE BOOL "Skip building SPIRV executable and tests along with the library")
@@ -28,7 +28,7 @@ if(${AXIS_VULKAN_SUPPORT})
     set(SPIRV_HEADERS_SKIP_INSTALL ON CACHE BOOL "Skip SPIRV headers installation")
 
     add_subdirectory("SPIRV-Tools")
-    axis_set_directory_root_folder("SPIRV-Tools" "Axis/Library/SPRIV-Tools")
+    axis_set_directory_root_folder("SPIRV-Tools" "Axis/Library/SPIRV-Tools")
 
     set(SPIRV_TOOLS_EXCLUDE_TARGETS SPIRV-Tools-link SPIRV-Tools-reduce SPIRV-Tools-shared SPIRV-Headers-example)
 
@@ -58,7 +58,7 @@ if(${AXIS_VULKAN_SUPPORT})
     set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "Skip SPIRV-Cross installation.")
 
     add_subdirectory("SPIRV-Cross")
-    axis_set_directory_root_folder("SPIRV-Cross" "Axis/Library/SPRIV-Cross")
+    axis_set_directory_root_folder("SPIRV-Cross" "Axis/Library/SPIRV-Cross")
 endif()
 
 # Adds stb_image to the project
@@ -69,4 +69,4 @@ set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 
 # Adds freetype to the project
 add_subdirectory(freetype EXCLUDE_FROM_ALL)
-axis_set_directory_root_folder("freetype" "Axis/Library/freetype" )
+axis_set_directory_root_folder("freetype" "Axis/Library/freetype")

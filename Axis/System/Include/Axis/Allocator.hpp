@@ -432,7 +432,7 @@ public:
 
     /// \brief Allcoates the memory for the given number of elements.
     ///
-    /// \param[in] allocator    The allocator to use.
+    /// \param[in] allocator The allocator to use.
     /// \param[in] elementCount The number of elements to allocate.
     ///
     /// \returns A pointer to the allocated memory.
@@ -441,8 +441,8 @@ public:
 
     /// \brief Deallocates the memory from the given pointer.
     ///
-    /// \param[in] allocator    The allocator to use.
-    /// \param[in] pointer      The pointer to deallocate.
+    /// \param[in] allocator The allocator to use.
+    /// \param[in] pointer The pointer to deallocate.
     /// \param[in] elementCount number of elements that were allocated for the given pointer.
     static constexpr void Deallocate(T&          allocator,
                                      PointerType pointer,
@@ -451,8 +451,8 @@ public:
     /// \brief Constructs / initializes the `ValueType` at the given pointer.
     ///
     /// \param[in] allocator The allocator to use.
-    /// \param[in] pointer   The pointer to construct / initialize.
-    /// \param[in] args      The arguments to pass to the constructor.
+    /// \param[in] pointer The pointer to construct / initialize.
+    /// \param[in] args The arguments to pass to the constructor.
     template <class... Args>
     static constexpr void Construct(T&          allocator,
                                     PointerType pointer,
@@ -543,7 +543,7 @@ public:
     /// \brief Constructs an instance of the specified type `T` at the specified pointer.
     ///
     /// \param[in] pointer The pointer to the memory to construct.
-    /// \param[in] args    The arguments to pass to the constructor.
+    /// \param[in] args The arguments to pass to the constructor.
     template <class... Args>
     constexpr void Construct(PointerType pointer,
                              Args&&... args) noexcept(IsNothrowConstructible<T, Args...>);

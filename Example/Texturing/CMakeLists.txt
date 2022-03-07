@@ -18,7 +18,7 @@ endif()
 axis_add_example(Axis-Texturing
                  SOURCES ${AXIS_TEXTURING_SOURCE_FILES}
                  TARGETS_TO_LINK "${AXIS_TEXTURING_TARGETS_TO_LNK}"
-                 FOLDER "Axis/Example/Texturing"
+                 FOLDER "Axis/Example"
                  RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 
 # Copies the Asset folder

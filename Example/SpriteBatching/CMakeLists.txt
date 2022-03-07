@@ -19,7 +19,7 @@ endif()
 axis_add_example(Axis-SpriteBatching
                  SOURCES ${AXIS_SPRITEBATCHING_SOURCE_FILES}
                  TARGETS_TO_LINK "${AXIS_SPRITEBATCHING_TARGETS_TO_LNK}"
-                 FOLDER "Axis/Example/SpriteBatching"
+                 FOLDER "Axis/Example"
                  RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 
 # Copies the Asset folder

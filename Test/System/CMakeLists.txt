@@ -10,6 +10,7 @@ set(AXIS_SYSTEM_TEST_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/List.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/Function.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/SmartPointer.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/TestAllocator.hpp"
     "${CMAKE_CURRENT_LIST_DIR}/HashSet.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/HashMap.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/Event.cpp"
@@ -22,7 +23,7 @@ set(AXIS_SYSTEM_TEST_TARGETS_TO_LINK
 
 # Adds system module test unit
 axis_add_test(Axis-Test-System
-              FOLDER "Axis/Test/System"
+              FOLDER "Axis/Test"
               RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}/"
               SOURCES ${AXIS_SYSTEM_TEST_SOURCES}
               TARGETS_TO_LINK ${AXIS_SYSTEM_TEST_TARGETS_TO_LINK})

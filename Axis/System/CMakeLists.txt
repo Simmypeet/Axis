@@ -87,8 +87,8 @@ set(AXIS_SYSTEM_ALL_SOURCE_FILES ${AXIS_SYSTEM_HEADER_FILES} ${AXIS_SYSTEM_SOURC
 
 # Adds System module to the project
 axis_add_library(Axis-System
-                    FOLDER "Axis/Axis/System"
-                    RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}/../"
+                    FOLDER "Axis/Axis"
+                    RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}"
                     INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/Include"
                     SOURCES ${AXIS_SYSTEM_ALL_SOURCE_FILES})
 

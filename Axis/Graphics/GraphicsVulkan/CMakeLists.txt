@@ -65,8 +65,8 @@ if(${AXIS_VULKAN_SUPPORT})
 
     # Adds System module to the project
     axis_add_library(Axis-GraphicsVulkan
-        FOLDER "Axis/Axis/Graphics/GraphicsVulkan"
-        RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}/../"
+        FOLDER "Axis/Axis"
+        RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}"
         INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/Include"
         SOURCES ${AXIS_GRAPHICSVULKAN_ALL_SOURCE_FILES}
         TARGETS_TO_LINK ${AXIS_GRAPHICSVULKAN_TARGET_TO_LINK}

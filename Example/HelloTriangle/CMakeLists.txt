@@ -18,5 +18,5 @@ endif()
 axis_add_example(Axis-HelloTriangle
                  SOURCES ${AXIS_HELLOTRIANGLE_SOURCE_FILES}
                  TARGETS_TO_LINK "${AXIS_HELLOTRIANGLE_TARGETS_TO_LNK}"
-                 FOLDER "Axis/Example/HelloTriangle"
+                 FOLDER "Axis/Example"
                  RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}")

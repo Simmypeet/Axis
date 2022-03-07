@@ -27,8 +27,8 @@ set(AXIS_CORE_TARGET_TO_LINK
 
 # Adds System module to the project 
 axis_add_library(Axis-Core
-                FOLDER "Axis/Axis/Core"
-                RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}/../"
+                FOLDER "Axis/Axis"
+                RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}"
                 INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/Include"
                 SOURCES ${AXIS_CORE_ALL_SOURCE_FILES}
                 TARGETS_TO_LINK ${AXIS_CORE_TARGET_TO_LINK})

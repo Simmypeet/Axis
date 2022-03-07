@@ -18,5 +18,5 @@ endif()
 axis_add_example(Axis-RotatingCube
                  SOURCES ${AXIS_ROTATINGCUBE_SOURCE_FILES}
                  TARGETS_TO_LINK "${AXIS_ROTATINGCUBE_TARGETS_TO_LNK}"
-                 FOLDER "Axis/Example/RotatingCube"
+                 FOLDER "Axis/Example"
                  RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}")

@@ -64,7 +64,7 @@ template <RawType IteratorType, RawType VoidPointerType>
 struct IteratorTrackingBase
 {
     using NodeType        = IteratorTrackerNode<IteratorType, VoidPointerType>;                 // Iterator tracker node type
-    using NodePointerType = typename PointerTratis<VoidPointerType>::template Rebind<NodeType>; // NodeType's pointer type
+    using NodePointerType = typename PointerTraits<VoidPointerType>::template Rebind<NodeType>; // NodeType's pointer type
 
     static_assert(IsSame<NodePointerType, typename NodeType::NodePointerType>); // Ensure's that NodePointerType is the same as NodeType::NodePointerType
 

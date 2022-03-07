@@ -34,8 +34,8 @@ set(AXIS_WINDOW_TARGET_TO_LINK
 
 # Adds Window module to the project
 axis_add_library(Axis-Window
-                    FOLDER "Axis/Axis/Window"
-                    RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}/../"
+                    FOLDER "Axis/Axis"
+                    RELATIVE_PATH "${CMAKE_CURRENT_LIST_DIR}"
                     INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/Include"
                     SOURCES ${AXIS_WINDOW_ALL_SOURCE_FILES}
                     TARGETS_TO_LINK ${AXIS_WINDOW_TARGET_TO_LINK})
