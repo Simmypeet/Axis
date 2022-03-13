@@ -6,81 +6,41 @@
 #define AXIS_SYSTEM_MEMORY_HPP
 #pragma once
 
-#include "Config.hpp"
 #include "SystemExport.hpp"
-#include "Trait.hpp"
 #include "Utility.hpp"
 
-
-namespace Axis
+namespace Axis::System
 {
 
-namespace System
+namespace Concept
 {
 
 /// \brief The type which handles memory allocation and deallocation
 ///
-/// Constraints:
-/// - have public static member function with give signature:
-///   - `Axis::PVoid Allocate(Axis::Size byteSize, Axis::Size alignment) noexcept(/*optional*/)`
-///   - `void Deallocate(Axis::PVoid allocatedMemory) noexcept(true)`
+/// The term `MemoryResource` refers to the type that is capable of allocating and
+/// deallocating memory.
+///
+/// The class should have these following static function:
+///     - *PVoid Allocate(Size byteSize)*
+///     - *void Deallocate(PVoid memoryPtr) noexcept*
+///
+/// \tparam T Type to check for the constraints
 template <typename T>
-concept MemoryResourceType = requires(PVoid allocatedMemory,
-                                      Size  byteSize,
-                                      Size  alignment)
-{
-    {
-        // Allocates the memory with the given size and alignment
-        T::Allocate(byteSize,
-                    alignment)
-        } -> IsSame<PVoid>;
-    {
-        // Deallocates the memory for the allocated pointer (must be noexcept!)
-        T::Deallocate(allocatedMemory)
-        } -> IsSame<void>;
-}
-&&noexcept(T::Deallocate(MakeValue<PVoid>()));
+concept MemoryResource = IsSame<decltype(T::Allocate(Size{})), PVoid> && noexcept(T::Deallocate(PVoid{})) && Pure<T>;
+
+} // namespace Concept
 
 /// \brief MemoryResource class which uses operator new and delete
 ///        for memory allocation and deallocation
 struct AXIS_SYSTEM_API MemoryResource
 {
 public:
-    /// \brief Can't be instantiated
-    MemoryResource() = delete;
-
     /// \brief Allocates the memory with the given size and alignment
     ///
     /// \param[in] byteSize  The size of the memory to allocate
-    /// \param[in] alignment The alignment of the memory to allocate
     ///
     /// \returns The pointer to the allocated memory
-    AXIS_NODISCARD static PVoid Allocate(Size byteSize,
-                                         Size alignment);
-
-    /// \brief Deallocates the memory for the allocated pointer
-    ///
-    /// \param[in] allocatedMemory The allocated memory
-    static void Deallocate(PVoid allocatedMemory) noexcept;
-};
-
-/// \brief MemoryResource class which uses operator new and delete
-///        for memory allocation and deallocation, but pools the memory
-///        when deallocates the memory.
-struct AXIS_SYSTEM_API PoolMemoryResource
-{
-public:
-    /// \brief Can't be instantiated
-    PoolMemoryResource() = delete;
-
-    /// \brief Allocates the memory with the given size and alignment
-    ///
-    /// \param[in] byteSize  The size of the memory to allocate
-    /// \param[in] alignment The alignment of the memory to allocate
-    ///
-    /// \returns The pointer to the allocated memory
-    AXIS_NODISCARD static PVoid Allocate(Size byteSize,
-                                         Size alignment);
+    AXIS_NODISCARD static PVoid Allocate(Size byteSize);
 
     /// \brief Deallocates the memory for the allocated pointer
     ///
@@ -89,7 +49,13 @@ public:
 };
 
 /// \brief Axis's default memory resource type
-using DefaultMemoryResource = PoolMemoryResource;
+using DefaultMemoryResource = MemoryResource;
+
+/// \brief Gets the maximum number of elements that can be allocated at once.
+///
+/// \tparam T Type to check for maximum array size
+template <Concept::Pure T>
+AXIS_NODISCARD constexpr Size GetMaxArraySize() noexcept;
 
 /// \brief Creates a new instance of the specified type using the
 ///        specified memory resource on the heap. Uses \a `Delete` to delete
@@ -98,7 +64,7 @@ using DefaultMemoryResource = PoolMemoryResource;
 /// \param[in] args The arguments to pass to the constructor.
 ///
 /// \return A new instance of the specified type.
-template <MemoryResourceType MemoryResource, RawType T, class... Args>
+template <Concept::MemoryResource MemoryResource, Concept::Pure T, class... Args>
 AXIS_NODISCARD T* MemoryNew(Args&&... args);
 
 /// \brief Creates the array of new instances of the specified type using
@@ -106,25 +72,25 @@ AXIS_NODISCARD T* MemoryNew(Args&&... args);
 ///        delete the array.
 ///
 /// \param[in] elementCount Number of elements to allocate.
-/// \param[in] args         The arguments to pass to the constructor.
+/// \param[in] args The arguments to pass to the constructor.
 ///
 /// \return A new array of the specified type.
-template <MemoryResourceType MemoryResource, RawType T, class... Args>
+template <Concept::MemoryResource MemoryResource, Concept::Pure T, class... Args>
 AXIS_NODISCARD T* MemoryNewArray(Size elementCount, Args&&... args);
 
 /// \brief Deletes the instance and frees the memory, must use the
 ///        same memory resource type as the one used to allocate the instance.
 ///
 /// \param[in] instance Pointer to the instance to delete.
-template <MemoryResourceType MemoryResource, RawConstableType T>
-void MemoryDelete(T* instance) noexcept;
+template <Concept::MemoryResource MemoryResource, Concept::Pure T>
+void MemoryDelete(const T* instance) noexcept;
 
 /// \brief Deletes the array and frees the memory, must use the
 ///        same memory resource type as the one used to allocate the array.
 ///
 /// \param[in] array Pointer to the array to delete.
-template <MemoryResourceType MemoryResource, RawConstableType T>
-void MemoryDeleteArray(T* array) noexcept;
+template <Concept::MemoryResource MemoryResource, Concept::Pure T>
+void MemoryDeleteArray(const T* array) noexcept;
 
 /// \brief Creates a new instance of the specified type using the
 ///        default memory resource on the heap. Uses \a `Delete` to delete
@@ -133,35 +99,33 @@ void MemoryDeleteArray(T* array) noexcept;
 /// \param[in] args The arguments to pass to the constructor.
 ///
 /// \return A new instance of the specified type.
-template <RawType T, class... Args>
-AXIS_NODISCARD inline T* New(Args&&... args);
+template <Concept::Pure T, class... Args>
+AXIS_NODISCARD inline T* New(Args&&... args) { return MemoryNew<MemoryResource, T, Args...>(Forward<Args>(args)...); }
 
 /// \brief Creates the array of new instances of the specified type using
 ///        the default memory resource on the heap. Uses \a `DeleteArray` to
 ///        delete the array.
 ///
 /// \param[in] elementCount Number of elements to allocate.
-/// \param[in] args         The arguments to pass to the constructor.
+/// \param[in] args The arguments to pass to the constructor.
 ///
 /// \return A new array of the specified type.
-template <RawType T, class... Args>
-AXIS_NODISCARD inline T* NewArray(Size elementCount, Args&&... args);
+template <Concept::Pure T, class... Args>
+AXIS_NODISCARD inline T* NewArray(Size elementCount, Args&&... args) { return MemoryNewArray<MemoryResource, T, Args...>(elementCount, Forward<Args>(args)...); }
 
 /// \brief Deletes the instance and frees the memory
 ///
 /// \param[in] instance Pointer to the instance to delete.
-template <RawConstableType T>
-inline void Delete(T* instance) noexcept;
+template <Concept::Pure T>
+inline void Delete(const T* instance) noexcept { MemoryDelete<DefaultMemoryResource, T>(instance); }
 
 /// \brief Deletes the array and frees the memory.
 ///
 /// \param[in] array Pointer to the array to delete.
-template <RawConstableType T>
-inline void DeleteArray(T* array) noexcept;
+template <Concept::Pure T>
+inline void DeleteArray(const T* array) noexcept { MemoryDeleteArray<DefaultMemoryResource, T>(array); }
 
-} // namespace System
-
-} // namespace Axis
+} // namespace Axis::System
 
 #include "../../Private/Axis/MemoryImpl.inl"
 

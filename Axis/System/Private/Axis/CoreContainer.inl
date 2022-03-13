@@ -49,7 +49,7 @@ struct TidyGuard // Calls function `Tidy()` on the target on destruction
 };
 
 /// \note This class is not intended to be used directly
-template <RawType IteratorType, RawType VoidPointerType>
+template <Concept::Pure IteratorType, Concept::Pure VoidPointerType>
 struct IteratorTrackerNode
 {
     using ThisType        = IteratorTrackerNode<IteratorType, VoidPointerType>;
@@ -60,7 +60,7 @@ struct IteratorTrackerNode
 };
 
 /// \note This class is not intended to be used directly
-template <RawType IteratorType, RawType VoidPointerType>
+template <Concept::Pure IteratorType, Concept::Pure VoidPointerType>
 struct IteratorTrackingBase
 {
     using NodeType        = IteratorTrackerNode<IteratorType, VoidPointerType>;                 // Iterator tracker node type

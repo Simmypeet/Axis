@@ -21,8 +21,9 @@ inline constexpr T&& Forward(RemoveReference<T>& arg) noexcept
 }
 
 template <class T>
-inline constexpr T&& Forward(RemoveReference<T>&& arg) noexcept requires(!IsLvalueReference<T>)
+inline constexpr T&& Forward(RemoveReference<T>&& arg) noexcept
 {
+    static_assert(!IsLvalueReference<T>, "Couldn't forward l-value reference.");
     return static_cast<T&&>(arg);
 }
 
@@ -38,7 +39,7 @@ inline constexpr RemoveReference<T>&& Move(T&& value) noexcept
     return static_cast<RemoveReference<T>&&>(value);
 }
 
-template <RawType T>
+template <Concept::Pure T>
 inline constexpr ConditionalType<IsNoThrowMoveAssignable<T>, T&&, const T&> MoveAssignIfNoThrow(T& value) noexcept
 {
     if constexpr (IsNoThrowMoveAssignable<T>)
@@ -51,7 +52,7 @@ inline constexpr ConditionalType<IsNoThrowMoveAssignable<T>, T&&, const T&> Move
     }
 }
 
-template <RawType T>
+template <Concept::Pure T>
 inline constexpr ConditionalType<IsNoThrowMoveConstructible<T>, T&&, const T&> MoveConstructIfNoThrow(T& value) noexcept
 {
     if constexpr (IsNoThrowMoveConstructible<T>)

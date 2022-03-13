@@ -6,14 +6,10 @@
 #define AXIS_SYSTEM_CONFIG_HPP
 #pragma once
 
-#include <stdint.h>
-
+#include <cstdint>
 
 /// Platform detection
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-
-/// \brief Desktop platform
-#    define AXIS_PLATFORM_DESKTOP
 
 /// \brief Windows platform
 #    define AXIS_PLATFORM_WINDOWS
@@ -24,16 +20,10 @@
 
 #    if defined(TARGET_IPHONE_SIMULATOR) || defined(TARGET_OS_IPHONE)
 
-/// \brief Mobile phone platform
-#        define AXIS_PLATFORM_MOBILE
-
 /// \brief iOS platform
 #        define AXIS_PLATFORM_IOS
 
 #    elif defined(TARGET_OS_MACCATALYST) || defined(TARGET_OS_MAC)
-
-/// \brief Desktop platform
-#        define AXIS_PLATFORM_DESKTOP
 
 /// \brief macOS platform
 #        define AXIS_PLATFORM_MACOS
@@ -99,89 +89,79 @@ namespace Axis
 {
 
 /// \brief 8 bits signed integer
-typedef signed char Int8;
+using Int8 = std::int8_t;
 
 /// \brief 8 bits unsigned integer
-typedef unsigned char Uint8;
+using Uint8 = std::uint8_t;
 
 /// \brief 16 bits signed integer
-typedef signed short Int16;
+using Int16 = std::int16_t;
 
 /// \brief 16 bits unsigned integer
-typedef unsigned short Uint16;
+using Uint16 = std::uint16_t;
 
 /// \brief 32 bits signed integer
-typedef signed int Int32;
+using Int32 = std::int32_t;
 
 /// \brief 32 bits unsigned integer
-typedef unsigned int Uint32;
-
-#if defined(_MSC_VER)
+using Uint32 = std::uint32_t;
 
 /// \brief 64 bits signed integer
-typedef signed __int64 Int64;
+using Int64 = std::int64_t;
 
 /// \brief 64 bits unsigned integer
-typedef unsigned __int64 Uint64;
-#else
-
-/// \brief 64 bits signed integer
-typedef signed long long Int64;
-
-/// \brief 64 bits unsigned integer
-typedef unsigned long long Uint64;
-#endif
+using Uint64 = std::uint64_t;
 
 /// \brief The implicit type of `nullptr` literal
-typedef decltype(nullptr) NullptrType;
+using NullptrType = decltype(nullptr);
 
 /// \brief Boolean value type, Only contains 2 values: `true` and `false`
-typedef bool Bool;
+using Bool = bool;
 
 /// \brief Raw memory pointer (void* pointer)
-typedef void* PVoid;
+using PVoid = void*;
 
 /// \brief Read only raw memory pointer (const void* pointer)
-typedef const void* CPVoid;
+using ConstPVoid = const void*;
 
 /// \brief Biggest possible unsigned integer type.
-typedef size_t Size;
+using Size = decltype(sizeof(char));
 
 /// \brief Unsigned 8 bits integer type.
-typedef Uint8 Byte;
+using Byte = Uint8;
 
 /// \brief 32 bits floating point number type.
-typedef float Float32;
+using Float32 = float;
 
 /// \brief 64 bits floating point number type.
-typedef double Float64;
+using Float64 = double;
 
 /// \brief Largest precision possible floating point number.
 ///
 /// \warning The size may varies between different compilers and platforms.
-typedef long double BigFloat;
+using BigDouble = long double;
 
 /// \brief 8-Bits ANSI character
-typedef char Char;
+using Char = char;
 
 /// \brief Wide character
 ///
 /// \warning The size may varies between different platforms and compilers
-typedef wchar_t WChar;
+using WChar = wchar_t;
 
 /// \brief The type of the pointer differences.
-typedef ptrdiff_t PointerDifference;
+using PtrDiff = ptrdiff_t;
 
 #ifdef AXIS_64_BIT_PTR
 
 /// \brief 64 Bits unsigned integer type, can be casted to pointer, back and
-/// forth.
-typedef Uint64 UintPtr;
+///        forth.
+using UintPtr = Uint64;
 #else
 
 /// \brief 32 Bits unsigned integer type, can be casted to pointer, back and
-/// forth.
-typedef Uint32 UintPtr;
+///        forth.
+using UintPtr = Uint32;
 #endif
 
 /// \brief Size of pointer type (in bytes)

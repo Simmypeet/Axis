@@ -57,7 +57,7 @@ inline typename SinglyLinkedList<T, Alloc, IteratorDebugging>::Iterator SinglyLi
     tidyGuard.Target = nullptr;
 
     // Inserts new node at head
-    _nodeAllocPair.First() = newNodePointer;
+    GetNodePointer() = newNodePointer;
 }
 
 template <RawType T, AllocatorType Alloc, Bool IteratorDebugging>

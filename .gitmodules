@@ -13,3 +13,6 @@
 [submodule "Library/freetype"]
 	path = Library/freetype
 	url = https://github.com/SimmyPeet/freetype.git
+[submodule "Library/doctest"]
+	path = Library/doctest
+	url = https://github.com/doctest/doctest.git

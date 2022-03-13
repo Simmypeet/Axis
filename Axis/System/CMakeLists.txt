@@ -32,6 +32,7 @@ set(AXIS_SYSTEM_HEADER_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Iterator.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/SinglyLinkedList.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/System"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Utility.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Trait.hpp")
 
 # Collects all system's source files
@@ -67,7 +68,7 @@ set(AXIS_SYSTEM_PRIVATE_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/CompressedPair.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/CoreContainer.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/UtilityImpl.inl"
-   "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/SinglyLinkedListImpl.inl"
+   "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/SinglyLinkedListImpl.inl"    
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/StringImpl.inl")
 
 # Win32 platform specific header and source files

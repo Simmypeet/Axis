@@ -1,13 +1,12 @@
+/// \copyright Simmypeet - Copyright (C)
+///            This file is subject to the terms and conditions defined in
+///            file 'LICENSE', which is part of this source code package.
+
 #include <Axis/Utility.hpp>
 
-namespace Axis
+namespace Axis::System
 {
 
-namespace System
-{
-
-namespace Test
-{
 template <typename T, bool EnableCopyAssignment, bool EnableMoveAssignment>
 struct LeakTester
 {
@@ -73,11 +72,7 @@ private:
     static Axis::Size s_InstanceCount;
 };
 
-} // namespace Test
-
-} // namespace System
-
-} // namespace Axis
+} // namespace Axis::System
 
 template <class T, bool EnableCopyAssignment, bool EnableMoveAssignment>
-Axis::Size Axis::System::Test::LeakTester<T, EnableCopyAssignment, EnableMoveAssignment>::s_InstanceCount = 0;
+Axis::Size Axis::System::LeakTester<T, EnableCopyAssignment, EnableMoveAssignment>::s_InstanceCount = 0;

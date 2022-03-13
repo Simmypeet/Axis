@@ -65,6 +65,10 @@ endif()
 add_subdirectory(stb_image)
 axis_set_directory_root_folder("stb_image" "Axis/Library/stb_image")
 
+# Adds doctest to the project
+add_subdirectory(doctest)
+axis_set_directory_root_folder("doctest" "Axis/Library/doctest")
+
 set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 
 # Adds freetype to the project

@@ -9,139 +9,43 @@
 #include "../../Include/Axis/Allocator.hpp"
 #include <limits>
 
-namespace Axis
+namespace Axis::System
 {
 
-namespace System
+template <Concept::Pure T, Concept::MemoryResource MemoryResource>
+inline Allocator<T, MemoryResource>::PointerType<T> Allocator<T, MemoryResource>::Allocate(SizeType size)
 {
+    AXIS_VALIDATE(size <= MaxAllocationSize, "Allocation size exceeded the maximum allowed size.");
 
-template <DefaultType T>
-inline constexpr typename AllocatorTraits<T>::PointerType AllocatorTraits<T>::Allocate(T&       allocator,
-                                                                                       SizeType elementCount)
-{
-    return allocator.Allocate(elementCount);
+    return reinterpret_cast<PointerType<T>>(MemoryResource::Allocate(size * sizeof(ValueType)));
 }
 
-template <DefaultType T>
-inline constexpr void AllocatorTraits<T>::Deallocate(T&                                       allocator,
-                                                     typename AllocatorTraits<T>::PointerType ptr,
-                                                     SizeType                                 elementCount) noexcept
+template <Concept::Pure T, Concept::MemoryResource MemoryResource>
+inline void Allocator<T, MemoryResource>::Deallocate(PointerType<T> pointer,
+                                                     SizeType       size) noexcept
 {
-    allocator.Deallocate(ptr,
-                         elementCount);
+    MemoryResource::Deallocate(reinterpret_cast<PVoid>(pointer));
 }
 
-
-template <DefaultType T>
+template <Concept::Pure T, Concept::MemoryResource MemoryResource>
 template <class... Args>
-inline constexpr void AllocatorTraits<T>::Construct(T&                                       allocator,
-                                                    typename AllocatorTraits<T>::PointerType ptr,
-                                                    Args&&... args) noexcept(NoThrowConstructible<Args...>)
+inline void Allocator<T, MemoryResource>::Construct(PointerType<T> pointer,
+                                                    Args&&... args) noexcept(IsNothrowConstructible<T, Args...>)
 {
-    if constexpr (Detail::AllocatorDefineConstruct<T>)
-    {
-        allocator.Construct(ptr, Forward<Args>(args)...);
-    }
-    else
-    {
-        (void)allocator;
-        new (ptr) ValueType(Forward<Args>(args)...);
-    }
-}
+    static_assert(IsConstructible<T, Args..>, "Couldn't construct the element with the given arguments.");
 
-template <DefaultType T>
-inline constexpr void AllocatorTraits<T>::Destruct(T&                                       allocator,
-                                                   typename AllocatorTraits<T>::PointerType ptr) noexcept
-{
-    if constexpr (Detail::AllocatorDefineDestruct<T>)
-    {
-        allocator.Destruct(ptr);
-    }
-    else
-    {
-        (void)allocator;
-        ptr->~ValueType();
-    }
-}
-
-template <DefaultType T>
-inline constexpr T AllocatorTraits<T>::SelectOnContainerCopyConstruction(const T& allocator) noexcept(NoThrowSelectOnContainerCopyConstruction)
-{
-    if constexpr (Detail::AllocatorDefineSelectOnContainerCopyConstruction<T>)
-    {
-        return allocator.SelectOnContainerCopyConstruction();
-    }
-    else
-    {
-        return allocator;
-    }
-}
-
-template <DefaultType T>
-inline constexpr typename AllocatorTraits<T>::SizeType AllocatorTraits<T>::GetMaxSize(const T& allocator) noexcept
-{
-    if constexpr (Detail::AllocatorHasGetMaxSize<T>)
-    {
-        return allocator.GetMaxSize();
-    }
-    else
-        return std::numeric_limits<SizeType>::max() / sizeof(ValueType);
-}
-
-template <RawType T, MemoryResourceType MemoryResource>
-inline constexpr typename Allocator<T, MemoryResource>::PointerType Allocator<T, MemoryResource>::Allocate(typename Allocator<T, MemoryResource>::SizeType elementCount)
-{
-    // Maximum element count
-    if (elementCount > GetMaxSize())
-        throw InvalidArgumentException("`elementCount` was too large for allocation");
-
-    return (PointerType)MemoryResource::Allocate(elementCount * sizeof(T), alignof(T));
-}
-
-template <RawType T, MemoryResourceType MemoryResource>
-inline constexpr void Allocator<T, MemoryResource>::Deallocate(typename Allocator<T, MemoryResource>::PointerType pointer,
-                                                               typename Allocator<T, MemoryResource>::SizeType    elementCount) noexcept
-{
-    return MemoryResource::Deallocate(pointer);
-}
-
-template <RawType T, MemoryResourceType MemoryResource>
-template <class... Args>
-inline constexpr void Allocator<T, MemoryResource>::Construct(typename Allocator<T, MemoryResource>::PointerType pointer,
-                                                              Args&&... args) noexcept(IsNothrowConstructible<T, Args...>)
-{
     new (pointer) T(Forward<Args>(args)...);
 }
 
-template <RawType T, MemoryResourceType MemoryResource>
-inline constexpr void Allocator<T, MemoryResource>::Destruct(typename Allocator<T, MemoryResource>::PointerType pointer) noexcept
+template <Concept::Pure T, Concept::MemoryResource MemoryResource>
+template <class... Args>
+inline void Allocator<T, MemoryResource>::Destruct(PointerType<T> pointer) noexcept
 {
+    static_assert(IsNothrowDestructible<T>, "The element couldn't be nothrow destructed.");
+
     pointer->~T();
 }
 
-template <RawType T, MemoryResourceType MemoryResource>
-inline constexpr typename Allocator<T, MemoryResource>::SizeType Allocator<T, MemoryResource>::GetMaxSize() const noexcept
-{
-    constexpr SizeType MaximumElementCount = std::numeric_limits<SizeType>::max() / sizeof(T);
-    constexpr SizeType MaximumDifference   = std::numeric_limits<DifferenceType>::max();
-
-    return MaximumElementCount < MaximumDifference ? MaximumElementCount : MaximumDifference;
-}
-
-template <RawType T, MemoryResourceType MemoryResource>
-inline constexpr bool Allocator<T, MemoryResource>::operator==(const Allocator<T, MemoryResource>&) const noexcept
-{
-    return true;
-}
-
-template <RawType T, MemoryResourceType MemoryResource>
-inline constexpr bool Allocator<T, MemoryResource>::operator!=(const Allocator<T, MemoryResource>&) const noexcept
-{
-    return false;
-}
-
-} // namespace System
-
-} // namespace Axis
+} // namespace Axis::System
 
 #endif // AXIS_SYSTEM_ALLOCATORIMPL_INL

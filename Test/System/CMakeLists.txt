@@ -28,4 +28,8 @@ axis_add_test(Axis-Test-System
               SOURCES ${AXIS_SYSTEM_TEST_SOURCES}
               TARGETS_TO_LINK ${AXIS_SYSTEM_TEST_TARGETS_TO_LINK})
 
-target_link_libraries(Axis-Test-System PUBLIC Axis-Doctest-Main)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(Axis-Test-System PRIVATE "-bigobj")
+endif()
+
+target_link_libraries(Axis-Test-System PRIVATE doctest_with_main)

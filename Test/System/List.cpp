@@ -1,5 +1,5 @@
-#include "Axis/Assert.hpp"
 #include "LeakTester.hpp"
+#include "TestAllocator.hpp"
 #include <Axis/List.hpp>
 #include <doctest.h>
 
@@ -12,16 +12,17 @@ namespace System
 namespace Test
 {
 
-template <bool EnableCopyAssignment, bool EnableMoveAssignment>
-inline void RunTestList()
+template <Bool EnableCopyAssignment, Bool EnableMoveAssignment>
+void RunTestList()
 {
     using LeakTesterType = LeakTester<Size, EnableCopyAssignment, EnableMoveAssignment>;
+    using ListType       = List<LeakTesterType, ::Axis::System::Allocator<LeakTesterType, DefaultMemoryResource>>;
 
     DOCTEST_SUBCASE("Constructors")
     {
         DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         {
-            List<LeakTesterType> list = {1, 2, 3, 4, 5};
+            ListType list = {1, 2, 3, 4, 5};
 
             DOCTEST_CHECK(list.GetSize() == 5);
 
@@ -39,7 +40,7 @@ inline void RunTestList()
 
         DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         {
-            List<LeakTesterType> list(5, 1);
+            ListType list(5, 1);
 
             DOCTEST_CHECK(list.GetSize() == 5);
 
@@ -60,8 +61,8 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list  = {1, 2, 3, 4, 5};
-                List<LeakTesterType> list1 = Axis::System::Move(list);
+                ListType list  = {1, 2, 3, 4, 5};
+                ListType list1 = Axis::System::Move(list);
 
                 DOCTEST_CHECK(list.GetSize() == 0);
                 DOCTEST_CHECK(list1.GetSize() == 5);
@@ -79,8 +80,8 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list  = {1, 2, 3, 4, 5};
-                List<LeakTesterType> list1 = list;
+                ListType list  = {1, 2, 3, 4, 5};
+                ListType list1 = list;
 
                 DOCTEST_CHECK(list.GetSize() == 5);
                 DOCTEST_CHECK(list1.GetSize() == 5);
@@ -109,14 +110,14 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list1 = {1, 2, 3, 4, 5};
-                List<LeakTesterType> list2 = {6, 7, 8, 9, 0};
+                ListType list1 = {1, 2, 3, 4, 5};
+                ListType list2 = {6, 7, 8, 9, 0};
 
                 list1 = list2;
 
                 DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 10);
 
-                constexpr auto CheckCase1 = [](const List<LeakTesterType>& list) {
+                constexpr auto CheckCase1 = [](const ListType& list) {
                     DOCTEST_CHECK(list.GetSize() == 5);
 
                     DOCTEST_CHECK(list[0].Instance == 6);
@@ -129,14 +130,14 @@ inline void RunTestList()
                 CheckCase1(list1);
                 CheckCase1(list2);
 
-                List<LeakTesterType> list3 = {10, 11, 12, 13, 14};
-                List<LeakTesterType> list4 = {15, 16, 17, 18, 19, 20};
+                ListType list3 = {10, 11, 12, 13, 14};
+                ListType list4 = {15, 16, 17, 18, 19, 20};
 
                 list3 = list4;
 
                 DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 22);
 
-                constexpr auto CheckCase2 = [](const List<LeakTesterType>& list) {
+                constexpr auto CheckCase2 = [](const ListType& list) {
                     DOCTEST_CHECK(list.GetSize() == 6);
 
                     DOCTEST_CHECK(list[0].Instance == 15);
@@ -157,8 +158,8 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list  = {0, 1, 2, 3, 4, 5};
-                List<LeakTesterType> list1 = {6, 7, 8, 9, 0};
+                ListType list  = {0, 1, 2, 3, 4, 5};
+                ListType list1 = {6, 7, 8, 9, 0};
 
                 list = Axis::System::Move(list1);
 
@@ -182,7 +183,7 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
+                ListType list = {0, 1, 2, 3, 4, 5};
 
                 Size i = 0;
                 for (auto& item : list)
@@ -199,10 +200,10 @@ inline void RunTestList()
     {
         DOCTEST_SUBCASE("Reserve")
         {
-            constexpr auto CheckReserve = [](typename List<LeakTesterType>::SizeType reserveSize) {
+            constexpr auto CheckReserve = [](typename ListType::SizeType reserveSize) {
                 DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
                 {
-                    List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
+                    ListType list = {0, 1, 2, 3, 4, 5};
 
                     try
                     {
@@ -235,14 +236,14 @@ inline void RunTestList()
             CheckReserve(10);
 
             // Reserves more than the maximum size
-            CheckReserve(std::numeric_limits<typename List<LeakTesterType>::SizeType>::max());
+            CheckReserve(std::numeric_limits<typename ListType::SizeType>::max());
         }
 
         DOCTEST_SUBCASE("Append")
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list = {0, 1, 2, 3, 4};
+                ListType list = {0, 1, 2, 3, 4};
 
                 list.Append(5);
 
@@ -264,8 +265,8 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list  = {0, 1, 2, 3, 4};
-                List<LeakTesterType> list2 = {};
+                ListType list  = {0, 1, 2, 3, 4};
+                ListType list2 = {};
 
                 list2.AppendRange(list.begin(), list.end());
 
@@ -286,7 +287,7 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
+                ListType list = {0, 1, 2, 3, 4, 5};
 
                 DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 6);
 
@@ -324,7 +325,7 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list = {0, 1, 4, 5};
+                ListType list = {0, 1, 4, 5};
 
                 DOCTEST_CHECK(list.GetSize() == 4);
 
@@ -352,9 +353,9 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list  = {0, 5};
-                List<LeakTesterType> list1 = {1, 2};
-                List<LeakTesterType> list2 = {3, 4};
+                ListType list  = {0, 5};
+                ListType list1 = {1, 2};
+                ListType list2 = {3, 4};
 
                 list.InsertRange(1, list2.cbegin(), list2.cend());
 
@@ -377,7 +378,7 @@ inline void RunTestList()
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
                 constexpr auto RunTest = [](Bool deallocateMemory) {
-                    List<LeakTesterType> list = {0, 1, 2, 3, 4};
+                    ListType list = {0, 1, 2, 3, 4};
 
                     auto capacity = list.GetCapacity();
 
@@ -400,7 +401,7 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
+                ListType list = {0, 1, 2, 3, 4, 5};
 
                 DOCTEST_CHECK(list.GetSize() == 6);
 
@@ -415,7 +416,7 @@ inline void RunTestList()
             }
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
+                ListType list = {0, 1, 2, 3, 4, 5};
 
                 DOCTEST_CHECK(list.GetSize() == 6);
 
@@ -439,7 +440,7 @@ inline void RunTestList()
         {
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                List<LeakTesterType> list = {0, 1, 2, 3, 4, 5};
+                ListType list = {0, 1, 2, 3, 4, 5};
 
                 DOCTEST_CHECK(list.GetSize() == 6);
 
@@ -459,11 +460,13 @@ inline void RunTestList()
     }
 }
 
+
 } // namespace Test
 
 } // namespace System
 
 } // namespace Axis
+
 
 DOCTEST_TEST_CASE("Axis list : [Axis::System]")
 {

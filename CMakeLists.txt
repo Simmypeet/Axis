@@ -68,7 +68,7 @@ if(${AXIS_BUILD_TESTS})
     # Enables testing
     enable_testing()
     # Adds test subdirectory
-    add_subdirectory(Test)
+    add_subdirectory(Test/System)
 endif()
 
 if (${AXIS_BUILD_EXAMPLES})

@@ -2,10 +2,6 @@
 ///            This file is subject to the terms and conditions defined in
 ///            file 'LICENSE', which is part of this source code package.
 
-/// \file Exception.hpp
-///
-/// \brief Contains difinitions for the exception classes.
-
 #ifndef AXIS_SYSTEM_EXCEPTION_HPP
 #define AXIS_SYSTEM_EXCEPTION_HPP
 #pragma once
@@ -13,10 +9,7 @@
 #include "SystemExport.hpp"
 #include "Trait.hpp"
 
-namespace Axis
-{
-
-namespace System
+namespace Axis::System
 {
 
 /// \brief Defines the base class for all exceptions.
@@ -131,8 +124,6 @@ public:
     ContainerExceededMaxSizeException() = default;
 };
 
-} // namespace System
-
-} // namespace Axis
+} // namespace Axis::System
 
 #endif // AXIS_SYSTEM_EXCEPTION_HPP
