@@ -6,247 +6,121 @@
 #define AXIS_SYSTEM_STRING_HPP
 #pragma once
 
-#include "Math.hpp"
-#include "Memory.hpp"
-#include "Trait.hpp"
+#include "../../Private/Axis/CoreContainer.inl"
+#include "Allocator.hpp"
 
-namespace Axis
+namespace Axis::System
 {
 
-namespace System
+namespace Concept
 {
 
 /// \brief Type of character with different size.
 template <class T>
-concept CharType = IsSame<T, Char> || IsSame<T, WChar> || IsSame<T, char8_t> || IsSame<T, char16_t> || IsSame<T, char32_t>;
+concept BasicChar = IsSame<T, Char> || IsSame<T, WChar> || IsSame<T, char8_t> || IsSame<T, char16_t> || IsSame<T, char32_t>;
 
-/// \brief Container which contains a null terminated character sequence.
+} // namespace Concept
+
+/// \brief Container contains the sequence of specified character continuously in the memory. The sequence is terminated
+///        with null (0) at the end.
 ///
-/// \tparam T internal string data type.
-template <CharType T, MemoryResourceType MemRes = DefaultMemoryResource>
-class String final
+/// All the functions in this class are categorized as `strong exception guarantee`. Which means that
+/// if an exception is thrown, the state of the object is rolled back to the state before the function.
+///
+/// \tparam T The target chatacter type to contain
+/// \tparam Alloc Allocator type to use in the memory allocation
+/// \tparam IteratorDebugging Specifies whether to enable iteartor debugging or not
+template <Concept::BasicChar T, template <Concept::Pure> class Alloc = DefaultAllocator, Bool IteratorDebugging = Detail::CoreContainer::DefaultIteratorDebug>
+class BasicString final : private ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>
 {
 public:
-    /// \brief Number of elements in the string that would apply
-    ///        the small string optimization.
-    static constexpr Size SmallStringSize = (Size)((sizeof(T*) + sizeof(Size)) / sizeof(T)) - 1;
+    using ThisType  = BasicString<T, Alloc, IteratorDebugging>; // Type to this class
+    using AllocType = Alloc<T>;                                 // Type of the allocator
 
-    /// \brief Default constructor, constructs an empty string.
-    String() noexcept = default;
+    // Checks if alloc type is useable
+    static_assert(Concept::Allocator<AllocType>, "The given allocator type was not viable.");
 
-    /// \brief Constructs a string from null terminated character sequence.
-    ///
-    /// \param[in] str null terminated character sequence.
-    template <CharType U>
-    String(const U* str);
+    using AllocTraits      = AllocatorTraits<AllocType>;                              // Allocator traits
+    using ValueType        = typename AllocTraits::ValueType;                         // Value type
+    using SizeType         = typename AllocTraits::SizeType;                          // Size type
+    using PointerType      = typename AllocTraits::template Pointer<ValueType>;       // pointer type
+    using ConstPointerType = typename AllocTraits::template Pointer<const ValueType>; // const pointer type
+    using DifferenceType   = typename PointerTraits<Pointer>::DifferenceType;         // Difference type
 
-    /// \brief Constructs a string from the specified character range.
-    ///
-    /// \param[in] begin The beginning of the character range.
-    /// \param[in] end The end of the character range.
-    template <CharType U>
-    String(const U* begin,
-           const U* end);
-
-    /// \brief Copy constructor
-    ///
-    /// \param[in] other instance to copy
-    String(const String& other);
-
-    /// \brief Move constructor
-    ///
-    /// \param[in] other instance to move
-    String(String&& other) noexcept;
-
-    /// \brief Constructs a string from different character type.
-    ///
-    /// \param[in] other instance to copy
-    template <CharType U, MemoryResourceType OtherMemRes>
-    String(const String<U, OtherMemRes>& other);
-
-    /// \brief Destructor
-    ~String() noexcept;
-
-    /// \brief Copy assignment operator
-    ///
-    /// \param[in] other instance to copy
-    String& operator=(const String& other);
-
-    /// \brief Move assignment operator
-    ///
-    /// \param[in] other instance to move
-    String& operator=(String&& other) noexcept;
-
-    /// \brief Gets pointer to the internal string buffer.
-    ///
-    /// \return pointer to the internal string buffer.
-    AXIS_NODISCARD T* GetCString() noexcept;
-
-    /// \brief Gets pointer to the internal string buffer.
-    ///
-    /// \return pointer to the internal string buffer.
-    AXIS_NODISCARD const T* GetCString() const noexcept;
-
-    /// \brief Checks if the string is equal to another string.
-    ///
-    /// \param[in] str null terminated character sequence to compare.
-    ///
-    /// \return Returns true if the string is equal to the other string.
-    template <CharType U>
-    AXIS_NODISCARD Bool operator==(const U* str) const noexcept;
-
-    /// \brief Checks if the string is not equal to another string.
-    ///
-    /// \param[in] str null terminated character sequence to compare.
-    ///
-    /// \return Returns true if the string is not equal to the other string.
-    template <CharType U>
-    AXIS_NODISCARD Bool operator!=(const U* str) const noexcept;
-
-    /// \brief Checks if the string is null or empty.
-    ///
-    /// \return Returns true if the string is null or empty.
-    AXIS_NODISCARD Bool operator==(NullptrType) const noexcept;
-
-    /// \brief Checks if the string is not null or empty.
-    ///
-    /// \return Returns true if the string is not null or empty.
-    AXIS_NODISCARD Bool operator!=(NullptrType) const noexcept;
-
-    /// \brief Equality operator.
-    ///
-    /// \param[in] other instance to compare.
-    ///
-    /// \return Returns true if the string is equal to the other string.
-    template <CharType U, MemoryResourceType OtherMemRes>
-    AXIS_NODISCARD Bool operator==(const String<U, OtherMemRes>& other) const noexcept;
-
-    /// \brief Inequality operator.
-    ///
-    /// \param[in] other instance to compare.
-    ///
-    /// \return Returns true if the string is equal to the other string.
-    template <CharType U, MemoryResourceType OtherMemRes>
-    AXIS_NODISCARD Bool operator!=(const String<U, OtherMemRes>& other) const noexcept;
-
-    /// \brief Array subscript operator
-    ///
-    /// \param[in] index index of the element to get.
-    ///
-    /// \return Returns the element at the specified index.
-    AXIS_NODISCARD T& operator[](Size index);
-
-    /// \brief Array subscript operator
-    ///
-    /// \param[in] index index of the element to get.
-    ///
-    /// \return Returns the element at the specified index.
-    AXIS_NODISCARD const T& operator[](Size index) const;
-
-    /// \brief Gets begin const iterator.
-    AXIS_NODISCARD const T* begin() const noexcept;
-
-    /// \brief Gets end const iterator.
-    AXIS_NODISCARD const T* end() const noexcept;
-
-    /// \brief Gets begin iterator.
-    AXIS_NODISCARD T* begin() noexcept;
-
-    /// \brief Gets end iterator.
-    AXIS_NODISCARD T* end() noexcept;
-
-    /// \brief Inserts the range of the string at the specified position.
-    ///
-    /// \param[in] begin The beginning of the character range.
-    /// \param[in] end The end of the character range.
-    /// \param[in] index The position to insert the range.
-    template <CharType U>
-    void Insert(const U* begin,
-                const U* end,
-                Size     index);
-
-    /// \brief Removes the range of the string at the specified position and length.
-    void RemoveAt(Size index,
-                  Size count = 1);
-
-    /// \brief Reseves the capacity of the string buffer for the specified number of elements.
-    void Reserve(Size count);
-
-    /// \brief Gets the number of elements in the string (null terminated character is not included).
-    ///
-    /// \return Returns the number of elements in the string.
-    AXIS_NODISCARD Size GetSize() const noexcept;
-
-    /// \brief Appends a single character to the string.
-    template <CharType U>
-    String& operator+=(const U& character);
-
-    /// \brief Apeends the string.
-    template <CharType U, MemoryResourceType OtherMemRes>
-    String& operator+=(const String<U, OtherMemRes>& string);
-
-    /// \brief Appends a null terminated character sequence to the string.
-    template <CharType U>
-    String& operator+=(const U* str);
-
-    /// \brief Appends the range of the string to the end of the string.
-    ///
-    /// \param[in] begin The beginning of the character range.
-    /// \param[in] end The end of the character range.
-    template <CharType U>
-    void Append(const U* begin,
-                const U* end);
-
-    /// \brief Appends a single character to the end of the string.
-    ///
-    /// \param[in] character The character to append.
-    template <CharType U>
-    void Append(const U& character);
-
-    /// \brief Gets the number of elements in the string (null terminated character is not included).
-    AXIS_NODISCARD constexpr static Size GetStringLength(const T* str) noexcept;
-
-    /// \brief Parses the numerics value to the string.
-    template <ArithmeticType U>
-    AXIS_NODISCARD static String<T, MemRes> ToString(const U& value);
+    // AllocatorTraits' value type must be the same as `T`
+    static_assert(Concept::IsSame<ValueType, T>, "Allocator's value type mismatch");
 
 private:
-    template <Bool Move = true>
-    T* ReserveInternal(Size size);
+    using BaseType = ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>;
 
-    union
+    // Holds dynamic memory allocation info
+    struct DynamicMemoryAllocationInfo
     {
-        struct
-        {
-            T*   DynamicStringBuffer;        // Dynamic buffer allocation for the string.
-            Size DynamicMemoryAllocatedSize; // Size of dynamic allocated memory (per character! not bytes!), included null terminated character.
-        };
-
-        T SmallStringBuffer[SmallStringSize + 1]; // Stack allocated buffer memory.
+        PointerType Begin           = {};
+        SizeType    AllocatedLength = {}; // The amount of the memory allocated (null-terminated is not included)
     };
 
-    Size _stringLength  = 0;    // Caches the string length to this variable. not included null terminated character.
-    Bool _isSmallString = true; // Indicates whether the current string is using small string optimization.
+    ///  Number of elements in the string that would apply the small string optimization.
+    static constexpr Size SmallStringSize = sizeof(DynamicMemoryAllocationInfo) > sizeof(T) ? (Size)(sizeof(DynamicMemoryAllocationInfo) / sizeof(T)) - 1 : 0;
 
-    template <CharType, MemoryResourceType>
-    friend class String;
+    struct Data
+    {
+        union
+        {
+            // Dynamic memory allocation info
+            DynamicMemoryAllocationInfo MemAllocInfo;
+
+            // Small string buffer
+            T SmallStringBuffer[SmallStringSize + 1];
+        };
+
+        // The length of the string (null terminated isn't counted).
+        SizeType StringLength = SizeType(0);
+
+        // Identifies whether the current string uses small buffer or not.
+        Bool IsSmallString = Bool(true);
+    };
+
+    // Checks if default constructor is nooexcept
+    static constexpr Bool DefaultConstructorNoexcept = IsNothrowDefaultConstructible<AllocType>;
+
+    // Checks if allocator copy constructor is noexcept
+    static constexpr Bool AllocatorCopyConstructorNoexcept = IsNothrowCopyConstructible<AllocType>;
+
+    // Checks if move constructor is noexcept
+    static constexpr Bool MoveConstructorNoexcept = IsNothrowMoveConstructible<AllocType>;
+
+    // Checks if move assignment is noexcept
+    static constexpr Bool MoveAssignmentNoexcept = AllocTraits::Equality == AllocatorEquality::AlwaysEqual || AllocTraits::PropagateOnContainerMoveAssignment;
+
+    // Contains both the data and the allocator
+    CompressedPair<Data, AllocType> _dataAllocPair = {};
+
+public:
+    /// \brief Default constructor (empty string)
+    BasicString() noexcept(DefaultConstructorNoexcept);
+
+    /// \brief Destructor
+    ~BasicString() noexcept;
+
+    /// \brief Gets the length of the string. (null terminated isn't included)
+    ///
+    /// \return The length of the string
+    inline SizeType GetLength() const noexcept;
+
+private:
+    // Gets the pointer to the current buffer
+    PointerType GetCurrentPointer() noexcept;
+
+    // Reserves the memory for the given string length
+    template <Bool CopyContent, Bool RoundAllocation>
+    PointerType ReserveMemoryFor(SizeType stringLength);
+
+    // Tidies the container
+    inline void Tidy() noexcept;
 };
 
-/// \brief Data structure which contains null terminated `Axis::Char` sequence.
-using String8 = String<Char, DefaultMemoryResource>;
-
-/// \brief Data structure which contains null terminated `Axis::WChar` sequence.
-using WString = String<WChar, DefaultMemoryResource>;
-
-/// \brief Data structure which contains null terminated `char8_t` sequence.
-using StringU8 = String<char8_t, DefaultMemoryResource>;
-
-/// \brief Data structure which contains null terminated `char16_t` sequence.
-using StringU16 = String<char16_t, DefaultMemoryResource>;
-
-} // namespace System
-
-} // namespace Axis
+} // namespace Axis::System
 
 #include "../../Private/Axis/StringImpl.inl"
 

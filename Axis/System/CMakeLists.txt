@@ -29,21 +29,22 @@ set(AXIS_SYSTEM_HEADER_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Path.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/StringView.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Allocator.hpp"
-   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Iterator.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/SinglyLinkedList.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/System"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Utility.hpp"
+   "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Variant.hpp"
    "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Trait.hpp")
 
 # Collects all system's source files
 set(AXIS_SYSTEM_SOURCE_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Exception.cpp"
-   "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Random.cpp"
+   #"${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Random.cpp"
    "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Memory.cpp"
-   "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Stream.cpp"
-   "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/FileStream.cpp"
-   "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Path.cpp"
-   "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/SmartPointer.cpp")
+   #"${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Stream.cpp"
+   #"${CMAKE_CURRENT_LIST_DIR}/Source/Axis/FileStream.cpp"
+   #"${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Path.cpp"
+   #"${CMAKE_CURRENT_LIST_DIR}/Source/Axis/SmartPointer.cpp"
+   )
 
 # Collects all system's private files
 set(AXIS_SYSTEM_PRIVATE_FILES
@@ -69,6 +70,7 @@ set(AXIS_SYSTEM_PRIVATE_FILES
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/CoreContainer.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/UtilityImpl.inl"
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/SinglyLinkedListImpl.inl"    
+   "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/VariantImpl.inl"    
    "${CMAKE_CURRENT_LIST_DIR}/Private/Axis/StringImpl.inl")
 
 # Win32 platform specific header and source files
@@ -76,10 +78,10 @@ if(${AXIS_PLATFORM_WIN32})
     list(APPEND AXIS_SYSTEM_HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Platform/Win32/Win32Timer.hpp")
     list(APPEND AXIS_SYSTEM_HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/Include/Axis/Platform/Win32/Win32Assembly.hpp")
 
-    list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Path.cpp")
-    list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Assembly.cpp")
-    list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Timer.cpp")
-    list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32System.cpp")
+    #list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Path.cpp")
+    #list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Assembly.cpp")
+    #list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32Timer.cpp")
+    #list(APPEND AXIS_SYSTEM_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/Source/Axis/Platform/Win32/Win32System.cpp")
 endif()
 
 

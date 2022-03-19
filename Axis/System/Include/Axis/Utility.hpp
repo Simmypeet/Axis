@@ -67,10 +67,10 @@ struct StaticStorage
 {
 public:
     /// \brief Gets the pointer to the storage.
-    ConstPVoid GetStoragePtr() const noexcept { return &_staticStorage; };
+    const void* GetStoragePtr() const noexcept { return &_staticStorage; };
 
     /// \brief Get the pointer to the storage.
-    PVoid GetStoragePtr() noexcept { return &_staticStorage; };
+    void* GetStoragePtr() noexcept { return &_staticStorage; };
 
 private:
     alignas(StorageAlign) Byte _staticStorage[StorageSize];
@@ -98,11 +98,16 @@ AXIS_NODISCARD constexpr RemoveReference<T>&& Move(T&& value) noexcept;
 
 /// \brief Returns rvalue reference to the given type if the given type is nothrow move assignable else returns const lvalue reference.
 template <Concept::Pure T>
-AXIS_NODISCARD constexpr ConditionalType<IsNoThrowMoveAssignable<T>, T&&, const T&> MoveAssignIfNoThrow(T& value) noexcept;
+AXIS_NODISCARD constexpr ConditionalType<IsNothrowMoveAssignable<T>, T&&, const T&> MoveAssignIfNoThrow(T& value) noexcept;
 
 /// \brief Returns rvalue reference to the given type if the given type is nothrow move constructible else returns const lvalue reference.
 template <Concept::Pure T>
-AXIS_NODISCARD constexpr ConditionalType<IsNoThrowMoveConstructible<T>, T&&, const T&> MoveConstructIfNoThrow(T& value) noexcept;
+AXIS_NODISCARD constexpr ConditionalType<IsNothrowMoveConstructible<T>, T&&, const T&> MoveConstructIfNoThrow(T& value) noexcept;
+
+/// \brief Used in SFINAE to check if the given template parameter
+///       is well-formed or not.
+template <class...>
+using VoidTypeSink = void;
 
 namespace Detail
 {
@@ -111,7 +116,7 @@ namespace Detail
 struct IgnoreImpl
 {
     template <class T> // Ignores the assignment
-    inline constexpr const IgnoreImpl& operator=(const T&) const noexcept
+    constexpr const IgnoreImpl& operator=(const T&) const noexcept
     {
         return *this;
     }

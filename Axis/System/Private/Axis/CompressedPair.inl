@@ -9,10 +9,7 @@
 #include "../../Include/Axis/Trait.hpp"
 #include "CallTraits.inl"
 
-namespace Axis
-{
-
-namespace System
+namespace Axis::System
 {
 
 /// \brief Constructs a compressed pair elements via perfect forwarding.
@@ -22,7 +19,7 @@ struct CompressedPairPerfectForwardTagType
 /// \brief Constructs a compressed pair elements via perfect forwarding.
 inline constexpr CompressedPairPerfectForwardTagType PerfectForwardTag = {};
 
-namespace Detail
+namespace Detail::CompressedPair
 {
 
 /// \brief The class uses empty base optimization to reduce the size of
@@ -46,7 +43,7 @@ public:
     using SecondConstReferenceType = typename Detail::CallTraits<SecondType>::ConstReferenceType; // The const reference type of the second type of the pair.
 
     /// \brief The constructor.
-    CompressedPairImpl() noexcept(IsNoThrowDefaultConstructible<FirstType>&& IsNoThrowDefaultConstructible<SecondType>) = default;
+    CompressedPairImpl() noexcept(IsNothrowDefaultConstructible<FirstType>&& IsNothrowDefaultConstructible<SecondType>) = default;
 
     /// \brief The constructor.
     ///
@@ -58,13 +55,13 @@ public:
     /// \brief Constructs a pair for only the first type.
     ///
     /// \param[in] first The first value of the pair.
-    explicit CompressedPairImpl(FirstParamType first) noexcept(IsNothrowConstructible<FirstType, FirstParamType>&& IsNoThrowDefaultConstructible<SecondType>) :
+    explicit CompressedPairImpl(FirstParamType first) noexcept(IsNothrowConstructible<FirstType, FirstParamType>&& IsNothrowDefaultConstructible<SecondType>) :
         _first(first), _second() {}
 
     /// \brief Constructs a pair for only the second type.
     ///
     /// \param[in] second The second value of the pair.
-    explicit CompressedPairImpl(SecondParamType second) noexcept(IsNoThrowDefaultConstructible<FirstType>&& IsNothrowConstructible<SecondType, SecondParamType>) :
+    explicit CompressedPairImpl(SecondParamType second) noexcept(IsNothrowDefaultConstructible<FirstType>&& IsNothrowConstructible<SecondType, SecondParamType>) :
         _first(), _second(second) {}
 
     /// \brief The constructor, using perfect forwarding.
@@ -112,7 +109,7 @@ public:
     using SecondConstReferenceType = typename Detail::CallTraits<SecondType>::ConstReferenceType; // The const reference type of the second type of the pair.
 
     /// \brief The constructor.
-    CompressedPairImpl() noexcept(IsNoThrowDefaultConstructible<FirstType>&& IsNoThrowDefaultConstructible<SecondType>) = default;
+    CompressedPairImpl() noexcept(IsNothrowDefaultConstructible<FirstType>&& IsNothrowDefaultConstructible<SecondType>) = default;
 
     /// \brief The constructor.
     ///
@@ -124,13 +121,13 @@ public:
     /// \brief Constructs a pair for only the first type.
     ///
     /// \param[in] first The first value of the pair.
-    explicit CompressedPairImpl(FirstParamType first) noexcept(IsNothrowConstructible<FirstType, FirstParamType>&& IsNoThrowDefaultConstructible<SecondType>) :
+    explicit CompressedPairImpl(FirstParamType first) noexcept(IsNothrowConstructible<FirstType, FirstParamType>&& IsNothrowDefaultConstructible<SecondType>) :
         FirstType(first), _second() {}
 
     /// \brief Constructs a pair for only the second type.
     ///
     /// \param[in] second The second value of the pair.
-    explicit CompressedPairImpl(SecondParamType second) noexcept(IsNoThrowDefaultConstructible<FirstType>&& IsNothrowConstructible<SecondType, SecondParamType>) :
+    explicit CompressedPairImpl(SecondParamType second) noexcept(IsNothrowDefaultConstructible<FirstType>&& IsNothrowConstructible<SecondType, SecondParamType>) :
         FirstType(), _second(second) {}
 
     /// \brief The constructor, using perfect forwarding.
@@ -177,7 +174,7 @@ public:
     using SecondConstReferenceType = typename Detail::CallTraits<SecondType>::ConstReferenceType; // The const reference type of the second type of the pair.
 
     /// \brief The constructor.
-    CompressedPairImpl() noexcept(IsNoThrowDefaultConstructible<FirstType>&& IsNoThrowDefaultConstructible<SecondType>) = default;
+    CompressedPairImpl() noexcept(IsNothrowDefaultConstructible<FirstType>&& IsNothrowDefaultConstructible<SecondType>) = default;
 
     /// \brief The constructor.
     ///
@@ -189,13 +186,13 @@ public:
     /// \brief Constructs a pair for only the first type.
     ///
     /// \param[in] first The first value of the pair.
-    explicit CompressedPairImpl(FirstParamType first) noexcept(IsNothrowConstructible<FirstType, FirstParamType>&& IsNoThrowDefaultConstructible<SecondType>) :
+    explicit CompressedPairImpl(FirstParamType first) noexcept(IsNothrowConstructible<FirstType, FirstParamType>&& IsNothrowDefaultConstructible<SecondType>) :
         SecondType(), _first(first) {}
 
     /// \brief Constructs a pair for only the second type.
     ///
     /// \param[in] second The second value of the pair.
-    explicit CompressedPairImpl(SecondParamType second) noexcept(IsNoThrowDefaultConstructible<FirstType>&& IsNothrowConstructible<SecondType, SecondParamType>) :
+    explicit CompressedPairImpl(SecondParamType second) noexcept(IsNothrowDefaultConstructible<FirstType>&& IsNothrowConstructible<SecondType, SecondParamType>) :
         SecondType(second), _first() {}
 
     /// \brief The constructor, using perfect forwarding.
@@ -242,7 +239,7 @@ public:
     using SecondConstReferenceType = typename Detail::CallTraits<SecondType>::ConstReferenceType; // The const reference type of the second type of the pair.
 
     /// \brief The constructor.
-    CompressedPairImpl() noexcept(IsNoThrowDefaultConstructible<FirstType>&& IsNoThrowDefaultConstructible<SecondType>) = default;
+    CompressedPairImpl() noexcept(IsNothrowDefaultConstructible<FirstType>&& IsNothrowDefaultConstructible<SecondType>) = default;
 
     /// \brief The constructor.
     ///
@@ -254,13 +251,13 @@ public:
     /// \brief Constructs a pair for only the first type.
     ///
     /// \param[in] first The first value of the pair.
-    explicit CompressedPairImpl(FirstParamType first) noexcept(IsNothrowConstructible<FirstType, FirstParamType>&& IsNoThrowDefaultConstructible<SecondType>) :
+    explicit CompressedPairImpl(FirstParamType first) noexcept(IsNothrowConstructible<FirstType, FirstParamType>&& IsNothrowDefaultConstructible<SecondType>) :
         FirstType(first), SecondType() {}
 
     /// \brief Constructs a pair for only the second type.
     ///
     /// \param[in] second The second value of the pair.
-    explicit CompressedPairImpl(SecondParamType second) noexcept(IsNoThrowDefaultConstructible<FirstType>&& IsNothrowConstructible<SecondType, SecondParamType>) :
+    explicit CompressedPairImpl(SecondParamType second) noexcept(IsNothrowDefaultConstructible<FirstType>&& IsNothrowConstructible<SecondType, SecondParamType>) :
         FirstType(), SecondType(second) {}
 
     /// \brief The constructor, using perfect forwarding.
@@ -304,12 +301,12 @@ public:
     using SecondConstReferenceType = typename Detail::CallTraits<SecondType>::ConstReferenceType; // The const reference type of the second type of the pair.
 
     /// \brief The constructor.
-    CompressedPairImpl() noexcept(IsNoThrowDefaultConstructible<FirstType>&& IsNoThrowDefaultConstructible<SecondType>) = default;
+    CompressedPairImpl() noexcept(IsNothrowDefaultConstructible<FirstType>&& IsNothrowDefaultConstructible<SecondType>) = default;
 
     /// \brief Constructs a pair for only the first type.
     ///
     /// \param[in] first The first value of the pair.
-    explicit CompressedPairImpl(FirstParamType first) noexcept(IsNothrowConstructible<FirstType, FirstParamType>&& IsNoThrowDefaultConstructible<SecondType>) :
+    explicit CompressedPairImpl(FirstParamType first) noexcept(IsNothrowConstructible<FirstType, FirstParamType>&& IsNothrowDefaultConstructible<SecondType>) :
         FirstType(first) {}
 
     /// \brief The constructor, using perfect forwarding.
@@ -375,17 +372,16 @@ struct CompressedPairSwitch<true, false, false>
 };
 
 template <class First, class Second>
-inline constexpr Size GetSwitch = Detail::CompressedPairSwitch<IsSame<First, Second>, IsEmpty<First>, IsEmpty<Second>>::Value;
+inline constexpr Size GetSwitch = CompressedPairSwitch<Concept::IsSame<First, Second>, IsEmpty<First>, IsEmpty<Second>>::Value;
 
-} // namespace Detail
+} // namespace Detail::CompressedPair
+
 
 /// \brief The class uses empty base optimization to reduce the size of
 ///        the object.
 template <class First, class Second>
-using CompressedPair = Detail::CompressedPairImpl<First, Second, Detail::GetSwitch<First, Second>>;
+using CompressedPair = Detail::CompressedPair::CompressedPairImpl<First, Second, Detail::CompressedPair::GetSwitch<First, Second>>;
 
-} // namespace System
-
-} // namespace Axis
+} // namespace Axis::System
 
 #endif // AXIS_SYSTEM_COMPRESSEDPAIR_HPP

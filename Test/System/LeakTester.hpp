@@ -14,10 +14,14 @@ public:
     using ThisType = LeakTester<T, EnableCopyAssignment, EnableMoveAssignment>;
 
     // Default constructor
-    LeakTester() noexcept(Axis::System::IsDefaultConstructible<T>) = default;
+    LeakTester() noexcept(Axis::System::IsNothrowDefaultConstructible<T>) :
+        Instance()
+    {
+        s_InstanceCount++;
+    }
 
     // Constructor increments; the counter
-    LeakTester(const T& arg) noexcept(Axis::System::IsNoThrowCopyConstructible<T>) :
+    LeakTester(const T& arg) noexcept(Axis::System::IsNothrowCopyConstructible<T>) :
         Instance(arg)
     {
         s_InstanceCount++;
@@ -30,21 +34,21 @@ public:
     }
 
     // Copy constructor; increments the counter
-    LeakTester(const ThisType& other) noexcept(Axis::System::IsNoThrowCopyConstructible<T>) :
+    LeakTester(const ThisType& other) noexcept(Axis::System::IsNothrowCopyConstructible<T>) :
         Instance(other.Instance)
     {
         s_InstanceCount++;
     }
 
     // Move constructor; increments the counter
-    LeakTester(ThisType&& other) noexcept(Axis::System::IsNoThrowMoveConstructible<T>) :
+    LeakTester(ThisType&& other) noexcept(Axis::System::IsNothrowMoveConstructible<T>) :
         Instance(Axis::System::Move(other.Instance))
     {
         s_InstanceCount++;
     }
 
     // Copy assignment operator; doesn't increment / decrement the counter
-    ThisType& operator=(const ThisType& other) noexcept(Axis::System::IsNoThrowCopyAssignable<T>) requires(EnableCopyAssignment)
+    ThisType& operator=(const ThisType& other) noexcept(Axis::System::IsNothrowCopyAssignable<T>) requires(EnableCopyAssignment)
     {
         if (this != Axis::System::AddressOf(other))
             Instance = other.Instance;
@@ -53,7 +57,7 @@ public:
     }
 
     // Move assignment operator; doesn't increment / decrement the counter
-    ThisType& operator=(ThisType&& other) noexcept(Axis::System::IsNoThrowMoveAssignable<T>) requires(EnableMoveAssignment)
+    ThisType& operator=(ThisType&& other) noexcept(Axis::System::IsNothrowMoveAssignable<T>) requires(EnableMoveAssignment)
     {
         if (this != Axis::System::AddressOf(other))
             Instance = Axis::System::Move(other.Instance);

@@ -8,20 +8,10 @@
 
 #include "../../Include/Axis/Allocator.hpp"
 #include "../../Include/Axis/Assert.hpp"
-#include "../../Include/Axis/Memory.hpp"
 #include "../../Include/Axis/SmartPointer.hpp"
 #include "CompressedPair.inl"
 
-namespace Axis
-{
-
-namespace System
-{
-
-namespace Detail
-{
-
-namespace CoreContainer
+namespace Axis::System::Detail::CoreContainer
 {
 
 #if defined(AXIS_ENABLE_ITERATOR_DEBUG)
@@ -38,6 +28,11 @@ constexpr bool DefaultIteratorDebug = false;
 template <class T>
 struct TidyGuard // Calls function `Tidy()` on the target on destruction
 {
+    explicit TidyGuard(T* target) noexcept :
+        Target(target) {}
+
+    TidyGuard() noexcept {}
+
     // Target to call `Tidy()` on (if not null)
     T* Target = nullptr;
 
@@ -45,49 +40,6 @@ struct TidyGuard // Calls function `Tidy()` on the target on destruction
     ~TidyGuard() noexcept
     {
         if (Target) Target->Tidy();
-    }
-};
-
-/// \note This class is not intended to be used directly
-template <Concept::Pure IteratorType, Concept::Pure VoidPointerType>
-struct IteratorTrackerNode
-{
-    using ThisType        = IteratorTrackerNode<IteratorType, VoidPointerType>;
-    using NodePointerType = typename PointerTraits<VoidPointerType>::template Rebind<ThisType>;
-
-    IteratorType*   IteratorPointer = {}; // Pointer to the iterator instance
-    NodePointerType Next            = {}; // Pointer to the next node
-};
-
-/// \note This class is not intended to be used directly
-template <Concept::Pure IteratorType, Concept::Pure VoidPointerType>
-struct IteratorTrackingBase
-{
-    using NodeType        = IteratorTrackerNode<IteratorType, VoidPointerType>;                 // Iterator tracker node type
-    using NodePointerType = typename PointerTraits<VoidPointerType>::template Rebind<NodeType>; // NodeType's pointer type
-
-    static_assert(IsSame<NodePointerType, typename NodeType::NodePointerType>); // Ensure's that NodePointerType is the same as NodeType::NodePointerType
-
-    NodePointerType Head = {}; // Head of the singly linked list
-
-    template <AllocatorType Alloc>
-    inline void ClearAll(Alloc& alloc) // Allocator
-    {
-        using AllocTraits = AllocatorTraits<Alloc>;
-
-        auto current = Head;
-
-        while (current)
-        {
-            auto next = current->Next;
-
-            AllocTraits::Destroy(alloc, current);
-            AllocTraits::Deallocate(alloc, current, 1);
-
-            current = next;
-        }
-
-        Head = {};
     }
 };
 
@@ -105,16 +57,7 @@ struct ContainerTracker
 class DebugIteratorContainer // Container for debugging iterators
 {
 protected:
-    DebugIteratorContainer() noexcept
-    {
-        try
-        {
-            // Try to allocate the memory for the tracker
-            _debuggingTracker = MakeShared<ContainerTracker>(this);
-        }
-        catch (...)
-        {}
-    }
+    DebugIteratorContainer() noexcept = default;
 
     ~DebugIteratorContainer() noexcept
     {
@@ -131,7 +74,24 @@ protected:
     // Gets the tracker
     inline const SharedPointer<ContainerTracker>& GetTracker() const noexcept
     {
+        if (_debuggingTracker == nullptr)
+        {
+            try
+            {
+                _debuggingTracker = SharedPointer<ContainerTracker>::MakeShared<DefaultMemoryResource>(const_cast<DebugIteratorContainer*>(this));
+            }
+            catch (...)
+            {}
+        }
         return _debuggingTracker;
+    }
+
+    inline void MoveTrackerTo(DebugIteratorContainer& target)
+    {
+        target._debuggingTracker = Move(_debuggingTracker);
+
+        if (target._debuggingTracker != nullptr)
+            target._debuggingTracker->DebugContainer = AddressOf(target);
     }
 
     inline void AssignIterator(BaseDebugIterator& iterator) const noexcept;
@@ -145,7 +105,7 @@ protected:
     /// pointer is set to null to indicate that the container is no longer valid, and so the iterators.
     ///
     /// The iterator which holds this shared pointer will be able to detect if the iterator is safe to dereference.
-    SharedPointer<ContainerTracker> _debuggingTracker = nullptr;
+    mutable SharedPointer<ContainerTracker> _debuggingTracker = nullptr;
 
     friend class BaseDebugIterator;
 };
@@ -157,11 +117,6 @@ struct Empty
 class BaseDebugIterator // Base class for all debugging iterators
 {
 protected:
-    void AssignContainer(const DebugIteratorContainer& container) noexcept // Assigns the container to the iterator
-    {
-        _debuggingTracker = container.GetTracker();
-    }
-
     void BasicValidate() const noexcept // basic validation: container association and container lifetime validity
     {
         if (_skipValidation)
@@ -218,12 +173,6 @@ inline void ThrowIfOverflow(SizeType    a,
         throw ThrowClass(message);
 }
 
-} // namespace CoreContainer
-
-} // namespace Detail
-
-} // namespace System
-
-} // namespace Axis
+} // namespace Axis::System::Detail::CoreContainer
 
 #endif // AXIS_SYSTEM_CORECONTAINER_INL

@@ -125,6 +125,132 @@ inline void Delete(const T* instance) noexcept { MemoryDelete<DefaultMemoryResou
 template <Concept::Pure T>
 inline void DeleteArray(const T* array) noexcept { MemoryDeleteArray<DefaultMemoryResource, T>(array); }
 
+namespace Detail::Memory
+{
+
+// clang-format off
+
+template <class Ptr, class ValueType, class DifferenceType>
+concept PointerLikeTypeImpl = requires(const Ptr            constPointer,
+                                       Ptr                  pointer,
+                                       const DifferenceType constDifferenceType)
+{
+    { *constPointer } -> Concept::IsConvertible<ValueType&>;
+    { constPointer[constDifferenceType] } -> Concept::IsConvertible<ValueType&>;
+    { constPointer - constPointer } -> Concept::IsConvertible<DifferenceType>;
+    { constPointer + constDifferenceType } -> Concept::IsConvertible<Ptr>;
+    { constPointer - constDifferenceType } -> Concept::IsConvertible<Ptr>;
+    { pointer += constDifferenceType } -> Concept::IsConvertible<Ptr&>;
+    { pointer -= constDifferenceType } -> Concept::IsConvertible<Ptr&>;
+    { constPointer == constPointer } -> Concept::IsConvertible<Bool>;
+    { constPointer != constPointer } -> Concept::IsConvertible<Bool>;
+    { constPointer >= constPointer } -> Concept::IsConvertible<Bool>;
+    { constPointer <= constPointer } -> Concept::IsConvertible<Bool>;
+    { constPointer > constPointer } -> Concept::IsConvertible<Bool>;
+    { constPointer < constPointer } -> Concept::IsConvertible<Bool>;
+    { pointer = nullptr } -> Concept::IsConvertible<Ptr&>;
+} &&
+noexcept(*MakeValue<const Ptr&>()) &&
+noexcept(MakeValue<const Ptr&>()[MakeValue<const DifferenceType&>()]) &&
+noexcept(MakeValue<const Ptr&>() - MakeValue<const Ptr&>()) &&
+noexcept(MakeValue<const Ptr&>() + MakeValue<const DifferenceType&>()) &&
+noexcept(MakeValue<const Ptr&>() - MakeValue<const DifferenceType&>()) &&
+noexcept(MakeValue<Ptr&>() += MakeValue<const DifferenceType&>()) &&
+noexcept(MakeValue<Ptr&>() -= MakeValue<const DifferenceType&>()) &&
+noexcept(MakeValue<const Ptr&>() == MakeValue<const Ptr&>()) &&
+noexcept(MakeValue<const Ptr&>() != MakeValue<const Ptr&>()) &&
+noexcept(MakeValue<const Ptr&>() >= MakeValue<const Ptr&>()) &&
+noexcept(MakeValue<const Ptr&>() <= MakeValue<const Ptr&>()) &&
+noexcept(MakeValue<const Ptr&>() > MakeValue<const Ptr&>()) &&
+noexcept(MakeValue<const Ptr&>() < MakeValue<const Ptr&>()) &&
+noexcept(MakeValue<Ptr&>() = nullptr) &&
+IsNothrowDefaultConstructible<Ptr> &&
+IsNothrowCopyConstructible<Ptr> &&
+IsNothrowMoveConstructible<Ptr> &&
+IsNothrowCopyAssignable<Ptr> &&
+IsNothrowMoveAssignable<Ptr> &&
+noexcept(Ptr(nullptr));
+
+// clang-format on
+
+} // namespace Detail::Memory
+
+namespace Concept
+{
+
+// clang-format off
+
+/// \brief Checks if the specified pointer type can be used as the pointer type
+///        points to the given value type.
+///
+/// \tparam Ptr Pointer type to check.
+/// \tparam ValueType The target value type that pointer will point to.
+template <typename Ptr, typename ValueType>
+concept PointerToValue = PureConstable<ValueType> &&
+    Pure<Ptr> &&
+    Detail::Memory::PointerLikeTypeImpl<Ptr, ValueType, decltype(MakeValue<const Ptr&>() - MakeValue<const Ptr&>())>;
+
+/// \brief Checks if the templated type can be used as the pointer type
+///        points to the given value type (both const qualified and non-const qualified)
+///
+/// \tparam PtrTemplate Templated type to check.
+/// \tparam ValueType The target value type that pointer will point to.
+template <template <typename> class PtrTemplate, typename ValueType>
+concept PointerTemplate = Pure<ValueType> &&
+    PointerToValue <PtrTemplate<ValueType>, ValueType> &&
+    PointerToValue <PtrTemplate<const ValueType>, const ValueType>;
+
+
+/// \brief Checks if the specified type is pointer like type
+template <typename T>
+concept Pointer = PointerToValue<T, RemoveReference<decltype(*MakeValue<T>())>>;
+
+} // namespace Concept
+
+template <Concept::Pointer T>
+class PointerTraits;
+
+template <Concept::Pointer T>
+class PointerTraits
+{
+public:
+    // Can't be instantiated
+    PointerTraits() = delete;
+
+    /// \brief The target value type of the pointer type.
+    using ValueType = RemoveReference<decltype(*MakeValue<T>())>;
+
+    /// \brief The difference type of the pointer.
+    using DifferenceType = decltype(MakeValue<const T&>() - MakeValue<const T&>());
+
+    /// \brief Gets the pointer to the reference of the object
+    ///
+    /// \param[in] object Object to obtain the reference from.
+    ///
+    /// \return Pointer to the object
+    AXIS_NODISCARD static T GetPointer(AddLValueReference<ValueType> object) noexcept;};
+
+template <Concept::Pointer T>
+class PointerTraits<T*>
+{
+public:
+    // Can't be instantiated
+    PointerTraits() = delete;
+    
+    /// \brief The target value type of the pointer type.
+    using ValueType = RemoveReference<decltype(*MakeValue<T>())>;
+
+    /// \brief The difference type of the pointer.
+    using DifferenceType = decltype(MakeValue<const T&>() - MakeValue<const T&>());
+
+    /// \brief Gets the pointer to the reference of the object
+    ///
+    /// \param[in] object Object to obtain the reference from.
+    ///
+    /// \return Pointer to the object
+    AXIS_NODISCARD static T* GetPointer(AddLValueReference<ValueType> object) noexcept;
+};
+
 } // namespace Axis::System
 
 #include "../../Private/Axis/MemoryImpl.inl"

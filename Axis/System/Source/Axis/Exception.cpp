@@ -5,33 +5,30 @@
 #include <Axis/SystemPch.hpp>
 
 #include <Axis/Exception.hpp>
-#include <Axis/String.hpp>
+#include <cstring>
 
-namespace Axis
-{
-
-namespace System
+namespace Axis::System
 {
 
 inline const Char* CopyMessageValue(const Char* message) noexcept
 {
-    auto length = String<Char>::GetStringLength(message);
+    auto stringLength = std::strlen(message);
 
-    auto pointer = (Char*)std::malloc(((length + 1) * sizeof(Char)));
+    auto* newMessage = new (std::nothrow) Char[stringLength + 1];
 
-    if (!pointer) // Out of memory / no message specified.
-        return pointer;
+    if (newMessage == nullptr)
+        return nullptr;
 
-    std::memcpy(pointer, message, (length * sizeof(Char)));
+    std::memcpy(newMessage, message, (stringLength * sizeof(Char)));
 
-    pointer[length] = '\0';
+    newMessage[stringLength] = '\0';
 
-    return pointer;
+    return newMessage;
 }
 
 inline void FreeMessage(const Char* message) noexcept
 {
-    std::free((PVoid)message);
+    delete[] message;
 }
 
 Exception::Exception(const Exception& other) noexcept :
@@ -80,6 +77,4 @@ Exception& Exception::operator=(Exception&& other) noexcept
     return *this;
 }
 
-} // namespace System
-
-} // namespace Axis
+} // namespace Axis::System

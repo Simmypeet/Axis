@@ -1,274 +1,551 @@
-#include <Axis/System>
-#include <doctest.h>
+#include "LeakTester.hpp"
+#include <Axis/SmartPointer.hpp>
+#include <doctest/doctest.h>
 
 using namespace Axis;
 using namespace Axis::System;
 
+namespace Axis::System
+{
+
+struct Base
+{};
+
+struct Derived : public Base
+{};
+
+using LeakTesterType = LeakTester<Size, true, true>;
+
 DOCTEST_TEST_CASE("Axis smart pointers : [Axis::System]")
 {
-    static Size Instances = 0;
-
-    struct TestStruct
+    DOCTEST_SUBCASE("UniquePointer")
     {
-        TestStruct() noexcept { Instances++; }
-        virtual ~TestStruct() noexcept { Instances--; }
-
-        Size num1 = 64;
-        Size num2 = 128;
-    };
-
-    struct TestStructDerived : public TestStruct
-    {
-        using TestStruct::TestStruct;
-
-        ~TestStructDerived() noexcept override = default;
-    };
-
-    DOCTEST_SUBCASE("`Axis::UniquePointer`")
-    {
-        DOCTEST_SUBCASE("Constructors")
+        DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         {
-            // Should be zero
-            DOCTEST_CHECK(Instances == 0);
+            UniquePointer<LeakTesterType> pointer(New<LeakTesterType>(1));
 
-            {
-                // Constructs unique pointer of array of TestStruct
-                UniquePointer<TestStruct[]> ptr(Axis::System::NewArray<TestStruct>(10));
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
 
-                // instance count should be 10
-                DOCTEST_CHECK(Instances == 10);
+            DOCTEST_CHECK(pointer != nullptr);
+            DOCTEST_CHECK((*pointer).Instance == 1);
+            DOCTEST_CHECK(pointer->Instance == 1);
+        }
+        DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
 
-                // Should be true
-                DOCTEST_CHECK(ptr);
-            }
+        DOCTEST_SUBCASE("Nullptr constructor")
+        {
+            UniquePointer<LeakTesterType> pointer = nullptr;
 
-            // Should be zero
-            DOCTEST_CHECK(Instances == 0);
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+            DOCTEST_CHECK(pointer == nullptr);
         }
 
-        DOCTEST_SUBCASE("Conversion constructors")
+        DOCTEST_SUBCASE("Move constructor")
         {
-            // Converts from const qualified unique pointer
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                UniquePointer<TestStruct> ptr(Axis::System::New<TestStruct>());
+                UniquePointer<LeakTesterType> pointer(New<LeakTesterType>(1));
 
-                // instance count should be 1
-                DOCTEST_CHECK(Instances == 1);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
 
-                // Should be true
-                DOCTEST_CHECK(ptr);
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK((*pointer).Instance == 1);
+                DOCTEST_CHECK(pointer->Instance == 1);
+
+                UniquePointer<LeakTesterType> anotherPointer = Move(pointer);
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(anotherPointer != nullptr);
+                DOCTEST_CHECK((*anotherPointer).Instance == 1);
+                DOCTEST_CHECK(anotherPointer->Instance == 1);
+
+                DOCTEST_CHECK(pointer == nullptr);
             }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
 
-            // Should be zero
-            DOCTEST_CHECK(Instances == 0);
+        DOCTEST_SUBCASE("Move with cast constructor")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                UniquePointer<Derived> pointer(New<Derived>());
+                UniquePointer<Base>    anotherPointer = Move(pointer);
+
+                DOCTEST_CHECK(pointer == nullptr);
+                DOCTEST_CHECK(anotherPointer != nullptr);
+
+                UniquePointer<const Base> anotherConstPointer = Move(anotherPointer);
+
+                DOCTEST_CHECK(pointer == nullptr);
+                DOCTEST_CHECK(anotherPointer == nullptr);
+                DOCTEST_CHECK(anotherConstPointer != nullptr);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
+
+        DOCTEST_SUBCASE("Constructor with custom deleter")
+        {
+            Int32 value = 0;
+
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                struct CustomDeleter
+                {
+                    void operator()(const LeakTesterType* leakTester) noexcept
+                    {
+                        *ValuePointer = 69;
+                        Axis::System::Delete(leakTester);
+                    }
+
+                    Int32* ValuePointer = nullptr;
+                };
+
+                CustomDeleter deleter = {AddressOf(value)};
+
+                UniquePointer<LeakTesterType, CustomDeleter> pointer(New<LeakTesterType>(1),
+                                                                     deleter);
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK((*pointer).Instance == 1);
+                DOCTEST_CHECK(pointer->Instance == 1);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+            DOCTEST_CHECK(value == 69);
+        }
+
+        DOCTEST_SUBCASE("Construct with void pointer")
+        {
+            UniquePointer<int> pointer(New<int>(32));
+
+            UniquePointer<void> voidPointer(Move(pointer));
+        }
+
+        DOCTEST_SUBCASE("Move assignment operator")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                UniquePointer<LeakTesterType> pointer1(New<LeakTesterType>(1));
+                UniquePointer<LeakTesterType> pointer2(nullptr);
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer1 != nullptr);
+                DOCTEST_CHECK(pointer2 == nullptr);
+
+                DOCTEST_CHECK(pointer1->Instance == 1);
+
+                pointer2 = Move(pointer1);
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer1 == nullptr);
+                DOCTEST_CHECK(pointer2 != nullptr);
+
+                DOCTEST_CHECK(pointer2->Instance == 1);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                UniquePointer<LeakTesterType> pointer1(New<LeakTesterType>(1));
+                UniquePointer<LeakTesterType> pointer2(New<LeakTesterType>(2));
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 2);
+
+                DOCTEST_CHECK(pointer1 != nullptr);
+                DOCTEST_CHECK(pointer2 != nullptr);
+
+                DOCTEST_CHECK(pointer1->Instance == 1);
+                DOCTEST_CHECK(pointer2->Instance == 2);
+
+                pointer2 = Move(pointer1);
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer1 == nullptr);
+                DOCTEST_CHECK(pointer2 != nullptr);
+
+                DOCTEST_CHECK(pointer2->Instance == 1);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
+
+        DOCTEST_SUBCASE("Move assignment with case")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                UniquePointer<Derived> pointer1(New<Derived>());
+                UniquePointer<Base>    pointer2(nullptr);
+
+                DOCTEST_CHECK(pointer1 != nullptr);
+                DOCTEST_CHECK(pointer2 == nullptr);
+
+                pointer2 = Move(pointer1);
+
+                DOCTEST_CHECK(pointer1 == nullptr);
+                DOCTEST_CHECK(pointer2 != nullptr);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
     }
 
-    DOCTEST_SUBCASE("`Axis::SharedPointer`")
+    DOCTEST_SUBCASE("SharedPointer")
     {
-        DOCTEST_SUBCASE("Constructor")
+        DOCTEST_SUBCASE("Array type")
         {
-            // Default constructor
+            auto pointer = SharedPointer<LeakTesterType[]>::MakeShared<DefaultMemoryResource>(10, 1);
+        }
+
+        DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        {
+            auto pointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
+
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+            DOCTEST_CHECK(pointer != nullptr);
+
+            DOCTEST_CHECK(pointer->Instance == 1);
+        }
+        DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+        DOCTEST_SUBCASE("Copy constructor")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                SharedPointer<TestStruct> ptr;
+                auto pointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
 
-                // Should be false
-                DOCTEST_CHECK(!ptr);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
 
-                // Should be zero
-                DOCTEST_CHECK(Instances == 0);
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK(pointer->Instance == 1);
+
+                SharedPointer<LeakTesterType> anotherPointer(pointer);
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(anotherPointer != nullptr);
+                DOCTEST_CHECK(anotherPointer->Instance == 1);
+
+                DOCTEST_CHECK(pointer == anotherPointer);
             }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
 
-            // Nullptr constructor
+        DOCTEST_SUBCASE("Copy constructor with cast")
+        {
+            SharedPointer<Derived> pointer(SharedPointer<Derived>::MakeShared<DefaultMemoryResource>());
+            SharedPointer<Base>    anotherPointer(pointer);
+
+            DOCTEST_CHECK(pointer != nullptr);
+            DOCTEST_CHECK(anotherPointer != nullptr);
+
+            DOCTEST_CHECK(pointer == anotherPointer);
+        }
+
+        DOCTEST_SUBCASE("Move constructor")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                SharedPointer<TestStruct> ptr(nullptr);
+                auto pointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
 
-                // Should be false
-                DOCTEST_CHECK(!ptr);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
 
-                // Should be zero
-                DOCTEST_CHECK(Instances == 0);
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK(pointer->Instance == 1);
+
+                SharedPointer<LeakTesterType> anotherPointer(Move(pointer));
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer == nullptr);
+                DOCTEST_CHECK(anotherPointer != nullptr);
+
+                DOCTEST_CHECK(anotherPointer->Instance == 1);
             }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
 
-            // Constructs shared pointer of TestStruct
+        DOCTEST_SUBCASE("Move constructor with cast")
+        {
+            SharedPointer<Derived> pointer(SharedPointer<Derived>::MakeShared<DefaultMemoryResource>());
+            SharedPointer<Base>    anotherPointer(Move(pointer));
+
+            DOCTEST_CHECK(pointer == nullptr);
+            DOCTEST_CHECK(anotherPointer != nullptr);
+        }
+
+        DOCTEST_SUBCASE("Copy assignment operator")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                SharedPointer<TestStruct> ptr(Axis::System::New<TestStruct>());
+                auto pointer1 = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
+                auto pointer2 = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(2);
 
-                // instance count should be 1
-                DOCTEST_CHECK(Instances == 1);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 2);
 
-                // Should be true
-                DOCTEST_CHECK(ptr);
+                DOCTEST_CHECK(pointer1 != nullptr);
+                DOCTEST_CHECK(pointer2 != nullptr);
+
+                DOCTEST_CHECK(pointer1->Instance == 1);
+                DOCTEST_CHECK(pointer2->Instance == 2);
+
+                pointer2 = pointer1;
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer1 != nullptr);
+                DOCTEST_CHECK(pointer2 != nullptr);
+
+                DOCTEST_CHECK(pointer1->Instance == 1);
+                DOCTEST_CHECK(pointer2->Instance == 1);
             }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
 
-            // Constructs shared pointer of array of TestStruct
+        DOCTEST_SUBCASE("Move assignment operator")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                SharedPointer<TestStruct[]> ptr(Axis::System::NewArray<TestStruct>(10));
+                auto pointer1 = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
+                auto pointer2 = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(2);
 
-                // instance count should be 10
-                DOCTEST_CHECK(Instances == 10);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 2);
 
-                // Should be true
-                DOCTEST_CHECK(ptr);
+                DOCTEST_CHECK(pointer1 != nullptr);
+                DOCTEST_CHECK(pointer2 != nullptr);
+
+                DOCTEST_CHECK(pointer1->Instance == 1);
+                DOCTEST_CHECK(pointer2->Instance == 2);
+
+                pointer2 = Move(pointer1);
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer1 == nullptr);
+                DOCTEST_CHECK(pointer2 != nullptr);
+
+                DOCTEST_CHECK(pointer2->Instance == 1);
             }
-
-            // Copy constructor
-            {
-                SharedPointer<TestStruct> ptr(Axis::System::New<TestStruct>());
-
-                // instance count should be 1
-                DOCTEST_CHECK(Instances == 1);
-
-                // Should be true
-                DOCTEST_CHECK(ptr);
-
-                // Copy constructor
-                SharedPointer<TestStruct> ptr2(ptr);
-
-                // instance count should be 2
-                DOCTEST_CHECK(Instances == 1);
-
-                // Should be true
-                DOCTEST_CHECK(ptr2);
-
-                // ptr1 and ptr2 should be equal
-                DOCTEST_CHECK(ptr == ptr2);
-
-                SharedPointer<TestStruct> null1 = nullptr;
-                SharedPointer<TestStruct> null2 = null1;
-            }
-
-            // Move constructor
-            {
-                SharedPointer<TestStruct> ptr(Axis::System::New<TestStruct>());
-
-                // instance count should be 1
-                DOCTEST_CHECK(Instances == 1);
-
-                // Should be true
-                DOCTEST_CHECK(ptr);
-
-                // Move constructor
-                SharedPointer<TestStruct> ptr2(std::move(ptr));
-
-                // instance count should be 1
-                DOCTEST_CHECK(Instances == 1);
-
-                // ptr1 should be null
-                DOCTEST_CHECK(!ptr);
-
-                // ptr2 should be not null
-                DOCTEST_CHECK(ptr2);
-
-                // ptr1 and ptr2 should not be equal
-                DOCTEST_CHECK(ptr != ptr2);
-
-
-                SharedPointer<TestStruct> null1 = nullptr;
-                SharedPointer<TestStruct> null2 = std::move(null1);
-            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
 
         DOCTEST_SUBCASE("Reference counting")
         {
-            // Reference count test
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
+                SharedPointer<LeakTesterType> pointer = nullptr;
                 {
-                    SharedPointer<TestStruct> testStruct;
+                    auto anotherPointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
 
-                    // No instances
-                    DOCTEST_CHECK(Instances == 0);
+                    DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
 
-                    {
-                        // Constructs shared pointer of TestStruct
-                        SharedPointer<TestStruct> ptr(Axis::System::New<TestStruct>());
+                    DOCTEST_CHECK(anotherPointer != nullptr);
+                    DOCTEST_CHECK(anotherPointer->Instance == 1);
 
-                        // instance count should be 1
-                        DOCTEST_CHECK(Instances == 1);
-
-                        // Should be true
-                        DOCTEST_CHECK(ptr);
-
-                        // Assigns shared pointer of TestStruct
-                        testStruct = ptr;
-
-                        // instance count should be 1
-                        DOCTEST_CHECK(Instances == 1);
-
-                        // Should be true
-                        DOCTEST_CHECK(testStruct);
-
-                        // ptr and testStruct should be equal
-                        DOCTEST_CHECK(ptr == testStruct);
-                    }
-
-                    // instance count should still be 1 (shared)
-                    DOCTEST_CHECK(Instances == 1);
-
-                    // testStruct should be not null
-                    DOCTEST_CHECK(testStruct);
+                    pointer = anotherPointer;
                 }
 
-                // instance count should be zero
-                DOCTEST_CHECK(Instances == 0);
+                // The object is still alive because the `pointer` still holds a reference to it.
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK(pointer->Instance == 1);
             }
-
-            // Nullptr assignment should reduce the reference count
-            {
-                SharedPointer<TestStruct> testStruct(Axis::System::New<TestStruct>());
-
-                // instance count should be 1
-                DOCTEST_CHECK(Instances == 1);
-
-                // Should be true
-                DOCTEST_CHECK(testStruct);
-
-                // Assigns nullptr
-                testStruct = nullptr;
-
-                // instance count should be 0
-                DOCTEST_CHECK(Instances == 0);
-
-                // testStruct should be null
-                DOCTEST_CHECK(!testStruct);
-            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
 
-        DOCTEST_SUBCASE("MakeShared")
+        DOCTEST_SUBCASE("Reset and nullptr assignment")
         {
-            // Uses `SharedPtr<T>::MakeShared` instead of `Axis::System::New`
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                SharedPointer<TestStruct> ptr = Axis::System::MakeShared<TestStruct>();
+                auto pointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
 
-                // instance count should be 1
-                DOCTEST_CHECK(Instances == 1);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
 
-                // Should be true
-                DOCTEST_CHECK(ptr);
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK(pointer->Instance == 1);
+
+                pointer.Reset();
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+                DOCTEST_CHECK(pointer == nullptr);
             }
-
-            // Uses `SharedPtr<T>::MakeShared` instead of `Axis::System::New` to create array of instances
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
             {
-                SharedPointer<TestStruct[]> ptr = Axis::System::MakeShared<TestStruct[]>(10);
+                auto pointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
 
-                // instance count should be 10
-                DOCTEST_CHECK(Instances == 10);
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
 
-                // Should be true
-                DOCTEST_CHECK(ptr);
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK(pointer->Instance == 1);
+
+                pointer = nullptr;
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+                DOCTEST_CHECK(pointer == nullptr);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+            DOCTEST_SUBCASE("Explicit cast conversion")
+            {
+                SharedPointer<Base>    pointer        = SharedPointer<Derived>::MakeShared<DefaultMemoryResource>();
+                SharedPointer<Derived> pointerAnother = (SharedPointer<Derived>)pointer;
+
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK(pointerAnother != nullptr);
+
+                DOCTEST_CHECK(pointer == pointerAnother);
             }
         }
+    }
 
-        DOCTEST_SUBCASE("ISharedFromThis")
+    DOCTEST_SUBCASE("WeakPointer")
+    {
+        DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         {
-            struct SharedFromThisDerived : public ISharedFromThis
-            {};
+            auto pointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
 
-            SharedPointer<SharedFromThisDerived> ptr = Axis::System::MakeShared<SharedFromThisDerived>();
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
 
-            auto anotherPtr = ISharedFromThis::CreateSharedPointerFromThis(*ptr);
+            DOCTEST_CHECK(pointer != nullptr);
+            DOCTEST_CHECK(pointer->Instance == 1);
 
-            DOCTEST_CHECK(ptr == anotherPtr);
+            WeakPointer<LeakTesterType> weakPointer = (WeakPointer<LeakTesterType>)pointer;
+
+            pointer.Reset();
+
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+            DOCTEST_CHECK(weakPointer != nullptr);
+
+            DOCTEST_CHECK(weakPointer.GetStrongReferenceCount() == 0);
+
+            // Should give nullptr shared pointer
+            auto newSharedPointer = weakPointer.Generate();
+
+            DOCTEST_CHECK(newSharedPointer == nullptr);
+        }
+        DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+        DOCTEST_SUBCASE("Copy constructor")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                auto pointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
+
+                auto weakPointer = (WeakPointer<LeakTesterType>)pointer;
+
+                auto anotherPointer = weakPointer;
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK(pointer->Instance == 1);
+
+                DOCTEST_CHECK(weakPointer != nullptr);
+                DOCTEST_CHECK(anotherPointer != nullptr);
+
+                DOCTEST_CHECK(weakPointer == anotherPointer);
+
+                DOCTEST_CHECK(weakPointer.GetStrongReferenceCount() == 1);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
+
+        DOCTEST_SUBCASE("Move constructor")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                auto pointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
+
+                auto weakPointer = (WeakPointer<LeakTesterType>)pointer;
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK(pointer->Instance == 1);
+
+                DOCTEST_CHECK(weakPointer != nullptr);
+
+                DOCTEST_CHECK(weakPointer.GetStrongReferenceCount() == 1);
+
+                auto anotherWeakPointer = Move(weakPointer);
+
+                DOCTEST_CHECK(anotherWeakPointer != nullptr);
+                DOCTEST_CHECK(weakPointer == nullptr);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
+
+        DOCTEST_SUBCASE("Copy assignment operator")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                auto pointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
+
+                auto                        weakPointer    = (WeakPointer<LeakTesterType>)pointer;
+                WeakPointer<LeakTesterType> anotherPointer = nullptr;
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK(pointer->Instance == 1);
+
+                DOCTEST_CHECK(weakPointer != nullptr);
+                DOCTEST_CHECK(anotherPointer == nullptr);
+
+                DOCTEST_CHECK(weakPointer != anotherPointer);
+
+                DOCTEST_CHECK(weakPointer.GetStrongReferenceCount() == 1);
+
+                anotherPointer = weakPointer;
+
+                DOCTEST_CHECK(weakPointer != nullptr);
+                DOCTEST_CHECK(anotherPointer != nullptr);
+
+                DOCTEST_CHECK(weakPointer == anotherPointer);
+
+                DOCTEST_CHECK(weakPointer.GetStrongReferenceCount() == 1);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+        }
+
+        DOCTEST_SUBCASE("Move assignmnet oeprator")
+        {
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+            {
+                auto pointer = SharedPointer<LeakTesterType>::MakeShared<DefaultMemoryResource>(1);
+
+                auto                        weakPointer    = (WeakPointer<LeakTesterType>)pointer;
+                WeakPointer<LeakTesterType> anotherPointer = nullptr;
+
+                DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+                DOCTEST_CHECK(pointer != nullptr);
+                DOCTEST_CHECK(pointer->Instance == 1);
+
+                DOCTEST_CHECK(weakPointer != nullptr);
+                DOCTEST_CHECK(anotherPointer == nullptr);
+
+                DOCTEST_CHECK(weakPointer != anotherPointer);
+
+                DOCTEST_CHECK(weakPointer.GetStrongReferenceCount() == 1);
+
+                anotherPointer = Move(weakPointer);
+
+                DOCTEST_CHECK(weakPointer == nullptr);
+                DOCTEST_CHECK(anotherPointer != nullptr);
+
+                DOCTEST_CHECK(anotherPointer.GetStrongReferenceCount() == 1);
+            }
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
     }
 }
+
+} // namespace Axis::System

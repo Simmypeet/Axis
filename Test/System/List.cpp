@@ -1,22 +1,19 @@
+/// \copyright Simmypeet - Copyright (C)
+///            This file is subject to the terms and conditions defined in
+///            file 'LICENSE', which is part of this source code package.
+
 #include "LeakTester.hpp"
-#include "TestAllocator.hpp"
 #include <Axis/List.hpp>
-#include <doctest.h>
+#include <doctest/doctest.h>
 
-namespace Axis
-{
-
-namespace System
-{
-
-namespace Test
+namespace Axis::System
 {
 
 template <Bool EnableCopyAssignment, Bool EnableMoveAssignment>
 void RunTestList()
 {
     using LeakTesterType = LeakTester<Size, EnableCopyAssignment, EnableMoveAssignment>;
-    using ListType       = List<LeakTesterType, ::Axis::System::Allocator<LeakTesterType, DefaultMemoryResource>>;
+    using ListType       = List<LeakTesterType, DefaultAllocator>;
 
     DOCTEST_SUBCASE("Constructors")
     {
@@ -162,6 +159,7 @@ void RunTestList()
                 ListType list1 = {6, 7, 8, 9, 0};
 
                 list = Axis::System::Move(list1);
+
 
                 DOCTEST_CHECK(list.GetSize() == 5);
 
@@ -460,33 +458,27 @@ void RunTestList()
     }
 }
 
-
-} // namespace Test
-
-} // namespace System
-
-} // namespace Axis
-
-
 DOCTEST_TEST_CASE("Axis list : [Axis::System]")
 {
     DOCTEST_SUBCASE("EnableCopyAssignment: true, EnableMoveAssignment: true")
     {
-        Axis::System::Test::RunTestList<true, true>();
+        RunTestList<true, true>();
     }
 
     DOCTEST_SUBCASE("EnableCopyAssignment: false, EnableMoveAssignment: true")
     {
-        Axis::System::Test::RunTestList<false, true>();
+        RunTestList<false, true>();
     }
 
     DOCTEST_SUBCASE("EnableCopyAssignment: true, EnableMoveAssignment: false")
     {
-        Axis::System::Test::RunTestList<true, false>();
+        RunTestList<true, false>();
     }
 
     DOCTEST_SUBCASE("EnableCopyAssignment: false, EnableMoveAssignment: false")
     {
-        Axis::System::Test::RunTestList<false, false>();
+        RunTestList<false, false>();
     }
 }
+
+} // namespace Axis::System

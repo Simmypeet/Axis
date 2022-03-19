@@ -63,7 +63,7 @@ concept HasherType = requires(const T& hasher, const U& object)
         hasher(object)
         } -> IsSame<Size>;
 }
-&&IsNoThrowDefaultConstructible<T>&& IsNoThrowCopyConstructible<T>&& IsNoThrowMoveConstructible<T>&& IsNoThrowCopyAssignable<T>;
+&&IsNothrowDefaultConstructible<T>&& IsNothrowCopyConstructible<T>&& IsNothrowMoveConstructible<T>&& IsNothrowCopyAssignable<T>;
 
 /// \brief Functor object for comparing two objects equality.
 template <class T, class U>
@@ -73,7 +73,7 @@ concept ComparerType = requires(const T& comparer, const U& object)
         comparer(object, object)
         } -> IsSame<Bool>;
 }
-&&IsNoThrowDefaultConstructible<T>&& IsNoThrowCopyConstructible<T>&& IsNoThrowMoveConstructible<T>&& IsNoThrowCopyAssignable<T>;
+&&IsNothrowDefaultConstructible<T>&& IsNothrowCopyConstructible<T>&& IsNothrowMoveConstructible<T>&& IsNothrowCopyAssignable<T>;
 
 /// \brief Hash table template container implemented in separate chaining method.
 ///

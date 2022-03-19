@@ -11,11 +11,11 @@ namespace Axis::System
 
 PVoid MemoryResource::Allocate(Size byteSize)
 {
-    AXIS_VALIDATE(byteSize == 0, "`byteSize` was zero.");
+    AXIS_VALIDATE(byteSize != 0, "`byteSize` was zero.");
 
     auto ptr = ::operator new(byteSize, std::nothrow);
 
-    if (ptr)
+    if (ptr == nullptr)
         throw OutOfMemoryException();
 
     return ptr;

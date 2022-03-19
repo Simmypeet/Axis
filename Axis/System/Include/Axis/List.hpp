@@ -8,12 +8,8 @@
 
 #include "../../Private/Axis/CoreContainer.inl"
 #include "Allocator.hpp"
-#include "Iterator.hpp"
 
-namespace Axis
-{
-
-namespace System
+namespace Axis::System
 {
 
 /// \brief The container which stores the elements contiguously in the memory. It can be resized and
@@ -23,23 +19,32 @@ namespace System
 ///
 /// All the functions in this class are categorized as `strong exception guarantee`. Which means that
 /// if an exception is thrown, the state of the object is rolled back to the state before the function.
-template <RawType T, AllocatorType Alloc = Allocator<T, DefaultMemoryResource>, Bool IteratorDebugging = Detail::CoreContainer::DefaultIteratorDebug>
+///
+/// \tparam T The target element type to contain
+/// \tparam Alloc Allocator type to use in the memory allocation
+/// \tparam IteratorDebugging Specifies whether to enable iteartor debugging or not
+template <Concept::Pure T, template <Concept::Pure> class Alloc = DefaultAllocator, Bool IteratorDebugging = Detail::CoreContainer::DefaultIteratorDebug>
 class List final : private ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>
 {
 public:
-    using ThisType             = List<T, Alloc, IteratorDebugging>;          // Type of this class
-    using AllocType            = Alloc;                                      // Type of the allocator base class
-    using AllocTraits          = AllocatorTraits<AllocType>;                 // Allocator traits
-    using ValueType            = typename AllocTraits::ValueType;            // Value type
-    using SizeType             = typename AllocTraits::SizeType;             // Size type
-    using DifferenceType       = typename AllocTraits::DifferenceType;       // Difference type
-    using PointerType          = typename AllocTraits::PointerType;          // Pointer type
-    using ConstPointerType     = typename AllocTraits::ConstPointerType;     // Const pointer type
-    using VoidPointerType      = typename AllocTraits::VoidPointerType;      // Void pointer type
-    using ConstVoidPointerType = typename AllocTraits::ConstVoidPointerType; // Const void pointer type
+    using ThisType  = List<T, Alloc, IteratorDebugging>; // Type of this class
+    using AllocType = Alloc<T>;                          // Type of the allocator class
+
+    // Checks if alloc type is useable
+    static_assert(Concept::Allocator<AllocType>, "The given allocator type was not viable.");
+
+    // T must not be void
+    static_assert(!Concept::IsSame<T, void>, "T was void.");
+
+    using AllocTraits      = AllocatorTraits<AllocType>;                              // Allocator traits
+    using ValueType        = typename AllocTraits::ValueType;                         // Value type
+    using SizeType         = typename AllocTraits::SizeType;                          // Size type
+    using PointerType      = typename AllocTraits::template Pointer<ValueType>;       // pointer type
+    using ConstPointerType = typename AllocTraits::template Pointer<const ValueType>; // const pointer type
+    using DifferenceType   = typename PointerTraits<PointerType>::DifferenceType;     // Difference type
 
     // AllocatorTraits' value type must be the same as `T`
-    static_assert(IsSame<ValueType, T>, "Allocator's value type mismatch");
+    static_assert(Concept::IsSame<ValueType, T>, "Allocator's value type mismatch");
 
 private:
     using BaseType = ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>;
@@ -47,16 +52,16 @@ private:
     struct Data; // Data structure for the container
 
     // Checks if default constructor is nooexcept
-    static constexpr Bool DefaultConstructorNoexcept = IsNoThrowDefaultConstructible<AllocType>;
+    static constexpr Bool DefaultConstructorNoexcept = IsNothrowDefaultConstructible<AllocType>;
 
     // Checks if allocator copy constructor is noexcept
-    static constexpr Bool AllocatorCopyConstructorNoexcept = IsNoThrowCopyConstructible<AllocType>;
+    static constexpr Bool AllocatorCopyConstructorNoexcept = IsNothrowCopyConstructible<AllocType>;
 
     // Checks if move constructor is noexcept
-    static constexpr Bool MoveConstructorNoexcept = IsNoThrowMoveConstructible<AllocType>;
+    static constexpr Bool MoveConstructorNoexcept = IsNothrowMoveConstructible<AllocType>;
 
     // Checks if move assignment is noexcept
-    static constexpr Bool MoveAssignmentNoexcept = AllocTraits::IsAlwaysEqual || AllocTraits::PropagateOnContainerMoveAssignment;
+    static constexpr Bool MoveAssignmentNoexcept = AllocTraits::Equality == AllocatorEquality::AlwaysEqual || AllocTraits::PropagateOnContainerMoveAssignment;
 
     // Contains both the data and the allocator
     CompressedPair<Data, AllocType> _dataAllocPair;
@@ -207,7 +212,7 @@ public:
     /// \param[in] end Random access iterator to the element after the last element of the range.
     ///
     /// \return The iterator to the first appended element range.
-    template <RandomAccessReadIterator<T> IteratorType>
+    template <Concept::PointerToValue<const T> IteratorType>
     Iterator AppendRange(const IteratorType& begin,
                          const IteratorType& end);
 
@@ -265,7 +270,7 @@ public:
     /// \param[in] end Random access iterator to the element after the last element of the range.
     ///
     /// \return The iterator to the first inserted element range.
-    template <RandomAccessReadIterator<T> IteratorType>
+    template <Concept::PointerToValue<const T> IteratorType>
     Iterator InsertRange(SizeType            index,
                          const IteratorType& begin,
                          const IteratorType& end);
@@ -304,12 +309,12 @@ public:
     operator Bool() const noexcept;
 
     /// \brief Resets the elements in the list (destructs and default constructs them).
-    void Reset() noexcept(IsNoThrowDefaultConstructible<T>);
+    void Reset() noexcept(IsNothrowDefaultConstructible<T>);
 
     /// \brief Resets the elements in the list (destructs and copies construct them or copies assign them).
     ///
     /// \param[in] value The value used to reset the element in the list.
-    void Reset(const T& value) noexcept(IsNoThrowCopyConstructible<T>);
+    void Reset(const T& value) noexcept(IsNothrowCopyConstructible<T>);
 
     /// \brief Gets the underlying pointer to the list's buffer.
     ///
@@ -359,9 +364,7 @@ private:
     friend struct Detail::CoreContainer::TidyGuard;
 };
 
-} // namespace System
-
-} // namespace Axis
+} // namespace Axis::System
 
 #include "../../Private/Axis/ListImpl.inl"
 

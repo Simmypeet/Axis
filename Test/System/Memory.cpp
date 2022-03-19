@@ -25,14 +25,13 @@ struct Thrower
 
 DOCTEST_TEST_CASE("MemoryResource : [Voltaic::System]")
 {
-
     DOCTEST_SUBCASE("New and Delete")
     {
         using Type = LeakTester<Size, true, true>;
 
         DOCTEST_CHECK(Type::GetInstanceCount() == 0);
         {
-            Type* instance = New<Type>(2);
+            const Type* instance = New<Type>(2);
             DOCTEST_CHECK(instance->Instance == 2);
             DOCTEST_CHECK(Type::GetInstanceCount() == 1);
             Delete<Type>(instance);
@@ -48,7 +47,7 @@ DOCTEST_TEST_CASE("MemoryResource : [Voltaic::System]")
         {
             constexpr Size ArraySize = 32;
 
-            Type* instance = NewArray<Type>(ArraySize, 0);
+            const Type* instance = NewArray<Type>(ArraySize, 0);
 
             DOCTEST_CHECK(Type::GetInstanceCount() == 32);
 
@@ -74,11 +73,10 @@ DOCTEST_TEST_CASE("MemoryResource : [Voltaic::System]")
 
             try
             {
-                auto _ = NewArray<Type>(ArraySize);
+                Ignore = NewArray<Type>(ArraySize);
             }
-            catch (Size& val)
+            catch (...)
             {
-                DOCTEST_CHECK(val == ThrowAt);
             }
         }
         DOCTEST_CHECK(Type::GetInstanceCount() == 0);

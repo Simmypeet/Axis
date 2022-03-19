@@ -8,41 +8,38 @@
 
 #include "../../Include/Axis/Utility.hpp"
 
-namespace Axis
-{
-
-namespace System
+namespace Axis::System
 {
 
 template <class T>
-inline constexpr T&& Forward(RemoveReference<T>& arg) noexcept
+constexpr T&& Forward(RemoveReference<T>& arg) noexcept
 {
     return static_cast<T&&>(arg);
 }
 
 template <class T>
-inline constexpr T&& Forward(RemoveReference<T>&& arg) noexcept
+constexpr T&& Forward(RemoveReference<T>&& arg) noexcept
 {
     static_assert(!IsLvalueReference<T>, "Couldn't forward l-value reference.");
     return static_cast<T&&>(arg);
 }
 
 template <class T>
-inline constexpr T* AddressOf(T& value)
+constexpr T* AddressOf(T& value)
 {
     return std::addressof(value);
 }
 
 template <class T>
-inline constexpr RemoveReference<T>&& Move(T&& value) noexcept
+constexpr RemoveReference<T>&& Move(T&& value) noexcept
 {
     return static_cast<RemoveReference<T>&&>(value);
 }
 
 template <Concept::Pure T>
-inline constexpr ConditionalType<IsNoThrowMoveAssignable<T>, T&&, const T&> MoveAssignIfNoThrow(T& value) noexcept
+constexpr ConditionalType<IsNothrowMoveAssignable<T>, T&&, const T&> MoveAssignIfNoThrow(T& value) noexcept
 {
-    if constexpr (IsNoThrowMoveAssignable<T>)
+    if constexpr (IsNothrowMoveAssignable<T>)
     {
         return static_cast<T&&>(value);
     }
@@ -53,9 +50,9 @@ inline constexpr ConditionalType<IsNoThrowMoveAssignable<T>, T&&, const T&> Move
 }
 
 template <Concept::Pure T>
-inline constexpr ConditionalType<IsNoThrowMoveConstructible<T>, T&&, const T&> MoveConstructIfNoThrow(T& value) noexcept
+constexpr ConditionalType<IsNothrowMoveConstructible<T>, T&&, const T&> MoveConstructIfNoThrow(T& value) noexcept
 {
-    if constexpr (IsNoThrowMoveConstructible<T>)
+    if constexpr (IsNothrowMoveConstructible<T>)
     {
         return static_cast<T&&>(value);
     }
@@ -65,8 +62,7 @@ inline constexpr ConditionalType<IsNoThrowMoveConstructible<T>, T&&, const T&> M
     }
 }
 
-} // namespace System
 
-} // namespace Axis
+} // namespace Axis::System
 
 #endif // AXIS_SYSTEM_UTILITYIMPL_INL

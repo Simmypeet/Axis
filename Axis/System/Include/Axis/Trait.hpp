@@ -29,6 +29,12 @@ concept IsSame = std::is_same_v<T, U>;
 template <class T>
 concept Pure = !std::is_reference_v<T> && !std::is_const_v<T> && !std::is_array_v<T> && !std::is_volatile_v<T>;
 
+/// \brief Checks if the type isn't reference, array, or volatile qualified.
+///
+/// \tparam T Type to check
+template <class T>
+concept PureConstable = !std::is_reference_v<T> && !std::is_array_v<T> && !std::is_volatile_v<T>;
+
 /// \brief Checks if a type is convertible to the given type.
 ///
 /// \tparam From The source type
@@ -37,6 +43,11 @@ template <class From, class To>
 concept IsConvertible = std::is_convertible_v<From, To>;
 
 } // namespace Concept
+
+/// \brief Gets the passed typename if the conditional is
+///        true else the type is ill-formed.
+template <Bool Conditional, typename T = void>
+using EnableIfType = std::enable_if_t<Conditional, T>;
 
 /// \brief Checks if the type can be noexcept constructed with the following arguments.
 ///
@@ -56,6 +67,10 @@ using RemoveReference = std::remove_reference_t<T>;
 /// \tparam T Type to add lvalue reference
 template <class T>
 using AddLValueReference = std::add_lvalue_reference_t<T>;
+
+/// \brief Adds const qualification to the type
+template <class T>
+using AddConst = std::add_const_t<T>;
 
 /// \brief Adds the rvalue reference to the type
 ///
@@ -89,7 +104,7 @@ inline constexpr auto IsDefaultConstructible = std::is_default_constructible_v<T
 
 /// \brief Checks if a type is nothrow default constructible.
 template <Concept::Pure T>
-inline constexpr auto IsNoThrowDefaultConstructible = std::is_nothrow_default_constructible_v<T>;
+inline constexpr auto IsNothrowDefaultConstructible = std::is_nothrow_default_constructible_v<T>;
 
 /// \brief Checks if a type is copy constructible.
 template <Concept::Pure T>
@@ -97,7 +112,7 @@ inline constexpr auto IsCopyConstructible = std::is_copy_constructible_v<T>;
 
 /// \brief Checks if a type is nothrow copy constructible.
 template <Concept::Pure T>
-inline constexpr auto IsNoThrowCopyConstructible = std::is_nothrow_copy_constructible_v<T>;
+inline constexpr auto IsNothrowCopyConstructible = std::is_nothrow_copy_constructible_v<T>;
 
 /// \brief Checks if a type is move constructible.
 template <Concept::Pure T>
@@ -105,7 +120,7 @@ inline constexpr auto IsMoveConstructible = std::is_move_constructible_v<T>;
 
 /// \brief Checks if a type is nothrow move constructible.
 template <Concept::Pure T>
-inline constexpr auto IsNoThrowMoveConstructible = std::is_nothrow_move_constructible_v<T>;
+inline constexpr auto IsNothrowMoveConstructible = std::is_nothrow_move_constructible_v<T>;
 
 /// \brief Checks if a type is copy assignable.
 template <Concept::Pure T>
@@ -113,7 +128,7 @@ inline constexpr auto IsCopyAssignable = std::is_copy_assignable_v<T>;
 
 /// \brief Checks if a type is nothrow copy assignable.
 template <Concept::Pure T>
-inline constexpr auto IsNoThrowCopyAssignable = std::is_nothrow_copy_assignable_v<T>;
+inline constexpr auto IsNothrowCopyAssignable = std::is_nothrow_copy_assignable_v<T>;
 
 /// \brief Checks if a type is move assignable.
 template <Concept::Pure T>
@@ -121,7 +136,7 @@ inline constexpr auto IsMoveAssignable = std::is_move_assignable_v<T>;
 
 /// \brief Checks if a type is nothrow move assignable.
 template <Concept::Pure T>
-inline constexpr auto IsNoThrowMoveAssignable = std::is_nothrow_move_assignable_v<T>;
+inline constexpr auto IsNothrowMoveAssignable = std::is_nothrow_move_assignable_v<T>;
 
 /// \brief Checks if a type is integral type.
 template <Concept::Pure T>
@@ -155,6 +170,38 @@ inline constexpr Bool IsConstructible = std::is_constructible_v<T, Args...>;
 template <class T>
 inline constexpr Bool IsNothrowDestructible = std::is_nothrow_destructible_v<T>;
 
+/// \brief Checks if the type is reference
+template <class T>
+inline constexpr Bool IsReference = std::is_reference_v<T>;
+
+/// \brief Checks if the type is bounded array. (array with specified element count e.g., int[32])
+template <class T>
+inline constexpr Bool IsBoundedArray = std::is_bounded_array_v<T>;
+
+/// \brief Checks if the type is unbounded array. (array with no element count specified e.g., int[])
+template <class T>
+inline constexpr Bool IsUnboundedArray = std::is_unbounded_array_v<T>;
+
+/// \brief Checks if the type is volatile qualified.
+template <class T>
+inline constexpr Bool IsVolatile = std::is_volatile_v<T>;
+
+/// \brief Removes const from the type
+template <class T>
+using RemoveConst = std::remove_const_t<T>;
+
+/// \brief Removes all array specifiers from the type (bounded and unbounded array)
+template <class T>
+using RemoveAllExtents = std::remove_all_extents_t<T>;
+
+/// \brief Checks if the type is void
+template <class T>
+inline constexpr Bool IsVoid = std::is_void_v<T>;
+
+/// \brief Checks if the type can be assigned from another type
+template <class To, class From>
+inline constexpr Bool IsNothrowAssignable = std::is_nothrow_assignable_v<To, From>;
+
 namespace Concept
 {
 
@@ -170,7 +217,7 @@ concept Callable = requires(T t, Args&&... args)
         t(std::forward<Args>(args)...)
         } -> IsSame<ReturnType>;
 }
-&&Pure<T>&& IsNoThrowMoveConstructible<T>&& IsNoThrowCopyConstructible<T>;
+&&Pure<T>&& IsNothrowCopyConstructible<T>&& IsNothrowCopyAssignable<T>;
 
 } // namespace Concept
 

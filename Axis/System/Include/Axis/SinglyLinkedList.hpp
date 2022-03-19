@@ -69,7 +69,7 @@ public:
     using ValueType            = typename AllocTraits::ValueType;               // Value type
     using SizeType             = typename AllocTraits::SizeType;                // Size type
     using DifferenceType       = typename AllocTraits::DifferenceType;          // Difference type
-    using PointerType          = typename AllocTraits::PointerType;             // Pointer type
+    using Pointer              = typename AllocTraits::Pointer;                 // Pointer type
     using ConstPointerType     = typename AllocTraits::ConstPointerType;        // Const pointer type
     using VoidPointerType      = typename AllocTraits::VoidPointerType;         // Void pointer type
     using ConstVoidPointerType = typename AllocTraits::ConstVoidPointerType;    // Const void pointer type
@@ -88,13 +88,13 @@ private:
     using NodeType        = Detail::SinglyLinkedList::Node<T, IteratorBase, IteratorDebugging, VoidPointerType>; // underlying node type
     using AllocNodeType   = typename AllocTraits::template Rebind<NodeType>;                                     // node type's allocator
     using AllocNodeTraits = AllocatorTraits<AllocNodeType>;                                                      // node type's allocator traits
-    using NodePointerType = typename AllocNodeTraits::PointerType;                                               // node's pointer type.
+    using NodePointerType = typename AllocNodeTraits::Pointer;                                                   // node's pointer type.
 
     /* ==================================> Debugging <================================== */
     using IteratorTrackerNodeType        = Detial::SinglyLinkedList::IteratorTrackerNode<IteratorBase, VoidPointerType>; // Iterator tracker node type
     using AllocIteratorTrackerNodeType   = typename AllocTraits::template Rebind<IteratorTrackerNodeType>;               // Iterator tracker node's allocator
     using AllocIteratorTrackerNodeTraits = AllocatorTraits<AllocIteratorTrackerNodeType>;                                // Iterator tracker node's allocator traits
-    using IteratorTrackerNodePointerType = typename AllocIteratorTrackerNodeTraits::PointerType;                         // Iterator tracker node's pointer type
+    using IteratorTrackerNodePointerType = typename AllocIteratorTrackerNodeTraits::Pointer;                             // Iterator tracker node's pointer type
     /* ==================================> Debugging <================================== */
 
     using PairNoDebugType = CompressedPair<NodePointerType, AllocNodeType>;                                               // Pair data for non-iterator debugging type
@@ -108,13 +108,13 @@ private:
     using BaseType = ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>;
 
     // Checks if default constructor is nooexcept
-    static constexpr Bool DefaultConstructorNoexcept = IsNoThrowDefaultConstructible<AllocNodeTraits> && (IteratorDebugging ? IsNoThrowDefaultConstructible<AllocIteratorTrackerNodeTyp> : true);
+    static constexpr Bool DefaultConstructorNoexcept = IsNothrowDefaultConstructible<AllocNodeTraits> && (IteratorDebugging ? IsNothrowDefaultConstructible<AllocIteratorTrackerNodeTyp> : true);
 
     // Checks if allocator copy constructor is noexcept
-    static constexpr Bool AllocatorCopyConstructorNoexcept = IsNoThrowCopyConstructible<AllocType>;
+    static constexpr Bool AllocatorCopyConstructorNoexcept = IsNothrowCopyConstructible<AllocType>;
 
     // Checks if move constructor is noexcept
-    static constexpr Bool MoveConstructorNoexcept = IsNoThrowMoveConstructible<AllocType>;
+    static constexpr Bool MoveConstructorNoexcept = IsNothrowMoveConstructible<AllocType>;
 
     // Checks if move assignment is noexcept
     static constexpr Bool MoveAssignmentNoexcept = AllocTraits::IsAlwaysEqual || AllocTraits::PropagateOnContainerMoveAssignment;
