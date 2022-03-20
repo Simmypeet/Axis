@@ -19,7 +19,7 @@ DOCTEST_TEST_CASE("Variant : [Axis::System]")
         {
             Variant<LeakTesterType, Bool> variant = {};
 
-            DOCTEST_CHECK(variant.IsValueless() == false);
+            DOCTEST_CHECK(variant.IsValueless() == true);
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         }
         DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
@@ -30,6 +30,16 @@ DOCTEST_TEST_CASE("Variant : [Axis::System]")
         DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
         {
             Variant<LeakTesterType, Bool> variant = {};
+
+            DOCTEST_CHECK(variant.IsValueless() == true);
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
+
+            variant.Construct<0>(1);
+
+            DOCTEST_CHECK(variant.IsValueless() == false);
+            DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
+
+            variant.Construct<1>(true);
 
             DOCTEST_CHECK(variant.IsValueless() == false);
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
@@ -45,9 +55,11 @@ DOCTEST_TEST_CASE("Variant : [Axis::System]")
 
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);
 
+            DOCTEST_CHECK(variant.IsValueless() == true);
+
             variant.Construct<0>(1);
 
-            DOCTEST_CHECK(variant.IsValueless() == true);
+            DOCTEST_CHECK(variant.IsValueless() == false);
             DOCTEST_CHECK(variant.GetTypeIndex() == 0);
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 1);
 
@@ -55,7 +67,7 @@ DOCTEST_TEST_CASE("Variant : [Axis::System]")
 
             DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 2);
 
-            DOCTEST_CHECK(anotherVariant.IsValueless() == true);
+            DOCTEST_CHECK(anotherVariant.IsValueless() == false);
             DOCTEST_CHECK(anotherVariant.GetTypeIndex() == 0);
         }
         DOCTEST_CHECK(LeakTesterType::GetInstanceCount() == 0);

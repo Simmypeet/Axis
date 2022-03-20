@@ -7,7 +7,9 @@
 #pragma once
 
 #include "Config.hpp"
+#include <cstdlib>
 #include <stdio.h>
+
 
 #ifdef AXIS_DEBUG
 #    if defined(__has_builtin) && !defined(__ibmxl__)

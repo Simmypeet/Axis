@@ -51,6 +51,8 @@ macro(axis_add_library target)
         set_target_properties(${target} PROPERTIES COMPILE_FLAGS "/D_CRT_SECURE_NO_WARNINGS")
     endif()
 
+    SET_TARGET_PROPERTIES(${target} PROPERTIES PREFIX "")
+
     # Adds source files to the source group
     axis_assign_source_group("${THIS_SOURCES}" "${THIS_RELATIVE_PATH}")
 

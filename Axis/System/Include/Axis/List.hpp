@@ -23,12 +23,11 @@ namespace Axis::System
 /// \tparam T The target element type to contain
 /// \tparam Alloc Allocator type to use in the memory allocation
 /// \tparam IteratorDebugging Specifies whether to enable iteartor debugging or not
-template <Concept::Pure T, template <Concept::Pure> class Alloc = DefaultAllocator, Bool IteratorDebugging = Detail::CoreContainer::DefaultIteratorDebug>
+template <Concept::Pure T, template <typename> class Alloc = DefaultAllocator, Bool IteratorDebugging = Detail::CoreContainer::DefaultIteratorDebug>
 class List final : private ConditionalType<IteratorDebugging, Detail::CoreContainer::DebugIteratorContainer, Detail::CoreContainer::Empty>
 {
 public:
-    using ThisType  = List<T, Alloc, IteratorDebugging>; // Type of this class
-    using AllocType = Alloc<T>;                          // Type of the allocator class
+    using AllocType = Alloc<T>; // Type of the allocator class
 
     // Checks if alloc type is useable
     static_assert(Concept::Allocator<AllocType>, "The given allocator type was not viable.");

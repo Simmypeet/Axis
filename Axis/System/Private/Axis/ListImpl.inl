@@ -13,7 +13,7 @@
 namespace Axis::System
 {
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 struct List<T, Alloc, IteratorDebugging>::ContainerHolder
 {
     AllocType* AllocatorPointer = nullptr;
@@ -29,7 +29,7 @@ struct List<T, Alloc, IteratorDebugging>::ContainerHolder
     }
 };
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 struct List<T, Alloc, IteratorDebugging>::Data
 {
     PointerType Begin           = PointerType(nullptr); // Pointer to the first element
@@ -37,7 +37,7 @@ struct List<T, Alloc, IteratorDebugging>::Data
     SizeType    InitializedSize = SizeType(0);          // Number of elements initialized
 };
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 struct List<T, Alloc, IteratorDebugging>::SpacedContainerHolder
 {
     AllocType* AllocatorPointer = nullptr;
@@ -62,14 +62,14 @@ struct List<T, Alloc, IteratorDebugging>::SpacedContainerHolder
     }
 };
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 class List<T, Alloc, IteratorDebugging>::BaseIterator : protected ConditionalType<IteratorDebugging, Detail::CoreContainer::BaseDebugIterator, Detail::CoreContainer::Empty>
 {
 protected:
     List<T, Alloc, IteratorDebugging>::PointerType _currentPointer = {}; // Pointer to the current element.
 };
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 template <bool IsConst>
 class List<T, Alloc, IteratorDebugging>::IteratorTemplate final : private List<T, Alloc, IteratorDebugging>::BaseIterator
 {
@@ -309,7 +309,7 @@ public :
     friend class IteratorTemplate;
 };
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline void List<T, Alloc, IteratorDebugging>::Reserve(SizeType elementCount)
 {
     if (elementCount <= _dataAllocPair.GetFirst().AllocatedSize)
@@ -326,19 +326,19 @@ inline void List<T, Alloc, IteratorDebugging>::Reserve(SizeType elementCount)
     _dataAllocPair.GetFirst() = newDataCopy.First;
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Append(const T& value)
 {
     return EmplaceBack<const T&>(value);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Append(T&& value)
 {
     return EmplaceBack<T&&>(Axis::System::Move(value));
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 template <Concept::PointerToValue<const T> IteratorType>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::AppendRange(const IteratorType& begin,
                                                                                                            const IteratorType& end)
@@ -393,7 +393,7 @@ inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, Itera
     return GetIterator<false>(data.InitializedSize - count);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline void List<T, Alloc, IteratorDebugging>::PopBack() noexcept
 {
     if (_dataAllocPair.GetFirst().InitializedSize == 0)
@@ -403,7 +403,7 @@ inline void List<T, Alloc, IteratorDebugging>::PopBack() noexcept
     --_dataAllocPair.GetFirst().InitializedSize;
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::RemoveAt(SizeType index,
                                                                                                         SizeType count)
 {
@@ -497,7 +497,7 @@ inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, Itera
     return GetIterator<false>(index);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline void List<T, Alloc, IteratorDebugging>::Tidy() noexcept
 {
     Data&      dataInstance  = _dataAllocPair.GetFirst();
@@ -514,7 +514,7 @@ inline void List<T, Alloc, IteratorDebugging>::Tidy() noexcept
     dataInstance.InitializedSize = SizeType(0);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline void List<T, Alloc, IteratorDebugging>::TidyData(const Data& data) noexcept
 {
     Data&      dataInstance  = _dataAllocPair.GetFirst();
@@ -527,7 +527,7 @@ inline void List<T, Alloc, IteratorDebugging>::TidyData(const Data& data) noexce
         AllocTraits::Deallocate(allocInstance, dataInstance.Begin, dataInstance.AllocatedSize);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 template <Bool ForceNewAllocation>
 inline Pair<typename List<T, Alloc, IteratorDebugging>::Data, Bool> List<T, Alloc, IteratorDebugging>::CreateCopy(SizeType elementCount)
 {
@@ -556,13 +556,13 @@ inline Pair<typename List<T, Alloc, IteratorDebugging>::Data, Bool> List<T, Allo
     return {containerHolder.Data, true};
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, IteratorDebugging>::GetCapacity() const noexcept
 {
     return _dataAllocPair.GetFirst().AllocatedSize;
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, IteratorDebugging>::GetMaxSize() const noexcept
 {
     SizeType           allocMaxSize      = AllocTraits::MaxAllocationSize;
@@ -571,7 +571,7 @@ inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, Itera
     return Detail::CoreContainer::Min(allocMaxSize, differenceTypeMax);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 template <Bool ForceNewAllocation>
 inline Pair<typename List<T, Alloc, IteratorDebugging>::SpacedContainerHolder, Bool> List<T, Alloc, IteratorDebugging>::CreateSpace(SizeType index,
                                                                                                                                     SizeType elementCount)
@@ -678,7 +678,7 @@ inline Pair<typename List<T, Alloc, IteratorDebugging>::SpacedContainerHolder, B
     }
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 template <class... Args>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Emplace(SizeType index,
                                                                                                        Args&&... args)
@@ -718,21 +718,21 @@ inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, Itera
     return GetIterator<false>(index);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Insert(typename List<T, Alloc, IteratorDebugging>::SizeType index,
                                                                                                       const T&                                             element)
 {
     return Emplace<const T&>(index, element);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::Insert(typename List<T, Alloc, IteratorDebugging>::SizeType index,
                                                                                                       T&&                                                  element)
 {
     return Emplace<T&&>(index, ::Axis::System::Move(element));
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 template <Concept::PointerToValue<const T> IteratorType>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::InsertRange(typename List<T, Alloc, IteratorDebugging>::SizeType index,
                                                                                                            const IteratorType&                                  begin,
@@ -811,7 +811,7 @@ inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, Itera
     return GetIterator<false>(index);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 template <Bool DeallocateMemory>
 inline void List<T, Alloc, IteratorDebugging>::Clear() noexcept
 {
@@ -831,7 +831,7 @@ inline void List<T, Alloc, IteratorDebugging>::Clear() noexcept
     }
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline void List<T, Alloc, IteratorDebugging>::Resize(typename List<T, Alloc, IteratorDebugging>::SizeType newSize)
 {
     const auto Construct = [this](typename List<T, Alloc, IteratorDebugging>::PointerType ptr) {
@@ -841,7 +841,7 @@ inline void List<T, Alloc, IteratorDebugging>::Resize(typename List<T, Alloc, It
     ResizeInternal(newSize, Construct);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline void List<T, Alloc, IteratorDebugging>::Resize(typename List<T, Alloc, IteratorDebugging>::SizeType newSize,
                                                       const T&                                             value)
 {
@@ -852,7 +852,7 @@ inline void List<T, Alloc, IteratorDebugging>::Resize(typename List<T, Alloc, It
     ResizeInternal(newSize, Construct);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, IteratorDebugging>::CheckNewElement(SizeType newElementCount)
 {
     auto& data = _dataAllocPair.GetFirst();
@@ -864,7 +864,7 @@ inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, Itera
     return Detail::CoreContainer::Min(Detail::CoreContainer::RoundToNextPowerOfTwo(data.InitializedSize + newElementCount), GetMaxSize());
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 template <bool IsConst>
 inline typename List<T, Alloc, IteratorDebugging>::template IteratorTemplate<IsConst> List<T, Alloc, IteratorDebugging>::GetIterator(typename List<T, Alloc, IteratorDebugging>::SizeType index) const noexcept
 {
@@ -881,7 +881,7 @@ inline typename List<T, Alloc, IteratorDebugging>::template IteratorTemplate<IsC
         return IteratorTemplate<IsConst>(_dataAllocPair.GetFirst().Begin + index);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 template <class... Args>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::EmplaceBack(Args&&... args)
 {
@@ -897,14 +897,14 @@ inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, Itera
     return GetIterator<false>(data.InitializedSize - 1);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 template <class Lambda>
 inline void List<T, Alloc, IteratorDebugging>::ConstructContinuousContainer(SizeType elementCount, const Lambda& construct)
 {
     if (elementCount == 0)
         return;
 
-    Detail::CoreContainer::TidyGuard<ThisType> guard(this);
+    Detail::CoreContainer::TidyGuard<List<T, Alloc, IteratorDebugging>> guard(this);
 
     // Allocate memory
     Data&      dataInstance  = _dataAllocPair.GetFirst();
@@ -920,19 +920,19 @@ inline void List<T, Alloc, IteratorDebugging>::ConstructContinuousContainer(Size
 }
 
 // Default constructor
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>::List() noexcept(DefaultConstructorNoexcept) :
     _dataAllocPair() {}
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>::~List() noexcept { Tidy(); }
 
 // Constructor with allocator instance
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>::List(const AllocType& allocator) noexcept(AllocatorCopyConstructorNoexcept) :
     _dataAllocPair(Data(), allocator) {}
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>::List(SizeType elementCount, const AllocType& allocator) :
     _dataAllocPair(Data(), allocator)
 {
@@ -947,7 +947,7 @@ inline List<T, Alloc, IteratorDebugging>::List(SizeType elementCount, const Allo
     ConstructContinuousContainer(elementCount, construct);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>::List(SizeType elementCount, const T& value, const AllocType& allocator) :
     _dataAllocPair(Data(), allocator)
 {
@@ -962,7 +962,7 @@ inline List<T, Alloc, IteratorDebugging>::List(SizeType elementCount, const T& v
     ConstructContinuousContainer(elementCount, construct);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>::List(std::initializer_list<T> list, const AllocType& allocator) :
     _dataAllocPair(Data(), allocator)
 {
@@ -977,7 +977,7 @@ inline List<T, Alloc, IteratorDebugging>::List(std::initializer_list<T> list, co
     ConstructContinuousContainer(list.size(), construct);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>::List(const List& other) :
     _dataAllocPair(Data(), AllocTraits::SelectOnContainerCopyConstructor(other._dataAllocPair.GetSecond()))
 {
@@ -992,7 +992,7 @@ inline List<T, Alloc, IteratorDebugging>::List(const List& other) :
     ConstructContinuousContainer(other._dataAllocPair.GetFirst().InitializedSize, construct);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>::List(List&& other) noexcept(MoveConstructorNoexcept) :
     _dataAllocPair(PerfectForwardTag, Data(other._dataAllocPair.GetFirst()), Axis::System::Move(other._dataAllocPair.GetSecond()))
 {
@@ -1004,7 +1004,7 @@ inline List<T, Alloc, IteratorDebugging>::List(List&& other) noexcept(MoveConstr
     other.MoveTrackerTo(*this);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::operator=(const List<T, Alloc, IteratorDebugging>& other)
 {
     if (this == AddressOf(other))
@@ -1112,7 +1112,7 @@ inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::ope
     return *this;
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 template <class Lambda>
 inline void List<T, Alloc, IteratorDebugging>::ResizeInternal(SizeType      newSize,
                                                               const Lambda& construct)
@@ -1174,7 +1174,7 @@ inline void List<T, Alloc, IteratorDebugging>::ResizeInternal(SizeType      newS
     }
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 template <Bool ForceNewAllocation, class Lambda>
 inline void List<T, Alloc, IteratorDebugging>::ResetInternal(const Lambda& construct)
 {
@@ -1208,7 +1208,7 @@ inline void List<T, Alloc, IteratorDebugging>::ResetInternal(const Lambda& const
     }
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::operator=(List<T, Alloc, IteratorDebugging>&& other) noexcept(MoveAssignmentNoexcept)
 {
     if (this == AddressOf(other))
@@ -1320,13 +1320,13 @@ inline List<T, Alloc, IteratorDebugging>& List<T, Alloc, IteratorDebugging>::ope
     return *this;
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::SizeType List<T, Alloc, IteratorDebugging>::GetSize() const noexcept
 {
     return _dataAllocPair.GetFirst().InitializedSize;
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline T& List<T, Alloc, IteratorDebugging>::operator[](SizeType index)
 {
     if (index >= _dataAllocPair.GetFirst().InitializedSize)
@@ -1335,7 +1335,7 @@ inline T& List<T, Alloc, IteratorDebugging>::operator[](SizeType index)
     return _dataAllocPair.GetFirst().Begin[index];
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline const T& List<T, Alloc, IteratorDebugging>::operator[](SizeType index) const
 {
     if (index >= _dataAllocPair.GetFirst().InitializedSize)
@@ -1344,7 +1344,7 @@ inline const T& List<T, Alloc, IteratorDebugging>::operator[](SizeType index) co
     return _dataAllocPair.GetFirst().Begin[index];
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::begin()
 {
     if constexpr (IteratorDebugging)
@@ -1359,7 +1359,7 @@ inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, Itera
         return Iterator(_dataAllocPair.GetFirst().Begin);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, IteratorDebugging>::begin() const
 {
     if constexpr (IteratorDebugging)
@@ -1374,7 +1374,7 @@ inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, 
         return ConstIterator(_dataAllocPair.GetFirst().Begin);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, IteratorDebugging>::end()
 {
     if constexpr (IteratorDebugging)
@@ -1389,7 +1389,7 @@ inline typename List<T, Alloc, IteratorDebugging>::Iterator List<T, Alloc, Itera
         return Iterator(_dataAllocPair.GetFirst().Begin + _dataAllocPair.GetFirst().InitializedSize);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, IteratorDebugging>::end() const
 {
     if constexpr (IteratorDebugging)
@@ -1404,7 +1404,7 @@ inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, 
         return ConstIterator(_dataAllocPair.GetFirst().Begin + _dataAllocPair.GetFirst().InitializedSize);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, IteratorDebugging>::cbegin() const
 {
     if constexpr (IteratorDebugging)
@@ -1419,7 +1419,7 @@ inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, 
         return ConstIterator(_dataAllocPair.GetFirst().Begin);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, IteratorDebugging>::cend() const
 {
     if constexpr (IteratorDebugging)
@@ -1434,13 +1434,13 @@ inline typename List<T, Alloc, IteratorDebugging>::ConstIterator List<T, Alloc, 
         return ConstIterator(_dataAllocPair.GetFirst().Begin + _dataAllocPair.GetFirst().InitializedSize);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline List<T, Alloc, IteratorDebugging>::operator Bool() const noexcept
 {
     return (Bool)_dataAllocPair.GetFirst().InitializedSize;
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, Bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, Bool IteratorDebugging>
 inline void List<T, Alloc, IteratorDebugging>::Reset() noexcept(IsNothrowDefaultConstructible<T>)
 {
     const auto constructLambda = [this](PointerType ptr) {
@@ -1450,7 +1450,7 @@ inline void List<T, Alloc, IteratorDebugging>::Reset() noexcept(IsNothrowDefault
     ResetInternal<!IsNothrowDefaultConstructible<T>, decltype(constructLambda)>(constructLambda);
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline void List<T, Alloc, IteratorDebugging>::Reset(const T& value) noexcept(IsNothrowCopyConstructible<T>)
 {
     if constexpr (IsNothrowCopyAssignable<T>)
@@ -1470,13 +1470,13 @@ inline void List<T, Alloc, IteratorDebugging>::Reset(const T& value) noexcept(Is
     }
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::PointerType List<T, Alloc, IteratorDebugging>::GetData() noexcept
 {
     return _dataAllocPair.GetFirst().Begin;
 }
 
-template <Concept::Pure T, template <Concept::Pure> class Alloc, bool IteratorDebugging>
+template <Concept::Pure T, template <typename> class Alloc, bool IteratorDebugging>
 inline typename List<T, Alloc, IteratorDebugging>::ConstPointerType List<T, Alloc, IteratorDebugging>::GetData() const noexcept
 {
     return _dataAllocPair.GetFirst().Begin;

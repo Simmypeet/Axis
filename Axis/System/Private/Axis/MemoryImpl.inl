@@ -9,7 +9,9 @@
 #include "../../Include/Axis/Assert.hpp"
 #include "../../Include/Axis/Exception.hpp"
 #include "../../Include/Axis/Memory.hpp"
+#include <limits>
 #include <new>
+
 
 namespace Axis::System
 {

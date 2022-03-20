@@ -233,6 +233,11 @@ constexpr auto WeakDecrementer = [](ReferenceCounter* referenceCounter) {
         referenceCounter->DeleteWeakCount();
 };
 
+using StrongIncrementerType = decltype(StrongIncrementer);
+using StrongDecrementerType = decltype(StrongDecrementer);
+using WeakIncrementerType   = decltype(WeakIncrementer);
+using WeakDecrementerType   = decltype(WeakDecrementer);
+
 template <Concept::SmartPointerValue T, typename Incrementer, typename Decrementer>
 class BaseSharedPointer // Base class for SharedPointer and WeakPointer
 {
@@ -313,7 +318,7 @@ protected:
     ReferenceCounter* _referenceCounter = nullptr; ///< Pointer to the reference counter
 
     template <Concept::SmartPointerValue, typename, typename>
-    friend class BaseSharedPointer;
+    friend class ::Axis::System::Detail::SmartPointer::BaseSharedPointer;
 };
 
 } // namespace Detail::SmartPointer
@@ -321,11 +326,11 @@ protected:
 /// \brief Smart pointer for shared ownership of a resource. The resource is deleted when the last strong reference
 ///        is deleted. This class manipulates the weak reference count.
 template <Concept::SmartPointerValue T>
-class WeakPointer final : private Detail::SmartPointer::BaseSharedPointer<T, decltype(Detail::SmartPointer::WeakIncrementer), decltype(Detail::SmartPointer::WeakDecrementer)>
+class WeakPointer final : private Detail::SmartPointer::BaseSharedPointer<T, Detail::SmartPointer::WeakIncrementerType, Detail::SmartPointer::WeakDecrementerType>
 {
 private:
     // Smart pointer's base type
-    using BaseType = Detail::SmartPointer::BaseSharedPointer<T, decltype(Detail::SmartPointer::WeakIncrementer), decltype(Detail::SmartPointer::WeakDecrementer)>;
+    using BaseType = Detail::SmartPointer::BaseSharedPointer<T, Detail::SmartPointer::WeakIncrementerType, Detail::SmartPointer::WeakDecrementerType>;
 
 public:
     /// \brief The target value type of the pointer
@@ -469,7 +474,7 @@ private:
 /// \brief Smart pointer for shared ownership of a resource. The resource is deleted when the last strong reference
 ///        is deleted. This class manipulates the strong reference count.
 template <Concept::SmartPointerValue T>
-class SharedPointer final : private Detail::SmartPointer::BaseSharedPointer<T, decltype(Detail::SmartPointer::StrongIncrementer), decltype(Detail::SmartPointer::StrongDecrementer)>
+class SharedPointer final : private Detail::SmartPointer::BaseSharedPointer<T, Detail::SmartPointer::StrongIncrementerType, Detail::SmartPointer::StrongDecrementerType>
 {
 private:
     using BaseType = Detail::SmartPointer::BaseSharedPointer<T, decltype(Detail::SmartPointer::StrongIncrementer), decltype(Detail::SmartPointer::StrongDecrementer)>;

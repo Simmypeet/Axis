@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Utility.hpp"
+#include <limits>
 
 namespace Axis::System
 {

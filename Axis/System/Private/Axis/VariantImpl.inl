@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../../Include/Axis/Variant.hpp"
+#include <new>
 
 namespace Axis::System
 {
@@ -145,6 +146,12 @@ inline Variant<Types...>::~Variant() noexcept
     if (_typeIndex != ValuelessIndex)
         Detail::Variant::DestroyFunctions<Types...>[_typeIndex](_storage.GetStoragePtr());
 }
+
+template <class... Types>
+inline Uint8 Variant<Types...>::GetTypeIndex() const noexcept { return _typeIndex; }
+
+template <class... Types>
+inline Bool Variant<Types...>::IsValueless() const noexcept { return _typeIndex == ValuelessIndex; }
 
 } // namespace Axis::System
 
